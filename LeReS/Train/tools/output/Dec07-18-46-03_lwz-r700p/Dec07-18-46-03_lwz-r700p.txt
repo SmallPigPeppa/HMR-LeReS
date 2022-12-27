@@ -1,0 +1,295 @@
+2022-12-07 18:46:05,240 lib INFO: ----------------- Options ---------------
+                 backbone: resnet50
+                  base_lr: 0.001
+                batchsize: 2
+                 dataroot: C:\\Users\\90532\\Desktop\\Datasets\\HMR-LeReS
+                  dataset: gta
+             dataset_list: ['2020-06-11-10-06-48']
+                 dist_url: tcp://127.0.0.1:2252
+              distributed: False
+                    epoch: 2
+              global_rank: 0
+                load_ckpt: None
+               local_rank: 0
+             log_interval: 1
+                loss_mode: _ranking-edge_pairwise-normal-regress-edge_msgil-normal_meanstd-tanh_pairwise-normal-regress-plane_ranking-edge-auxi_meanstd-tanh-auxi_
+ lr_scheduler_multiepochs: [1]
+                   nnodes: 1
+                node_rank: 0
+               output_dir: ./output
+                    phase: train
+               phase_anno: train
+                   resume: False
+       sample_ratio_steps: 10000
+       sample_start_ratio: 0.1
+         scale_decoder_lr: 1
+           snapshot_iters: 100000
+               start_step: 0
+                   thread: 0
+              use_tfboard: True
+                 val_step: 10000
+               world_size: 1
+----------------- End -------------------
+2022-12-07 18:46:06,168 lib.configs.config INFO: ----------------- Configs ---------------
+                                          ROOT_DIR: C:\Users\90532\Desktop\code\HMR-LeReS\LeReS\Train
+                                       cfg.DATASET: 
+                                  cfg.DATASET.NAME: diversedepth                  
+                       cfg.DATASET.RGB_PIXEL_MEANS: (0.485, 0.456, 0.406)         
+                        cfg.DATASET.RGB_PIXEL_VARS: (0.229, 0.224, 0.225)         
+                             cfg.DATASET.CROP_SIZE: (448, 448)                    
+                               cfg.DATASET.FOCAL_X: 256.0                         
+                               cfg.DATASET.FOCAL_Y: 256.0                         
+                                         cfg.MODEL: 
+                               cfg.MODEL.INIT_TYPE: xavier                        
+                                 cfg.MODEL.ENCODER: resnet50_stride32             
+                        cfg.MODEL.MODEL_REPOSITORY: datasets/pretrained_model     
+                      cfg.MODEL.PRETRAINED_WEIGHTS: resnext50_32x4d.pth           
+        cfg.MODEL.LOAD_IMAGENET_PRETRAINED_WEIGHTS: True                          
+                   cfg.MODEL.RESNET_BOTTLENECK_DIM: [64, 256, 512, 1024, 2048]    
+                        cfg.MODEL.RESNET_BLOCK_DIM: [64, 64, 128, 256, 512]       
+                              cfg.MODEL.FCN_DIM_IN: [512, 256, 256, 256, 256, 256]
+                             cfg.MODEL.FCN_DIM_OUT: [256, 256, 256, 256, 256]     
+                             cfg.MODEL.LATERAL_OUT: [512, 256, 256, 256]          
+                         cfg.MODEL.ENCODER_INPUT_C: 3                             
+                        cfg.MODEL.DECODER_OUTPUT_C: 1                             
+                      cfg.MODEL.FREEZE_BACKBONE_BN: False                         
+                                  cfg.MODEL.DEVICE: cuda                          
+                                         cfg.TRAIN: 
+                                cfg.TRAIN.RUN_NAME: Dec07-18-46-03_lwz-r700p      
+                              cfg.TRAIN.OUTPUT_DIR: ./output                      
+                                 cfg.TRAIN.LOG_DIR: ./output\Dec07-18-46-03_lwz-r700p
+                        cfg.TRAIN.SCALE_DECODER_LR: 1                             
+                                 cfg.TRAIN.BASE_LR: 0.001                         
+                                cfg.TRAIN.MAX_ITER: 956                           
+                                   cfg.TRAIN.EPOCH: 2                             
+                 cfg.TRAIN.LR_SCHEDULER_MULTISTEPS: [478]                         
+                      cfg.TRAIN.LR_SCHEDULER_GAMMA: 0.1                           
+                           cfg.TRAIN.WARMUP_FACTOR: 0.3333333333333333            
+                            cfg.TRAIN.WARMUP_ITERS: 500                           
+                           cfg.TRAIN.WARMUP_METHOD: linear                        
+                          cfg.TRAIN.SNAPSHOT_ITERS: 100000                        
+                                cfg.TRAIN.VAL_STEP: 10000                         
+                               cfg.TRAIN.BATCHSIZE: 2                             
+                                 cfg.TRAIN.GPU_NUM: 1                             
+                            cfg.TRAIN.LOG_INTERVAL: 1                             
+                               cfg.TRAIN.LOAD_CKPT: None                          
+                               cfg.TRAIN.LOSS_MODE: _ranking-edge_pairwise-normal-regress-edge_msgil-normal_meanstd-tanh_pairwise-normal-regress-plane_ranking-edge-auxi_meanstd-tanh-auxi_
+                        cfg.TRAIN.LOSS_AUXI_WEIGHT: 0.5                           
+                                   cfg.TRAIN.OPTIM: SGD                           
+----------------- End -------------------
+2022-12-07 18:46:09,363 lib.utils.logging INFO: [Step 0/956] [Epoch 0/2]  [gta]
+		loss: 8.620,    time: 3.192357,    eta: 0:50:51
+		pairwise-normal-regress-edge_loss: 1.357, 		meanstd-tanh_loss: 2.877, 		ranking-edge_loss: 0.277, 		msg_normal_loss: 4.109, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000335,       group1_lr: 0.000335, 
+2022-12-07 18:46:10,296 lib.utils.logging INFO: [Step 1/956] [Epoch 0/2]  [gta]
+		loss: 3.893,    time: 2.061363,    eta: 0:32:48
+		pairwise-normal-regress-edge_loss: 1.231, 		meanstd-tanh_loss: 1.373, 		ranking-edge_loss: 0.336, 		msg_normal_loss: 0.953, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000336,       group1_lr: 0.000336, 
+2022-12-07 18:46:11,222 lib.utils.logging INFO: [Step 2/956] [Epoch 0/2]  [gta]
+		loss: 3.800,    time: 1.682333,    eta: 0:26:44
+		pairwise-normal-regress-edge_loss: 1.358, 		meanstd-tanh_loss: 1.494, 		ranking-edge_loss: 0.289, 		msg_normal_loss: 0.658, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000337,       group1_lr: 0.000337, 
+2022-12-07 18:46:12,151 lib.utils.logging INFO: [Step 3/956] [Epoch 0/2]  [gta]
+		loss: 12.833,    time: 1.493869,    eta: 0:23:43
+		pairwise-normal-regress-edge_loss: 1.299, 		meanstd-tanh_loss: 4.331, 		ranking-edge_loss: 0.279, 		msg_normal_loss: 6.925, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000339,       group1_lr: 0.000339, 
+2022-12-07 18:46:13,075 lib.utils.logging INFO: [Step 4/956] [Epoch 0/2]  [gta]
+		loss: 21.316,    time: 1.379680,    eta: 0:21:53
+		pairwise-normal-regress-edge_loss: 1.255, 		meanstd-tanh_loss: 13.781, 		ranking-edge_loss: 0.334, 		msg_normal_loss: 5.946, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000340,       group1_lr: 0.000340, 
+2022-12-07 18:46:13,957 lib.utils.logging INFO: [Step 5/956] [Epoch 0/2]  [gta]
+		loss: 2.874,    time: 1.296839,    eta: 0:20:33
+		pairwise-normal-regress-edge_loss: 1.272, 		meanstd-tanh_loss: 1.031, 		ranking-edge_loss: 0.259, 		msg_normal_loss: 0.312, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000341,       group1_lr: 0.000341, 
+2022-12-07 18:46:14,848 lib.utils.logging INFO: [Step 6/956] [Epoch 0/2]  [gta]
+		loss: 2.945,    time: 1.238546,    eta: 0:19:36
+		pairwise-normal-regress-edge_loss: 1.229, 		meanstd-tanh_loss: 0.995, 		ranking-edge_loss: 0.302, 		msg_normal_loss: 0.418, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000343,       group1_lr: 0.000343, 
+2022-12-07 18:46:15,743 lib.utils.logging INFO: [Step 7/956] [Epoch 0/2]  [gta]
+		loss: 4.846,    time: 1.195534,    eta: 0:18:54
+		pairwise-normal-regress-edge_loss: 1.219, 		meanstd-tanh_loss: 1.627, 		ranking-edge_loss: 0.407, 		msg_normal_loss: 1.594, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000344,       group1_lr: 0.000344, 
+2022-12-07 18:46:16,644 lib.utils.logging INFO: [Step 8/956] [Epoch 0/2]  [gta]
+		loss: 13.689,    time: 1.162787,    eta: 0:18:22
+		pairwise-normal-regress-edge_loss: 1.343, 		meanstd-tanh_loss: 5.149, 		ranking-edge_loss: 0.235, 		msg_normal_loss: 6.962, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000345,       group1_lr: 0.000345, 
+2022-12-07 18:46:17,568 lib.utils.logging INFO: [Step 9/956] [Epoch 0/2]  [gta]
+		loss: 3.859,    time: 1.138721,    eta: 0:17:58
+		pairwise-normal-regress-edge_loss: 1.236, 		meanstd-tanh_loss: 1.311, 		ranking-edge_loss: 0.414, 		msg_normal_loss: 0.899, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000347,       group1_lr: 0.000347, 
+2022-12-07 18:46:18,488 lib.utils.logging INFO: [Step 10/956] [Epoch 0/2]  [gta]
+		loss: 11.467,    time: 1.118765,    eta: 0:17:38
+		pairwise-normal-regress-edge_loss: 1.292, 		meanstd-tanh_loss: 4.337, 		ranking-edge_loss: 0.358, 		msg_normal_loss: 5.481, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000348,       group1_lr: 0.000348, 
+2022-12-07 18:46:19,413 lib.utils.logging INFO: [Step 11/956] [Epoch 0/2]  [gta]
+		loss: 4.178,    time: 1.102489,    eta: 0:17:21
+		pairwise-normal-regress-edge_loss: 1.230, 		meanstd-tanh_loss: 1.862, 		ranking-edge_loss: 0.350, 		msg_normal_loss: 0.736, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000349,       group1_lr: 0.000349, 
+2022-12-07 18:46:20,329 lib.utils.logging INFO: [Step 12/956] [Epoch 0/2]  [gta]
+		loss: 2.765,    time: 1.088062,    eta: 0:17:07
+		pairwise-normal-regress-edge_loss: 1.288, 		meanstd-tanh_loss: 0.942, 		ranking-edge_loss: 0.190, 		msg_normal_loss: 0.346, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000351,       group1_lr: 0.000351, 
+2022-12-07 18:46:21,291 lib.utils.logging INFO: [Step 13/956] [Epoch 0/2]  [gta]
+		loss: 3.086,    time: 1.078981,    eta: 0:16:57
+		pairwise-normal-regress-edge_loss: 1.219, 		meanstd-tanh_loss: 1.010, 		ranking-edge_loss: 0.404, 		msg_normal_loss: 0.454, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000352,       group1_lr: 0.000352, 
+2022-12-07 18:46:22,177 lib.utils.logging INFO: [Step 14/956] [Epoch 0/2]  [gta]
+		loss: 2.931,    time: 1.066003,    eta: 0:16:44
+		pairwise-normal-regress-edge_loss: 1.262, 		meanstd-tanh_loss: 1.038, 		ranking-edge_loss: 0.279, 		msg_normal_loss: 0.352, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000353,       group1_lr: 0.000353, 
+2022-12-07 18:46:23,054 lib.utils.logging INFO: [Step 15/956] [Epoch 0/2]  [gta]
+		loss: 14630188.000,    time: 1.054168,    eta: 0:16:31
+		pairwise-normal-regress-edge_loss: 1.377, 		meanstd-tanh_loss: 9286065.000, 		ranking-edge_loss: 0.273, 		msg_normal_loss: 5344122.500, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000355,       group1_lr: 0.000355, 
+2022-12-07 18:46:23,943 lib.utils.logging INFO: [Step 16/956] [Epoch 0/2]  [gta]
+		loss: 3.049,    time: 1.044421,    eta: 0:16:21
+		pairwise-normal-regress-edge_loss: 1.246, 		meanstd-tanh_loss: 1.083, 		ranking-edge_loss: 0.283, 		msg_normal_loss: 0.437, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000356,       group1_lr: 0.000356, 
+2022-12-07 18:46:24,794 lib.utils.logging INFO: [Step 17/956] [Epoch 0/2]  [gta]
+		loss: 15.599,    time: 1.033636,    eta: 0:16:10
+		pairwise-normal-regress-edge_loss: 1.368, 		meanstd-tanh_loss: 6.434, 		ranking-edge_loss: 0.337, 		msg_normal_loss: 7.460, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000357,       group1_lr: 0.000357, 
+2022-12-07 18:46:25,662 lib.utils.logging INFO: [Step 18/956] [Epoch 0/2]  [gta]
+		loss: 2.841,    time: 1.024911,    eta: 0:16:01
+		pairwise-normal-regress-edge_loss: 1.309, 		meanstd-tanh_loss: 1.004, 		ranking-edge_loss: 0.240, 		msg_normal_loss: 0.289, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000359,       group1_lr: 0.000359, 
+2022-12-07 18:46:26,533 lib.utils.logging INFO: [Step 19/956] [Epoch 0/2]  [gta]
+		loss: 2.865,    time: 1.017118,    eta: 0:15:53
+		pairwise-normal-regress-edge_loss: 1.251, 		meanstd-tanh_loss: 1.027, 		ranking-edge_loss: 0.283, 		msg_normal_loss: 0.304, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000360,       group1_lr: 0.000360, 
+2022-12-07 18:46:27,466 lib.utils.logging INFO: [Step 20/956] [Epoch 0/2]  [gta]
+		loss: 20.118,    time: 1.013107,    eta: 0:15:48
+		pairwise-normal-regress-edge_loss: 1.409, 		meanstd-tanh_loss: 9.421, 		ranking-edge_loss: 0.298, 		msg_normal_loss: 8.990, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000361,       group1_lr: 0.000361, 
+2022-12-07 18:46:28,329 lib.utils.logging INFO: [Step 21/956] [Epoch 0/2]  [gta]
+		loss: 2.775,    time: 1.006233,    eta: 0:15:40
+		pairwise-normal-regress-edge_loss: 1.250, 		meanstd-tanh_loss: 1.038, 		ranking-edge_loss: 0.231, 		msg_normal_loss: 0.256, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000363,       group1_lr: 0.000363, 
+2022-12-07 18:46:29,210 lib.utils.logging INFO: [Step 22/956] [Epoch 0/2]  [gta]
+		loss: 11.727,    time: 1.000773,    eta: 0:15:34
+		pairwise-normal-regress-edge_loss: 1.363, 		meanstd-tanh_loss: 3.767, 		ranking-edge_loss: 0.374, 		msg_normal_loss: 6.222, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000364,       group1_lr: 0.000364, 
+2022-12-07 18:46:30,082 lib.utils.logging INFO: [Step 23/956] [Epoch 0/2]  [gta]
+		loss: 3.294,    time: 0.995336,    eta: 0:15:28
+		pairwise-normal-regress-edge_loss: 1.290, 		meanstd-tanh_loss: 1.112, 		ranking-edge_loss: 0.295, 		msg_normal_loss: 0.597, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000365,       group1_lr: 0.000365, 
+2022-12-07 18:46:30,949 lib.utils.logging INFO: [Step 24/956] [Epoch 0/2]  [gta]
+		loss: 3.376,    time: 0.990205,    eta: 0:15:22
+		pairwise-normal-regress-edge_loss: 1.196, 		meanstd-tanh_loss: 1.166, 		ranking-edge_loss: 0.400, 		msg_normal_loss: 0.613, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000367,       group1_lr: 0.000367, 
+2022-12-07 18:46:31,879 lib.utils.logging INFO: [Step 25/956] [Epoch 0/2]  [gta]
+		loss: 2.989,    time: 0.987869,    eta: 0:15:19
+		pairwise-normal-regress-edge_loss: 1.294, 		meanstd-tanh_loss: 0.960, 		ranking-edge_loss: 0.344, 		msg_normal_loss: 0.390, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000368,       group1_lr: 0.000368, 
+2022-12-07 18:46:32,774 lib.utils.logging INFO: [Step 26/956] [Epoch 0/2]  [gta]
+		loss: 2.692,    time: 0.984376,    eta: 0:15:15
+		pairwise-normal-regress-edge_loss: 1.240, 		meanstd-tanh_loss: 0.884, 		ranking-edge_loss: 0.280, 		msg_normal_loss: 0.288, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000369,       group1_lr: 0.000369, 
+2022-12-07 18:46:33,663 lib.utils.logging INFO: [Step 27/956] [Epoch 0/2]  [gta]
+		loss: 52.112,    time: 0.980982,    eta: 0:15:11
+		pairwise-normal-regress-edge_loss: 1.391, 		meanstd-tanh_loss: 28.771, 		ranking-edge_loss: 0.293, 		msg_normal_loss: 21.657, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000371,       group1_lr: 0.000371, 
+2022-12-07 18:46:34,560 lib.utils.logging INFO: [Step 28/956] [Epoch 0/2]  [gta]
+		loss: 2.787,    time: 0.977996,    eta: 0:15:07
+		pairwise-normal-regress-edge_loss: 1.238, 		meanstd-tanh_loss: 1.009, 		ranking-edge_loss: 0.272, 		msg_normal_loss: 0.269, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000372,       group1_lr: 0.000372, 
+2022-12-07 18:46:35,433 lib.utils.logging INFO: [Step 29/956] [Epoch 0/2]  [gta]
+		loss: 2.967,    time: 0.974460,    eta: 0:15:03
+		pairwise-normal-regress-edge_loss: 1.273, 		meanstd-tanh_loss: 1.113, 		ranking-edge_loss: 0.259, 		msg_normal_loss: 0.322, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000373,       group1_lr: 0.000373, 
+2022-12-07 18:46:36,312 lib.utils.logging INFO: [Step 30/956] [Epoch 0/2]  [gta]
+		loss: 2.983,    time: 0.971364,    eta: 0:14:59
+		pairwise-normal-regress-edge_loss: 1.323, 		meanstd-tanh_loss: 1.049, 		ranking-edge_loss: 0.319, 		msg_normal_loss: 0.293, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000375,       group1_lr: 0.000375, 
+2022-12-07 18:46:37,207 lib.utils.logging INFO: [Step 31/956] [Epoch 0/2]  [gta]
+		loss: 2379359.000,    time: 0.968964,    eta: 0:14:56
+		pairwise-normal-regress-edge_loss: 1.268, 		meanstd-tanh_loss: 1097564.875, 		ranking-edge_loss: 0.268, 		msg_normal_loss: 1281792.500, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000376,       group1_lr: 0.000376, 
+2022-12-07 18:46:38,104 lib.utils.logging INFO: [Step 32/956] [Epoch 0/2]  [gta]
+		loss: 8.112,    time: 0.966800,    eta: 0:14:53
+		pairwise-normal-regress-edge_loss: 1.235, 		meanstd-tanh_loss: 4.243, 		ranking-edge_loss: 0.287, 		msg_normal_loss: 2.347, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000377,       group1_lr: 0.000377, 
+2022-12-07 18:46:39,002 lib.utils.logging INFO: [Step 33/956] [Epoch 0/2]  [gta]
+		loss: 1.696,    time: 0.964700,    eta: 0:14:50
+		pairwise-normal-regress-edge_loss: 0.619, 		meanstd-tanh_loss: 0.692, 		ranking-edge_loss: 0.179, 		msg_normal_loss: 0.206, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000379,       group1_lr: 0.000379, 
+2022-12-07 18:46:39,943 lib.utils.logging INFO: [Step 34/956] [Epoch 0/2]  [gta]
+		loss: 3.944,    time: 0.964033,    eta: 0:14:48
+		pairwise-normal-regress-edge_loss: 1.232, 		meanstd-tanh_loss: 1.463, 		ranking-edge_loss: 0.376, 		msg_normal_loss: 0.872, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000380,       group1_lr: 0.000380, 
+2022-12-07 18:46:40,853 lib.utils.logging INFO: [Step 35/956] [Epoch 0/2]  [gta]
+		loss: 3.565,    time: 0.962463,    eta: 0:14:46
+		pairwise-normal-regress-edge_loss: 1.307, 		meanstd-tanh_loss: 1.350, 		ranking-edge_loss: 0.312, 		msg_normal_loss: 0.595, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000381,       group1_lr: 0.000381, 
+2022-12-07 18:46:41,741 lib.utils.logging INFO: [Step 36/956] [Epoch 0/2]  [gta]
+		loss: 2.993,    time: 0.960460,    eta: 0:14:43
+		pairwise-normal-regress-edge_loss: 1.259, 		meanstd-tanh_loss: 1.152, 		ranking-edge_loss: 0.278, 		msg_normal_loss: 0.304, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000383,       group1_lr: 0.000383, 
+2022-12-07 18:46:42,643 lib.utils.logging INFO: [Step 37/956] [Epoch 0/2]  [gta]
+		loss: 3.025,    time: 0.958908,    eta: 0:14:41
+		pairwise-normal-regress-edge_loss: 1.261, 		meanstd-tanh_loss: 1.167, 		ranking-edge_loss: 0.279, 		msg_normal_loss: 0.318, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000384,       group1_lr: 0.000384, 
+2022-12-07 18:46:43,561 lib.utils.logging INFO: [Step 38/956] [Epoch 0/2]  [gta]
+		loss: 3.868,    time: 0.957830,    eta: 0:14:39
+		pairwise-normal-regress-edge_loss: 1.213, 		meanstd-tanh_loss: 1.311, 		ranking-edge_loss: 0.413, 		msg_normal_loss: 0.930, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000385,       group1_lr: 0.000385, 
+2022-12-07 18:46:44,469 lib.utils.logging INFO: [Step 39/956] [Epoch 0/2]  [gta]
+		loss: 2.828,    time: 0.956583,    eta: 0:14:37
+		pairwise-normal-regress-edge_loss: 1.251, 		meanstd-tanh_loss: 1.049, 		ranking-edge_loss: 0.257, 		msg_normal_loss: 0.272, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000387,       group1_lr: 0.000387, 
+2022-12-07 18:46:45,398 lib.utils.logging INFO: [Step 40/956] [Epoch 0/2]  [gta]
+		loss: 6.381,    time: 0.955914,    eta: 0:14:35
+		pairwise-normal-regress-edge_loss: 1.255, 		meanstd-tanh_loss: 3.629, 		ranking-edge_loss: 0.298, 		msg_normal_loss: 1.199, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000388,       group1_lr: 0.000388, 
+2022-12-07 18:46:46,301 lib.utils.logging INFO: [Step 41/956] [Epoch 0/2]  [gta]
+		loss: 4.795,    time: 0.954586,    eta: 0:14:33
+		pairwise-normal-regress-edge_loss: 1.279, 		meanstd-tanh_loss: 1.615, 		ranking-edge_loss: 0.384, 		msg_normal_loss: 1.517, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000389,       group1_lr: 0.000389, 
+2022-12-07 18:46:47,170 lib.utils.logging INFO: [Step 42/956] [Epoch 0/2]  [gta]
+		loss: 3.008,    time: 0.952580,    eta: 0:14:30
+		pairwise-normal-regress-edge_loss: 1.393, 		meanstd-tanh_loss: 0.977, 		ranking-edge_loss: 0.328, 		msg_normal_loss: 0.309, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000391,       group1_lr: 0.000391, 
+2022-12-07 18:46:48,060 lib.utils.logging INFO: [Step 43/956] [Epoch 0/2]  [gta]
+		loss: 3.132,    time: 0.951138,    eta: 0:14:28
+		pairwise-normal-regress-edge_loss: 1.283, 		meanstd-tanh_loss: 1.202, 		ranking-edge_loss: 0.300, 		msg_normal_loss: 0.347, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000392,       group1_lr: 0.000392, 
+2022-12-07 18:46:48,976 lib.utils.logging INFO: [Step 44/956] [Epoch 0/2]  [gta]
+		loss: 2.913,    time: 0.950344,    eta: 0:14:26
+		pairwise-normal-regress-edge_loss: 1.239, 		meanstd-tanh_loss: 1.064, 		ranking-edge_loss: 0.314, 		msg_normal_loss: 0.296, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000393,       group1_lr: 0.000393, 
+2022-12-07 18:46:49,846 lib.utils.logging INFO: [Step 45/956] [Epoch 0/2]  [gta]
+		loss: 5.356,    time: 0.948586,    eta: 0:14:24
+		pairwise-normal-regress-edge_loss: 1.296, 		meanstd-tanh_loss: 1.481, 		ranking-edge_loss: 0.257, 		msg_normal_loss: 2.323, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000395,       group1_lr: 0.000395, 
+2022-12-07 18:46:50,755 lib.utils.logging INFO: [Step 46/956] [Epoch 0/2]  [gta]
+		loss: 2.878,    time: 0.947721,    eta: 0:14:22
+		pairwise-normal-regress-edge_loss: 1.260, 		meanstd-tanh_loss: 1.064, 		ranking-edge_loss: 0.273, 		msg_normal_loss: 0.282, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000396,       group1_lr: 0.000396, 
+2022-12-07 18:46:51,684 lib.utils.logging INFO: [Step 47/956] [Epoch 0/2]  [gta]
+		loss: 3.222,    time: 0.947316,    eta: 0:14:21
+		pairwise-normal-regress-edge_loss: 1.240, 		meanstd-tanh_loss: 1.280, 		ranking-edge_loss: 0.336, 		msg_normal_loss: 0.367, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000397,       group1_lr: 0.000397, 
+2022-12-07 18:46:52,938 lib.utils.logging INFO: [Step 48/956] [Epoch 0/2]  [gta]
+		loss: 4.116,    time: 0.953575,    eta: 0:14:25
+		pairwise-normal-regress-edge_loss: 1.253, 		meanstd-tanh_loss: 1.362, 		ranking-edge_loss: 0.430, 		msg_normal_loss: 1.072, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000399,       group1_lr: 0.000399, 
+2022-12-07 18:46:53,946 lib.utils.logging INFO: [Step 49/956] [Epoch 0/2]  [gta]
+		loss: 3.541,    time: 0.954630,    eta: 0:14:25
+		pairwise-normal-regress-edge_loss: 1.393, 		meanstd-tanh_loss: 1.148, 		ranking-edge_loss: 0.275, 		msg_normal_loss: 0.725, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000400,       group1_lr: 0.000400, 
+2022-12-07 18:46:54,857 lib.utils.logging INFO: [Step 50/956] [Epoch 0/2]  [gta]
+		loss: 7.733,    time: 0.953744,    eta: 0:14:24
+		pairwise-normal-regress-edge_loss: 1.337, 		meanstd-tanh_loss: 2.707, 		ranking-edge_loss: 0.375, 		msg_normal_loss: 3.315, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000401,       group1_lr: 0.000401, 
+2022-12-07 18:46:55,732 lib.utils.logging INFO: [Step 51/956] [Epoch 0/2]  [gta]
+		loss: 2.817,    time: 0.952219,    eta: 0:14:21
+		pairwise-normal-regress-edge_loss: 1.269, 		meanstd-tanh_loss: 0.966, 		ranking-edge_loss: 0.332, 		msg_normal_loss: 0.249, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000403,       group1_lr: 0.000403, 
+2022-12-07 18:46:56,631 lib.utils.logging INFO: [Step 52/956] [Epoch 0/2]  [gta]
+		loss: 3.558,    time: 0.951212,    eta: 0:14:19
+		pairwise-normal-regress-edge_loss: 1.329, 		meanstd-tanh_loss: 1.113, 		ranking-edge_loss: 0.389, 		msg_normal_loss: 0.727, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000404,       group1_lr: 0.000404, 
+2022-12-07 18:46:57,528 lib.utils.logging INFO: [Step 53/956] [Epoch 0/2]  [gta]
+		loss: 2.902,    time: 0.950161,    eta: 0:14:17
+		pairwise-normal-regress-edge_loss: 1.256, 		meanstd-tanh_loss: 0.973, 		ranking-edge_loss: 0.344, 		msg_normal_loss: 0.329, 		abs_rel: 0.000000,       whdr: 0.000000, 
+		group0_lr: 0.000405,       group1_lr: 0.000405, 
