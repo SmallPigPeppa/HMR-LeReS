@@ -1,6 +1,6 @@
 import torchsparse.nn.functional as spf
 from torchsparse.tensor import PointTensor
-from torchsparse.utils.kernel_region import *
+from torchsparse.nn.utils import get_kernel_offsets
 from torchsparse.utils.helpers import *
 
 
@@ -65,8 +65,12 @@ def point_to_voxel(x, z):
 def voxel_to_point(x, z, nearest=False):
     if z.idx_query is None or z.weights is None or z.idx_query.get(
             x.s) is None or z.weights.get(x.s) is None:
-        kr = KernelRegion(2, x.s, 1)
-        off = kr.get_kernel_offset().to(z.F.device)
+        # kr = KernelRegion(2, x.s, 1)
+        # off = kr.get_kernel_offset().to(z.F.device)
+
+        off = get_kernel_offsets(2, x.s, 1).to(z.F.device)
+
+
         #old_hash = kernel_hash_gpu(torch.floor(z.C).int(), off)
         old_hash = spf.sphash(
             torch.cat([
