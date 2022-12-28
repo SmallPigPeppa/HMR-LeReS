@@ -25,7 +25,8 @@ def initial_voxelize(z, init_res, after_res):
     inserted_feat = spf.spvoxelize(z.F, idx_query, counts)
 
     new_tensor = SparseTensor(inserted_feat, inserted_coords, 1)
-    new_tensor.check()
+    # new_tensor.check()
+    new_tensor.cmaps.setdefault(new_tensor.stride, new_tensor.coords)
     z.additional_features['idx_query'][1] = idx_query
     z.additional_features['counts'][1] = counts
     z.C = new_float_coord
