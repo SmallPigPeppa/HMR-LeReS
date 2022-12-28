@@ -45,10 +45,13 @@ def pcd_to_sparsetensor(pcd, mask_valid, voxel_size=0.01, num_points=100000):
     feat_ = block
 
     # transfer point cloud to voxels
-    inds = sparse_quantize(pc_,
-                           feat_,
-                           return_index=True,
-                           return_invs=False)
+    # inds = sparse_quantize(pc_,
+    #                        feat_,
+    #                        return_index=True,
+    #                        return_invs=False)
+    coords, inds = sparse_quantize(pc_,
+                                   return_index=True,
+                                   return_inverse=False)
     if len(inds) > num_points:
         inds = np.random.choice(inds, num_points, replace=False)
 
