@@ -9,7 +9,7 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 from collections import OrderedDict
 
-from lib.configs.config import cfg
+from lib_train.configs.config import cfg
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ def get_func(func_name):
         if len(parts) == 1:
             return globals()[parts[0]]
         # Otherwise, assume we're referencing a module under modeling
-        module_name = 'lib.models.' + '.'.join(parts[:-1])
+        module_name = 'lib_train.models.' + '.'.join(parts[:-1])
         module = importlib.import_module(module_name)
         return getattr(module, parts[-1])
     except Exception:

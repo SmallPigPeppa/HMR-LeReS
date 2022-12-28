@@ -7,14 +7,14 @@ import torch.multiprocessing as mp
 
 from multiprocessing.sharedctypes import Value
 from data.load_dataset_distributed import MultipleDataLoaderDistributed
-from lib.models.multi_depth_model_auxiv2 import *
-from lib.configs.config import cfg, merge_cfg_from_file, print_configs
-from lib.utils.training_stats import TrainingStats
-from lib.utils.evaluate_depth_error import validate_rel_depth_err, recover_metric_depth
-from lib.utils.lr_scheduler_custom import make_lr_scheduler
-from lib.utils.comm import is_pytorch_1_1_0_or_later, get_world_size
-from lib.utils.net_tools import save_ckpt, load_ckpt
-from lib.utils.logging import setup_distributed_logger, SmoothedValue
+from lib_train.models.multi_depth_model_auxiv2 import *
+from lib_train.configs.config import cfg, merge_cfg_from_file, print_configs
+from lib_train.utils.training_stats import TrainingStats
+from lib_train.utils.evaluate_depth_error import validate_rel_depth_err, recover_metric_depth
+from lib_train.utils.lr_scheduler_custom import make_lr_scheduler
+from lib_train.utils.comm import is_pytorch_1_1_0_or_later, get_world_size
+from lib_train.utils.net_tools import save_ckpt, load_ckpt
+from lib_train.utils.logging import setup_distributed_logger, SmoothedValue
 from tools.parse_arg_base import print_options
 from tools.parse_arg_train import TrainOptions
 from tools.parse_arg_val import ValOptions
@@ -167,7 +167,7 @@ def main_worker(local_rank: int, ngpus_per_node: int, train_args, val_args):
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
-    logger = setup_distributed_logger("lib", log_output_dir, local_rank, cfg.TRAIN.RUN_NAME + '.txt')
+    logger = setup_distributed_logger("lib_train", log_output_dir, local_rank, cfg.TRAIN.RUN_NAME + '.txt')
     tblogger = None
     if train_args.use_tfboard and  local_rank == 0:
         from tensorboardX import SummaryWriter

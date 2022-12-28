@@ -7,11 +7,11 @@ import torch
 from torchvision.transforms import transforms
 import matplotlib.pyplot as plt
 
-from lib.utils.logging import setup_logging, SmoothedValue
-from lib.models.multi_depth_model_auxiv2 import RelDepthModel
-from lib.utils.net_tools import load_ckpt
-from lib.utils.evaluate_depth_error import evaluate_rel_err, recover_metric_depth
-from lib.configs.config import cfg, merge_cfg_from_file
+from lib_train.utils.logging import setup_logging, SmoothedValue
+from lib_train.models.multi_depth_model_auxiv2 import RelDepthModel
+from lib_train.utils.net_tools import load_ckpt
+from lib_train.utils.evaluate_depth_error import evaluate_rel_err, recover_metric_depth
+from lib_train.configs.config import cfg, merge_cfg_from_file
 from tools.parse_arg_test import TestOptions
 
 

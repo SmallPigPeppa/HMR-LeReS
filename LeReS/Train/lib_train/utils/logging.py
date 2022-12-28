@@ -10,7 +10,7 @@ import logging
 import numpy as np
 import sys
 import os
-from lib.configs.config import cfg
+from lib_train.configs.config import cfg
 
 
 def log_stats(stats, args):

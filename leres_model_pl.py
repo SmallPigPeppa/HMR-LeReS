@@ -1,12 +1,12 @@
 import torch.nn.functional
-from lib.models import network_auxi as network
-from lib.configs.config import cfg
+from lib_train.models import network_auxi as network
+from lib_train.configs.config import cfg
 import merge_config as config
-from lib.utils.net_tools import *
-from lib.models.PWN_edges import EdgeguidedNormalRegressionLoss
-from lib.models.ranking_loss import EdgeguidedRankingLoss
-from lib.models.ILNR_loss import MEADSTD_TANH_NORM_Loss
-from lib.models.MSGIL_loss import MSGIL_NORM_Loss
+from lib_train.utils.net_tools import *
+from lib_train.models.PWN_edges import EdgeguidedNormalRegressionLoss
+from lib_train.models.ranking_loss import EdgeguidedRankingLoss
+from lib_train.models.ILNR_loss import MEADSTD_TANH_NORM_Loss
+from lib_train.models.MSGIL_loss import MSGIL_NORM_Loss
 import pytorch_lightning as pl
 from dataloader.mosh_dataloader import mosh_dataloader
 from torch.utils.data import DataLoader

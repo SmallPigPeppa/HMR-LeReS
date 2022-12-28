@@ -9,7 +9,7 @@ from torch.utils.data import Dataset
 from PIL import Image
 from imgaug import augmenters as iaa
 
-from lib.configs.config import cfg
+from lib_train.configs.config import cfg
 
 
 class MultiDataset(Dataset):

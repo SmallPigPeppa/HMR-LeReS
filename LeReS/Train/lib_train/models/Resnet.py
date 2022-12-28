@@ -1,7 +1,7 @@
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
 import torchvision
-from lib.configs.config import cfg
+from lib_train.configs.config import cfg
 
 import torch.nn as NN
 

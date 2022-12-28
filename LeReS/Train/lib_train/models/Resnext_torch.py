@@ -11,7 +11,7 @@ import torch.nn as nn
 import math
 import torch.utils.model_zoo as model_zoo
 
-from lib.configs.config import cfg
+from lib_train.configs.config import cfg
 
 
 try:

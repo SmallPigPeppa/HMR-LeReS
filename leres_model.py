@@ -1,4 +1,4 @@
-from lib.models.multi_depth_model_auxiv2 import *
+from lib_train.models.multi_depth_model_auxiv2 import *
 from merge_config import args as train_args
 from merge_gta_dataset import MergeGTADataset
 from torch.utils.data import DataLoader

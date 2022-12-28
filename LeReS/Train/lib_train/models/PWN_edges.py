@@ -4,7 +4,7 @@ import numpy as np
 import torch.nn.functional as F
 
 
-from lib.models.Surface_normal import surface_normal_from_depth, vis_normal
+from lib_train.models.Surface_normal import surface_normal_from_depth, vis_normal
 """
 Sampling strategies: RS (Random Sampling), EGS (Edge-Guided Sampling), and IGS (Instance-Guided Sampling)
 """

@@ -9,10 +9,10 @@ from __future__ import unicode_literals
 from collections import defaultdict, OrderedDict
 import datetime
 
-from lib.configs.config import cfg
-from lib.utils.logging import log_stats
-from lib.utils.logging import SmoothedValue
-from lib.utils.timer import Timer
+from lib_train.configs.config import cfg
+from lib_train.utils.logging import log_stats
+from lib_train.utils.logging import SmoothedValue
+from lib_train.utils.timer import Timer
 
 
 
