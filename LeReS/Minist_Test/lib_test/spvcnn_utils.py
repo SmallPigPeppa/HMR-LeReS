@@ -76,7 +76,7 @@ def voxel_to_point(x, z, nearest=False):
         #old_hash = kernel_hash_gpu(torch.floor(z.C).int(), off)
         old_hash = spf.sphash(
             torch.cat([
-                torch.floor(z.C[:, :3] / x.s).int() * x.s,
+                torch.floor(z.C[:, :3] / x.s[0]).int() * x.s,
                 z.C[:, -1].int().view(-1, 1)
             ], 1), off)
         pc_hash = spf.sphash(x.C.to(z.F.device))
