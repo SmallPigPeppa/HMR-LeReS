@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from torchsparse import SparseTensor
 # from torchsparse.utils import sparse_collate_fn, sparse_quantize
-from torchsparse.utils.quantize import  sparse_quantize
+from torchsparse.utils.quantize import sparse_quantize
 from torchsparse.utils.collate import sparse_collate_fn
 from plyfile import PlyData, PlyElement
 
@@ -23,6 +23,7 @@ def init_image_coor(height, width, u0=None, v0=None):
     v_v0 = y - v0
     return u_u0, v_v0
 
+
 def depth_to_pcd(depth, u_u0, v_v0, f, invalid_value=0):
     mask_invalid = depth <= invalid_value
     depth[mask_invalid] = 0.0
@@ -31,6 +32,7 @@ def depth_to_pcd(depth, u_u0, v_v0, f, invalid_value=0):
     z = depth
     pcd = np.stack([x, y, z], axis=2)
     return pcd, ~mask_invalid
+
 
 def pcd_to_sparsetensor(pcd, mask_valid, voxel_size=0.01, num_points=100000):
     pcd_valid = pcd[mask_valid]
@@ -57,7 +59,8 @@ def pcd_to_sparsetensor(pcd, mask_valid, voxel_size=0.01, num_points=100000):
     inputs = sparse_collate_fn(feed_dict)
     return inputs
 
-def pcd_uv_to_sparsetensor(pcd, u_u0, v_v0, mask_valid, f= 500.0, voxel_size=0.01, mask_side=None, num_points=100000):
+
+def pcd_uv_to_sparsetensor(pcd, u_u0, v_v0, mask_valid, f=500.0, voxel_size=0.01, mask_side=None, num_points=100000):
     if mask_side is not None:
         mask_valid = mask_valid & mask_side
     pcd_valid = pcd[mask_valid]
@@ -68,16 +71,18 @@ def pcd_uv_to_sparsetensor(pcd, u_u0, v_v0, mask_valid, f= 500.0, voxel_size=0.0
     block = np.zeros_like(block_)
     block[:, :] = block_[:, :]
 
-
     pc_ = np.round(block_[:, :3] / voxel_size)
     pc_ -= pc_.min(0, keepdims=1)
     feat_ = block
 
     # transfer point cloud to voxels
-    inds = sparse_quantize(pc_,
-                           feat_,
-                           return_index=True,
-                           return_inverse=False)
+    # inds = sparse_quantize(pc_,
+    #                        feat_,
+    #                        return_index=True,
+    #                        return_inverse=False)
+    coords, inds = sparse_quantize(pc_,
+                                   return_index=True,
+                                   return_inverse=False)
     if len(inds) > num_points:
         inds = np.random.choice(inds, num_points, replace=False)
 
@@ -100,6 +105,7 @@ def refine_focal_one_step(depth, focal, model, u0, v0):
     outputs = model(inputs)
     return outputs
 
+
 def refine_shift_one_step(depth_wshift, model, focal, u0, v0):
     # reconstruct PCD from depth
     u_u0, v_v0 = init_image_coor(depth_wshift.shape[0], depth_wshift.shape[1], u0=u0, v0=v0)
@@ -111,6 +117,7 @@ def refine_shift_one_step(depth_wshift, model, focal, u0, v0):
     outputs = model(inputs)
     return outputs
 
+
 def refine_focal(depth, focal, model, u0, v0):
     last_scale = 1
     focal_tmp = np.copy(focal)
@@ -119,6 +126,7 @@ def refine_focal(depth, focal, model, u0, v0):
         focal_tmp = focal_tmp / scale.item()
         last_scale = last_scale * scale
     return torch.tensor([[last_scale]])
+
 
 def refine_shift(depth_wshift, model, focal, u0, v0):
     depth_wshift_tmp = np.copy(depth_wshift)
@@ -129,6 +137,7 @@ def refine_shift(depth_wshift, model, focal, u0, v0):
         depth_wshift_tmp -= shift.item()
         last_shift += shift.item()
     return torch.tensor([[last_shift]])
+
 
 def reconstruct_3D(depth, f):
     """
@@ -163,6 +172,7 @@ def reconstruct_3D(depth, f):
     pcd = pcd.astype(np.int)
     return pcd
 
+
 def save_point_cloud(pcd, rgb, filename, binary=True):
     """Save an RGB point cloud as a PLY file.
 
@@ -189,7 +199,7 @@ def save_point_cloud(pcd, rgb, filename, binary=True):
         vertices_array = np.array(vertices, dtype=npy_types)
         el = PlyElement.describe(vertices_array, 'vertex')
 
-         # Write
+        # Write
         PlyData([el]).write(filename)
     else:
         x = np.squeeze(points_3d[:, 0])
@@ -211,6 +221,7 @@ def save_point_cloud(pcd, rgb, filename, binary=True):
                    'end_header' % r.shape[0]
         # ---- Save ply data to disk
         np.savetxt(filename, np.column_stack((x, y, z, r, g, b)), fmt="%d %d %d %d %d %d", header=ply_head, comments='')
+
 
 def reconstruct_depth(depth, rgb, dir, pcd_name, focal):
     """
