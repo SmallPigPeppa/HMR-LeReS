@@ -1,5 +1,5 @@
 import torch.nn as nn
-import torchsparse.nn as spnn
+from torchsparse import nn as spnn
 from torchsparse.tensor import PointTensor
 
 from lib_test.spvcnn_utils import *
