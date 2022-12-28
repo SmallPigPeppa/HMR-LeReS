@@ -140,11 +140,13 @@ if __name__ == '__main__':
     image_input='/share/wenzhuoliu/torch_ds/HMR-LeReS/2020-06-11-10-06-48/00559.jpg'
     rgb = cv2.imread(image_input)
     rgb_c = rgb[:, :, ::-1].copy()
-    gt_depth = None
     A_resize = cv2.resize(rgb_c, (448, 448))
 
     img_torch = scale_torch(A_resize)[None, :, :, :]
-    pred_depth = depth_model.inference(img_torch).cpu().numpy().squeeze()
+    # pred_depth = depth_model.inference(img_torch).cpu().numpy().squeeze()
+    depth = depth_model(img_torch)
+    pred_depth_out = depth - depth.min() + 0.01
+    pred_depth=pred_depth_out.cpu().numpy().squeeze()
     pred_depth_ori = cv2.resize(pred_depth, (rgb.shape[1], rgb.shape[0]))
 
     # recover focal length, shift, and scale-invariant depth
