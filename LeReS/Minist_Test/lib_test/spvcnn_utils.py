@@ -1,5 +1,5 @@
 import torchsparse.nn.functional as spf
-from torchsparse.point_tensor import PointTensor
+from torchsparse.tensor import PointTensor
 from torchsparse.utils.kernel_region import *
 from torchsparse.utils.helpers import *
 
