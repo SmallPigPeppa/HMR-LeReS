@@ -144,7 +144,7 @@ if __name__ == '__main__':
 
     img_torch = scale_torch(A_resize)[None, :, :, :]
     # pred_depth = depth_model.inference(img_torch).cpu().numpy().squeeze()
-    depth = depth_model(img_torch)
+    depth,_ = depth_model(img_torch)
     pred_depth_out = depth - depth.min() + 0.01
     pred_depth=pred_depth_out.cpu().numpy().squeeze()
     pred_depth_ori = cv2.resize(pred_depth, (rgb.shape[1], rgb.shape[0]))
