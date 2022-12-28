@@ -6,7 +6,7 @@ python hmr_train_pl \
 --save-folder HMR/HMR-data/out-model \
 --num-worker 0 \
 --dataset gta \
---dataroot C:\\Users\\90532\\Desktop\\Datasets\\HMR-LeReS \
+--dataroot /share/wenzhuoliu/torch_ds/HMR-LeReS \
 --backbone resnet50 \
 --dataset_list 2020-06-11-10-06-48 \
 --batchsize 2 \
