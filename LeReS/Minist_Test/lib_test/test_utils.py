@@ -176,7 +176,8 @@ def reconstruct_3D(depth, f):
     y = np.reshape(y, (width * height, 1)).astype(float)
     z = np.reshape(z, (width * height, 1)).astype(float)
     pcd = np.concatenate((x, y, z), axis=1)
-    pcd = pcd.astype(np.int)
+    # pcd = pcd.astype(np.int)
+    pcd = pcd.astype(int)
     return pcd
 
 
@@ -185,7 +186,7 @@ def save_point_cloud(pcd, rgb, filename, binary=True):
 
     :paras
       @pcd: Nx3 matrix, the XYZ coordinates
-      @rgb: NX3 matrix, the rgb colors for each 3D point
+      @rgb: NX3 matrix, the rgb colors for each 3D pointƒ
     """
     assert pcd.shape[0] == rgb.shape[0]
 
