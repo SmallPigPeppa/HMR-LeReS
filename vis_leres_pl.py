@@ -146,7 +146,7 @@ if __name__ == '__main__':
     # pred_depth = depth_model.inference(img_torch).cpu().numpy().squeeze()
     depth,_ = depth_model(img_torch)
     pred_depth_out = depth - depth.min() + 0.01
-    pred_depth=pred_depth_out.cpu().numpy().squeeze()
+    pred_depth=pred_depth_out.cpu().detach().numpy().squeeze()
     pred_depth_ori = cv2.resize(pred_depth, (rgb.shape[1], rgb.shape[0]))
 
     # recover focal length, shift, and scale-invariant depth
