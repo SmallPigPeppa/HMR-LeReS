@@ -114,7 +114,7 @@ def strip_prefix_if_present(state_dict, prefix):
 
 if __name__ == '__main__':
     pl_ckpt_path = 'leres-ckpt-backup/last.ckpt'
-    leres_model = LeReS.load_state_dict(pl_ckpt_path)
+    leres_model = LeReS.load_from_checkpoint(pl_ckpt_path)
     depth_model = leres_model.depth_model.eval()
     image = leres_model.train_dataloader()
 
