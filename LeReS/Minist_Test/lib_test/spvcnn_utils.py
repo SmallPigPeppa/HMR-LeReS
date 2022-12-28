@@ -1,7 +1,7 @@
 import torchsparse.nn.functional as spf
 from torchsparse.tensor import PointTensor
 from torchsparse.nn.utils import get_kernel_offsets
-from torchsparse.utils.helpers import *
+# from torchsparse.utils.helpers import *
 
 
 __all__ = ['initial_voxelize', 'point_to_voxel', 'voxel_to_point']
