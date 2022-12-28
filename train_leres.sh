@@ -1,5 +1,5 @@
-export HMR/src
-export LeReS/Train
+export /share/wenzhuoliu/code/HMR-LeReS/HMR/src
+export /share/wenzhuoliu/code/HMR-LeReS/LeReS/Train
 python leres_train_pl \
 --smpl-mean-theta-path HMR/HMR-data/neutral_smpl_mean_params.h5 \
 --smpl-model HMR/HMR-data/neutral_smpl_with_cocoplus_reg.txt \

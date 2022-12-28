@@ -38,7 +38,6 @@ class HMR(pl.LightningModule):
         hmr_2d_dataset = hmr_dataset(hmr_2d_path, use_crop, scale_range, use_flip, min_pts_required, pix_format,
                                   normalize, flip_prob)
         hmr_mosh_dataset = mosh_dataloader(hmr_mosh_path, use_flip, flip_prob)
-
         hmr_3d_loader=DataLoader(
             dataset=hmr_3d_dataset,
             batch_size=config.args.batch_3d_size,
