@@ -1,4 +1,4 @@
-export PYTHONPATH="/share/wenzhuoliu/code/HMR-LeReS/HMR/src:/share/wenzhuoliu/code/HMR-LeReS/LeReS/Train"
+export PYTHONPATH="/share/wenzhuoliu/code/HMR-LeReS/HMR/src:/share/wenzhuoliu/code/HMR-LeReS/LeReS/Minist_Test"
 #export PYTHONPATH="/share/wenzhuoliu/code/HMR-LeReS/LeReS/Train"
 python vis_leres_pl.py \
 --smpl-mean-theta-path HMR/HMR-data/neutral_smpl_mean_params.h5 \
