@@ -77,7 +77,7 @@ def pcd_uv_to_sparsetensor(pcd, u_u0, v_v0, mask_valid, f= 500.0, voxel_size=0.0
     inds = sparse_quantize(pc_,
                            feat_,
                            return_index=True,
-                           return_invs=False)
+                           return_inverse=False)
     if len(inds) > num_points:
         inds = np.random.choice(inds, num_points, replace=False)
 
