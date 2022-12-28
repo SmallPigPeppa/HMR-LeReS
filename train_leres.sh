@@ -1,6 +1,6 @@
 export /share/wenzhuoliu/code/HMR-LeReS/HMR/src
 export /share/wenzhuoliu/code/HMR-LeReS/LeReS/Train
-python leres_train_pl \
+python leres_train_pl.py \
 --smpl-mean-theta-path HMR/HMR-data/neutral_smpl_mean_params.h5 \
 --smpl-model HMR/HMR-data/neutral_smpl_with_cocoplus_reg.txt \
 --save-folder HMR/HMR-data/out-model \
