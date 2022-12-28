@@ -132,8 +132,8 @@ if __name__ == '__main__':
     focal_model.load_state_dict(strip_prefix_if_present(sf_ckpt['focal_model'], 'module.'),
                                 strict=True)
     # depth_model.cuda()
-    # shift_model.cuda()
-    # focal_model.cuda()
+    shift_model.cuda()
+    focal_model.cuda()
 
     image_dir_out='leres_vis_out'
     image_name= 'demo-559'

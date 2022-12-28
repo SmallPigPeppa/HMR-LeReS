@@ -103,8 +103,8 @@ def refine_focal_one_step(depth, focal, model, u0, v0):
     pcd, mask_valid = depth_to_pcd(depth, u_u0, v_v0, f=focal, invalid_value=0)
     # input for the voxelnet
     feed_dict = pcd_uv_to_sparsetensor(pcd, u_u0, v_v0, mask_valid, f=focal, voxel_size=0.005, mask_side=None)
-    # inputs = feed_dict['lidar'].cuda()
-    inputs = feed_dict['lidar']
+    inputs = feed_dict['lidar'].cuda()
+    # inputs = feed_dict['lidar']
 
     outputs = model(inputs)
     return outputs
@@ -116,8 +116,8 @@ def refine_shift_one_step(depth_wshift, model, focal, u0, v0):
     pcd_wshift, mask_valid = depth_to_pcd(depth_wshift, u_u0, v_v0, f=focal, invalid_value=0)
     # input for the voxelnet
     feed_dict = pcd_to_sparsetensor(pcd_wshift, mask_valid, voxel_size=0.01)
-    # inputs = feed_dict['lidar'].cuda()
-    inputs = feed_dict['lidar']
+    inputs = feed_dict['lidar'].cuda()
+    # inputs = feed_dict['lidar']
 
     outputs = model(inputs)
     return outputs
