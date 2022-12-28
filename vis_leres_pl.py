@@ -119,9 +119,9 @@ if __name__ == '__main__':
     image = leres_model.train_dataloader()
 
     sf_ckpt_path='res50.pth'
-    # create depth model
-    depth_model = RelDepthModel(backbone='resnet50')
-    depth_model.eval()
+    # # create depth model
+    # depth_model = RelDepthModel(backbone='resnet50')
+    # depth_model.eval()
 
     # create shift and focal length model
     shift_model, focal_model = make_shift_focallength_models()
