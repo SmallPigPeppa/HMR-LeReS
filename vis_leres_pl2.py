@@ -160,7 +160,6 @@ if __name__ == '__main__':
     # if GT depth is available, uncomment the following part to recover the metric depth
     # pred_depth_metric = recover_metric_depth(pred_depth_ori, gt_depth)
 
-    cv2.imwrite(image_name + '.png', rgb)
     # save depth
     plt.imsave(image_name + '-depth.png', pred_depth_ori, cmap='rainbow')
     cv2.imwrite(image_name + '-depth_raw.png', (pred_depth_ori / pred_depth_ori.max() * 60000).astype(np.uint16))
