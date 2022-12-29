@@ -21,7 +21,7 @@ if __name__ == '__main__':
         max_epochs=200,
         strategy="ddp_spawn",
         accelerator="auto",
-        devices=1,
+        devices=2,
         logger=wandb_logger,
         callbacks=[LearningRateMonitor(logging_interval="step"), TQDMProgressBar(refresh_rate=10), checkpoint_callback],
     )
