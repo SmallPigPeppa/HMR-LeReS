@@ -145,7 +145,7 @@ if __name__ == '__main__':
 
     image_dir_out = 'leres_vis_out'
     image_name = 'demo-559'
-    rgb = rgb[0].permute(2, 0, 1)
+    rgb = rgb[0].permute(1,2,0)
     depth = depth[0]
     print('depth.shape', depth.shape)
     print('rgb.shape', rgb.shape)
