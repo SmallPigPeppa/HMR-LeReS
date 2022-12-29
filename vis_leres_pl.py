@@ -7,10 +7,10 @@ import matplotlib.pyplot as plt
 import torchvision.transforms as transforms
 from collections import OrderedDict
 
-from LeReS.Minist_Test.lib.test_utils import refine_focal, refine_shift
-from LeReS.Minist_Test.lib.multi_depth_model_woauxi import RelDepthModel
-from LeReS.Minist_Test.lib.spvcnn_classsification import SPVCNN_CLASSIFICATION
-from LeReS.Minist_Test.lib.test_utils import reconstruct_depth
+from LeReS.Minist_Test.lib_test.test_utils import refine_focal, refine_shift
+from LeReS.Minist_Test.lib_test.multi_depth_model_woauxi import RelDepthModel
+from LeReS.Minist_Test.lib_test.spvcnn_classsification import SPVCNN_CLASSIFICATION
+from LeReS.Minist_Test.lib_test.test_utils import reconstruct_depth
 from leres_model_pl import LeReS
 
 def parse_args():
@@ -114,15 +114,14 @@ def strip_prefix_if_present(state_dict, prefix):
 
 if __name__ == '__main__':
     pl_ckpt_path = 'leres-ckpt-backup/last.ckpt'
-    leres_model = LeReS()
-    leres_model.load_state_dict(pl_ckpt_path)
+    leres_model = LeReS.load_from_checkpoint(pl_ckpt_path)
     depth_model = leres_model.depth_model.eval()
     image = leres_model.train_dataloader()
 
     sf_ckpt_path='res50.pth'
-    # create depth model
-    depth_model = RelDepthModel(backbone='resnet50')
-    depth_model.eval()
+    # # create depth model
+    # depth_model = RelDepthModel(backbone='resnet50')
+    # depth_model.eval()
 
     # create shift and focal length model
     shift_model, focal_model = make_shift_focallength_models()
@@ -133,19 +132,21 @@ if __name__ == '__main__':
     focal_model.load_state_dict(strip_prefix_if_present(sf_ckpt['focal_model'], 'module.'),
                                 strict=True)
     # depth_model.cuda()
-    # shift_model.cuda()
-    # focal_model.cuda()
+    shift_model.cuda()
+    focal_model.cuda()
 
     image_dir_out='leres_vis_out'
     image_name= 'demo-559'
     image_input='/share/wenzhuoliu/torch_ds/HMR-LeReS/2020-06-11-10-06-48/00559.jpg'
     rgb = cv2.imread(image_input)
     rgb_c = rgb[:, :, ::-1].copy()
-    gt_depth = None
     A_resize = cv2.resize(rgb_c, (448, 448))
 
     img_torch = scale_torch(A_resize)[None, :, :, :]
-    pred_depth = depth_model.inference(img_torch).cpu().numpy().squeeze()
+    # pred_depth = depth_model.inference(img_torch).cpu().numpy().squeeze()
+    depth,_ = depth_model(img_torch)
+    pred_depth_out = depth - depth.min() + 0.01
+    pred_depth=pred_depth_out.cpu().detach().numpy().squeeze()
     pred_depth_ori = cv2.resize(pred_depth, (rgb.shape[1], rgb.shape[0]))
 
     # recover focal length, shift, and scale-invariant depth
