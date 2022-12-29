@@ -6,8 +6,8 @@ import torch
 import matplotlib.pyplot as plt
 import torchvision.transforms as transforms
 
-from lib_train.multi_depth_model_woauxi import RelDepthModel
-from lib_train.net_tools import load_ckpt
+from lib_test.multi_depth_model_woauxi import RelDepthModel
+from lib_test.net_tools import load_ckpt
 
 def parse_args():
     parser = argparse.ArgumentParser(
