@@ -146,7 +146,7 @@ if __name__ == '__main__':
     image_dir_out = 'leres_vis_out'
     image_name = 'demo-559'
     rgb=rgb[0]
-    depth=depth[0].permute(2, 0, 1)
+    depth=depth[0].permute(1, 2, 0)
     print('depth.shape',depth.shape)
     pred_depth_out = depth - depth.min() + 0.01
     pred_depth = pred_depth_out.cpu().detach().numpy().squeeze()
