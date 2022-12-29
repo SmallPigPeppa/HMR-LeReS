@@ -123,7 +123,7 @@ class GTADataset(Dataset):
         joints_2d = self.info_npz['joints_2d'][anno_index]
         joints_3d_cam = self.info_npz['joints_3d_cam'][anno_index]
         joints_3d_world = self.info_npz['joints_3d_world'][anno_index]
-        world2cam_trans = self.info_npz['world2cam_trans'][anno_index]
+        # world2cam_trans = self.info_npz['world2cam_trans'][anno_index]
         intrinsics = self.info_npz['intrinsics'][anno_index]
         focal_length = (intrinsics[0][0]).astype(np.float32)
         depth, invalid_depth, sem_mask = self.load_training_data(anno_index)
@@ -156,11 +156,18 @@ class GTADataset(Dataset):
 
         # TODO: add transforms for joints and camera_trans
 
+        # data = {
+        #     'rgb': rgb_torch, 'depth': depth_torch, 'sem_mask': torch.tensor(sem_mask_resize),
+        #     'human_mask': torch.tensor(human_mask_resize), 'joints_2d': torch.tensor(joints_2d),
+        #     'joints_3d_cam': torch.tensor(joints_3d_cam), 'joints_3d_world': torch.tensor(joints_3d_world),
+        #     'world2cam_trans': torch.tensor(world2cam_trans), 'intrinsics': torch.tensor(intrinsics),
+        #     'focal_length': torch.tensor(focal_length), 'A_paths': rgb_path, 'B_paths': depth_path,
+        # }
         data = {
             'rgb': rgb_torch, 'depth': depth_torch, 'sem_mask': torch.tensor(sem_mask_resize),
             'human_mask': torch.tensor(human_mask_resize), 'joints_2d': torch.tensor(joints_2d),
             'joints_3d_cam': torch.tensor(joints_3d_cam), 'joints_3d_world': torch.tensor(joints_3d_world),
-            'world2cam_trans': torch.tensor(world2cam_trans), 'intrinsics': torch.tensor(intrinsics),
+            'intrinsics': torch.tensor(intrinsics),
             'focal_length': torch.tensor(focal_length), 'A_paths': rgb_path, 'B_paths': depth_path,
         }
         return data
