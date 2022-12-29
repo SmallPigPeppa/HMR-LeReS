@@ -166,4 +166,4 @@ if __name__ == '__main__':
 
     print(depth_scaleinv)
     print(rgb)
-    reconstruct_depth(depth_scaleinv, rgb[:, :, ::-1], image_dir_out, image_name + '-pcd', focal=focal_length)
+    reconstruct_depth(depth_scaleinv, rgb.numpy()[:, :, ::-1], image_dir_out, image_name + '-pcd', focal=focal_length)
