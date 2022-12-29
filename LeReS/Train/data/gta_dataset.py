@@ -106,7 +106,7 @@ class GTADataset(Dataset):
         rgb_torch = self.scale_torch(rgb_resize.copy())
         # normalize disp and depth
         depth_normal = depth_norm / (depth_norm.max() + 1e-8)
-        depth_normal[~mask_valid.astype(np.bool)] = 0
+        depth_normal[~mask_valid.astype(bool)] = 0
 
         data = {'rgb': rgb_torch, 'gt_depth': depth_normal}
         return data
@@ -149,8 +149,8 @@ class GTADataset(Dataset):
         sky_mask_resize = sem_mask_resize == -1
         human_mask_resize = sem_mask_resize == 126
         depth_resize = (depth_resize / (depth_resize.max() + 1e-8)) * 10
-        depth_resize[invalid_depth_resize.astype(np.bool) | (depth_resize > 1e7) | (depth_resize < 0)] = -1
-        depth_resize[sky_mask_resize.astype(np.bool)] = 20
+        depth_resize[invalid_depth_resize.astype(bool) | (depth_resize > 1e7) | (depth_resize < 0)] = -1
+        depth_resize[sky_mask_resize.astype(bool)] = 20
 
         # to torch, normalize
         rgb_torch = self.scale_torch(rgb_resize.copy())
