@@ -2,13 +2,13 @@ import torch
 import torch.nn.functional
 
 from . import network_auxi as network
-from lib.configs.config import cfg
-from lib.utils.net_tools import *
-from lib.models.PWN_planes import PWNPlanesLoss
-from lib.models.PWN_edges import EdgeguidedNormalRegressionLoss
-from lib.models.ranking_loss import EdgeguidedRankingLoss
-from lib.models.ILNR_loss import MEADSTD_TANH_NORM_Loss
-from lib.models.MSGIL_loss import MSGIL_NORM_Loss
+from lib_train.configs.config import cfg
+from lib_train.utils.net_tools import *
+from lib_train.models.PWN_planes import PWNPlanesLoss
+from lib_train.models.PWN_edges import EdgeguidedNormalRegressionLoss
+from lib_train.models.ranking_loss import EdgeguidedRankingLoss
+from lib_train.models.ILNR_loss import MEADSTD_TANH_NORM_Loss
+from lib_train.models.MSGIL_loss import MSGIL_NORM_Loss
 
 
 class RelDepthModel(nn.Module):

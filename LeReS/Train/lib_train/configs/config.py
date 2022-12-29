@@ -11,8 +11,8 @@ import copy
 import numpy as np
 from ast import literal_eval
 
-from lib.utils.collections import AttrDict
-from lib.utils.misc import get_run_name
+from lib_train.utils.collections import AttrDict
+from lib_train.utils.misc import get_run_name
 
 
 __C = AttrDict()

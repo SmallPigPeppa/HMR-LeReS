@@ -2,7 +2,7 @@ import torch.nn as nn
 import torchsparse.nn as spnn
 from torchsparse.point_tensor import PointTensor
 
-from lib.spvcnn_utils import *
+from lib_train.spvcnn_utils import *
 __all__ = ['SPVCNN_CLASSIFICATION']
 
 

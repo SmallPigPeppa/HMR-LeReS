@@ -9,7 +9,7 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 from collections import OrderedDict
 
-from lib.configs.config import cfg
+from lib_train.configs.config import cfg
 
 logger = logging.getLogger(__name__)
 

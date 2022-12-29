@@ -9,8 +9,8 @@ import torch.nn as nn
 import torch.nn.init as init
 import torch.nn.functional as F
 
-from lib.configs.config import cfg
-from lib.models import Resnet, Resnext_torch
+from lib_train.configs.config import cfg
+from lib_train.models import Resnet, Resnext_torch
 
 
 def resnet18_stride32():
