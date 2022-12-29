@@ -9,12 +9,12 @@ export PYTHONPATH="/share/wenzhuoliu/code/HMR-LeReS/HMR/src:/share/wenzhuoliu/co
 --dataroot /share/wenzhuoliu/torch_ds/HMR-LeReS \
 --backbone resnet50 \
 --dataset_list 2020-06-11-10-06-48 \
---batchsize 2 \
+--batchsize 16 \
 --base_lr 0.001 \
 --use_tfboard \
---thread 0 \
+--thread 4 \
 --loss_mode _ranking-edge_pairwise-normal-regress-edge_msgil-normal_meanstd-tanh_pairwise-normal-regress-plane_ranking-edge-auxi_meanstd-tanh-auxi_ \
---epoch 2 \
+--epoch 50 \
 --lr_scheduler_multiepochs 1 \
 --val_step 10000 \
 --snapshot_iters 100000 \
