@@ -128,8 +128,8 @@ class GTADataset(Dataset):
         focal_length = (intrinsics[0][0]).astype(np.float32)
         depth, invalid_depth, sem_mask = self.load_training_data(anno_index)
 
-        # rgb_aug = self.rgb_aug(rgb)
-        rgb_aug = rgb
+        rgb_aug = self.rgb_aug(rgb)
+        # rgb_aug = rgb
 
         # resize rgb, depth, disp
         flip_flg, resize_size, crop_size, pad, resize_ratio = self.set_flip_resize_crop_pad(rgb_aug)
@@ -250,21 +250,6 @@ class GTADataset(Dataset):
                              constant_values=(pad_value, pad_value))
         return img_pad
 
-    def depth_to_bins(self, depth):
-        """
-        Discretize depth into depth bins
-        Mark invalid padding area as cfg.MODEL.DECODER_OUTPUT_C + 1
-        :param depth: 1-channel depth, [1, h, w]
-        :return: depth bins [1, h, w]
-        """
-        invalid_mask = depth < 1e-8
-        depth[depth < cfg.DATASET.DEPTH_MIN] = cfg.DATASET.DEPTH_MIN
-        depth[depth > cfg.DATASET.DEPTH_MAX] = cfg.DATASET.DEPTH_MAX
-        bins = ((torch.log10(depth) - cfg.DATASET.DEPTH_MIN_LOG) / cfg.DATASET.DEPTH_BIN_INTERVAL).to(torch.int)
-        bins[invalid_mask] = cfg.MODEL.DECODER_OUTPUT_C + 1
-        bins[bins == cfg.MODEL.DECODER_OUTPUT_C] = cfg.MODEL.DECODER_OUTPUT_C - 1
-        depth[invalid_mask] = -1.0
-        return bins
 
     def scale_torch(self, img):
         """
@@ -295,14 +280,6 @@ class GTADataset(Dataset):
 
         return depth, invalid_depth, sem_mask
 
-    def loading_check(self, depth, depth_path):
-        if 'taskonomy' in depth_path:
-            # invalid regions in taskonomy are set to 65535 originally
-            depth[depth >= 28000] = 0
-        if '3d-ken-burns' in depth_path:
-            # maybe sky regions
-            depth[depth >= 47000] = 0
-        return depth
 
     def __len__(self):
         return self.data_size

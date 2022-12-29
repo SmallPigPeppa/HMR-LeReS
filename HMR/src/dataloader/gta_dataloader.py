@@ -58,7 +58,7 @@ class gta_dataloader(Dataset):
             total_kp3d = np.array(fp['gt3d'])
             total_shap = np.array(fp['shape'])
             total_pose = np.array(fp['pose'])
-            print(total_pose.shape)
+            # print(total_pose.shape)
 
             assert len(total_kp2d) == len(total_kp3d) and \
                    len(total_kp2d) == len(total_shap) and len(total_kp2d) == len(total_pose)
