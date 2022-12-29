@@ -1,6 +1,6 @@
 export PYTHONPATH="/share/wenzhuoliu/code/HMR-LeReS/HMR/src:/share/wenzhuoliu/code/HMR-LeReS/LeReS/Train:/share/wenzhuoliu/code/HMR-LeReS/LeReS/Minist_Test"
 #export PYTHONPATH="/share/wenzhuoliu/code/HMR-LeReS/LeReS/Train"
-python vis_leres_pl.py \
+python vis_leres_pl2.py \
 --smpl-mean-theta-path HMR/HMR-data/neutral_smpl_mean_params.h5 \
 --smpl-model HMR/HMR-data/neutral_smpl_with_cocoplus_reg.txt \
 --save-folder HMR/HMR-data/out-model \
