@@ -164,6 +164,6 @@ if __name__ == '__main__':
     # save disp
 
 
-    print(depth_scaleinv)
-    print(rgb)
+    print(depth_scaleinv.shape)
+    print(rgb.shape)
     reconstruct_depth(depth_scaleinv, rgb.numpy()[:, :, ::-1], image_dir_out, image_name + '-pcd', focal=focal_length)
