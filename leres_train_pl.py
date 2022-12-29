@@ -20,7 +20,7 @@ if __name__ == '__main__':
         gradient_clip_val=10.0,
         max_epochs=200,
         accelerator="auto",
-        devices=1,
+        devices=None,
         logger=wandb_logger,
         callbacks=[LearningRateMonitor(logging_interval="step"), TQDMProgressBar(refresh_rate=10), checkpoint_callback],
     )
