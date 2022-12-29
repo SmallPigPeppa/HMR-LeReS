@@ -154,8 +154,6 @@ if __name__ == '__main__':
     # recover focal length, shift, and scale-invariant depth
     shift, focal_length, depth_scaleinv = reconstruct3D_from_depth(rgb, pred_depth_ori,
                                                                    shift_model, focal_model)
-    disp = 1 / depth_scaleinv
-    disp = (disp / disp.max() * 60000).astype(np.uint16)
 
     # if GT depth is available, uncomment the following part to recover the metric depth
     # pred_depth_metric = recover_metric_depth(pred_depth_ori, gt_depth)
@@ -164,6 +162,8 @@ if __name__ == '__main__':
     plt.imsave(image_name + '-depth.png', pred_depth_ori, cmap='rainbow')
     cv2.imwrite(image_name + '-depth_raw.png', (pred_depth_ori / pred_depth_ori.max() * 60000).astype(np.uint16))
     # save disp
-    cv2.imwrite(image_name + '.png', disp)
 
+
+    print(depth_scaleinv)
+    print(rgb)
     reconstruct_depth(depth_scaleinv, rgb[:, :, ::-1], image_dir_out, image_name + '-pcd', focal=focal_length)
