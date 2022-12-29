@@ -133,10 +133,8 @@ class GTADataset(Dataset):
 
         # resize rgb, depth, disp
         flip_flg, resize_size, crop_size, pad, resize_ratio = self.set_flip_resize_crop_pad(rgb_aug)
-        flip_flg, resize_size, crop_size,pad = False, [540, 960],[290,28,448,448],[0,0,0,0]
+        # flip_flg, resize_size, crop_size,pad = False, [540, 960],[290,28,448,448],[0,0,0,0]
         rgb_resize = self.flip_reshape_crop_pad(rgb_aug, flip_flg, resize_size, crop_size, pad, 0)
-        # depth_resize = self.flip_reshape_crop_pad(depth, flip_flg, resize_size, crop_size, pad, 0,
-        #                                           resize_method='nearest')
         depth_resize = self.flip_reshape_crop_pad(depth, flip_flg, resize_size, crop_size, pad, 0,
                                                   resize_method='nearest')
         sem_mask_resize = self.flip_reshape_crop_pad(sem_mask.astype(np.uint8), flip_flg, resize_size, crop_size, pad,
@@ -192,7 +190,6 @@ class GTADataset(Dataset):
         # flip
         flip_prob = np.random.uniform(0.0, 1.0)
         flip_flg = True if flip_prob > 0.5 and 'train' in self.opt.phase else False
-        flip_flg = False
 
         # reshape
         ratio_list = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5]  #
@@ -200,7 +197,6 @@ class GTADataset(Dataset):
             resize_ratio = ratio_list[np.random.randint(len(ratio_list))]
         else:
             resize_ratio = 0.5
-        resize_ratio = 0.5
         resize_size = [int(A.shape[0] * resize_ratio + 0.5),
                        int(A.shape[1] * resize_ratio + 0.5)]  # [height, width]
         # crop
