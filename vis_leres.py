@@ -79,10 +79,10 @@ import matplotlib.pyplot as plt
 import torchvision.transforms as transforms
 from collections import OrderedDict
 
-from LeReS.Minist_Test.lib.test_utils import refine_focal, refine_shift
-from LeReS.Minist_Test.lib.multi_depth_model_woauxi import RelDepthModel
-from LeReS.Minist_Test.lib.spvcnn_classsification import SPVCNN_CLASSIFICATION
-from LeReS.Minist_Test.lib.test_utils import reconstruct_depth
+from LeReS.Minist_Test.lib_test.test_utils import refine_focal, refine_shift
+from LeReS.Minist_Test.lib_test.multi_depth_model_woauxi import RelDepthModel
+from LeReS.Minist_Test.lib_test.spvcnn_classsification import SPVCNN_CLASSIFICATION
+from LeReS.Minist_Test.lib_test.test_utils import reconstruct_depth
 
 def parse_args():
     parser = argparse.ArgumentParser(
