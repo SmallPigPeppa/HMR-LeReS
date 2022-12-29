@@ -35,7 +35,7 @@ from scipy import interpolate
 #     return mean
 
 def load_mean_theta():
-    mean = np.zeros(args.total_theta_count, dtype=np.float)
+    mean = np.zeros(args.total_theta_count, dtype=float)
 
     # mean_values = h5py.File(args.smpl_mean_theta_path)
     mean_values = h5py.File(args.smpl_mean_theta_path)
@@ -93,7 +93,7 @@ def quat2mat(quat):
 def batch_global_rigid_transformation(Rs, Js, parent, rotate_base = False):
     N = Rs.shape[0]
     if rotate_base:
-        np_rot_x = np.array([[1, 0, 0], [0, -1, 0], [0, 0, -1]], dtype = np.float)
+        np_rot_x = np.array([[1, 0, 0], [0, -1, 0], [0, 0, -1]], dtype = float)
         np_rot_x = np.reshape(np.tile(np_rot_x, [N, 1]), [N, 3, 3])
         # rot_x = Variable(torch.from_numpy(np_rot_x).float()).cuda()
         rot_x = Variable(torch.from_numpy(np_rot_x).float()).to(Rs.device)
@@ -418,8 +418,8 @@ def crop_image(image_path, angle, lt, rb, scale, kp_2d, crop_size):
         vec_x = rt - lt
         vec_y = lb - lt
         i_x, i_y = np.meshgrid(range(crop_size), range(crop_size))
-        i_x = i_x.astype(np.float)
-        i_y = i_y.astype(np.float)
+        i_x = i_x.astype(float)
+        i_y = i_y.astype(float)
         i_x /= float(crop_size)
         i_y /= float(crop_size)
         interp_points = i_x[..., np.newaxis].repeat(2, axis=2) * vec_x + i_y[..., np.newaxis].repeat(2, axis=2) * vec_y
@@ -602,7 +602,7 @@ def convert_image_by_pixformat_normalize(src_image, pix_format, normalize):
         src_image = src_image.transpose((2, 0, 1))
     
     if normalize:
-        src_image = (src_image.astype(np.float) / 255) * 2.0 - 1.0
+        src_image = (src_image.astype(float) / 255) * 2.0 - 1.0
     
     return src_image
 
