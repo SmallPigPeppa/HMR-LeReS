@@ -12,7 +12,7 @@ export PYTHONPATH="/share/wenzhuoliu/code/HMR-LeReS/HMR/src:/share/wenzhuoliu/co
 --batchsize 2 \
 --base_lr 0.001 \
 --use_tfboard \
---thread 4 \
+--thread 0 \
 --loss_mode _ranking-edge_pairwise-normal-regress-edge_msgil-normal_meanstd-tanh_pairwise-normal-regress-plane_ranking-edge-auxi_meanstd-tanh-auxi_ \
 --epoch 2 \
 --lr_scheduler_multiepochs 1 \
