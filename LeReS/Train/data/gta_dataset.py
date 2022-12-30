@@ -138,7 +138,7 @@ class GTADataset(Dataset):
 
         # resize rgb, depth, disp
         flip_flg, resize_size, crop_size, pad, resize_ratio = self.set_flip_resize_crop_pad(rgb_aug)
-        flip_flg, resize_size, crop_size,pad = False, [540, 960],[290,28,448,448],[0,0,0,0]
+        # flip_flg, resize_size, crop_size,pad = False, [540, 960],[290,28,448,448],[0,0,0,0]
         rgb_resize = self.flip_reshape_crop_pad(rgb_aug, flip_flg, resize_size, crop_size, pad, 0)
         depth_resize = self.flip_reshape_crop_pad(depth, flip_flg, resize_size, crop_size, pad, -1,
                                                   resize_method='nearest')
@@ -149,11 +149,13 @@ class GTADataset(Dataset):
         invalid_depth_resize = self.flip_reshape_crop_pad(invalid_depth.astype(np.uint8), flip_flg, resize_size,
                                                           crop_size, pad, 0, resize_method='nearest')
         # # resize
-        sky_mask_resize = sem_mask_resize == -1
-        human_mask_resize = sem_mask_resize == 126
+        # sky_mask_resize = sem_mask_resize == -1
+        # human_mask_resize = sem_mask_resize == 126
+        # depth_resize = (depth_resize / (depth_resize.max() + 1e-8)) * 10
+        # depth_resize[invalid_depth_resize.astype(bool) | (depth_resize > 1e7) | (depth_resize < 0)] = -1
+        # depth_resize[sky_mask_resize.astype(bool)] = 20
         depth_resize = (depth_resize / (depth_resize.max() + 1e-8)) * 10
-        depth_resize[invalid_depth_resize.astype(bool) | (depth_resize > 1e7) | (depth_resize < 0)] = -1
-        depth_resize[sky_mask_resize.astype(bool)] = 20
+        depth_resize[(depth_resize < 0)] = -1
 
         # to torch, normalize
         rgb_torch = self.scale_torch(rgb_resize.copy())
@@ -161,9 +163,16 @@ class GTADataset(Dataset):
 
         # TODO: add transforms for joints and camera_trans
 
+        # data = {
+        #     'rgb': rgb_torch, 'depth': depth_torch, 'sem_mask': torch.tensor(sem_mask_resize),
+        #     'human_mask': torch.tensor(human_mask_resize), 'joints_2d': torch.tensor(joints_2d),
+        #     'joints_3d_cam': torch.tensor(joints_3d_cam), 'joints_3d_world': torch.tensor(joints_3d_world),
+        #     'world2cam_trans': torch.tensor(world2cam_trans), 'intrinsics': torch.tensor(intrinsics),
+        #     'focal_length': torch.tensor(focal_length), 'A_paths': rgb_path, 'B_paths': depth_path,
+        # }
         data = {
             'rgb': rgb_torch, 'depth': depth_torch, 'sem_mask': torch.tensor(sem_mask_resize),
-            'human_mask': torch.tensor(human_mask_resize), 'joints_2d': torch.tensor(joints_2d),
+            'joints_2d': torch.tensor(joints_2d),
             'joints_3d_cam': torch.tensor(joints_3d_cam), 'joints_3d_world': torch.tensor(joints_3d_world),
             'world2cam_trans': torch.tensor(world2cam_trans), 'intrinsics': torch.tensor(intrinsics),
             'focal_length': torch.tensor(focal_length), 'A_paths': rgb_path, 'B_paths': depth_path,
