@@ -130,7 +130,7 @@ class GTADataset(Dataset):
         # joints_3d_world = self.info_npz['joints_3d_world'][anno_index]
         # world2cam_trans = self.info_npz['world2cam_trans'][anno_index]
         # intrinsics = self.info_npz['intrinsics'][anno_index]
-        focal_length = (intrinsics[0][0]).astype(np.float32)
+        focal_length = (intrinsics[0][0]).astype(float)
         depth, invalid_depth, sem_mask = self.load_training_data(anno_index)
 
         rgb_aug = self.rgb_aug(rgb)
@@ -159,7 +159,7 @@ class GTADataset(Dataset):
 
         # to torch, normalize
         rgb_torch = self.scale_torch(rgb_resize.copy())
-        depth_resize = depth_resize[np.newaxis, :, :]
+        depth_resize = depth_resize[np.newaxis, :, :].astype(float)
         depth_torch = torch.from_numpy(depth_resize)
 
         # TODO: add transforms for joints and camera_trans
