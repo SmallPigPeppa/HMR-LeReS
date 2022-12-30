@@ -147,7 +147,7 @@ if __name__ == '__main__':
     #                                                                shift_model, focal_model)
 
     focal_length=1.15803374e+03
-    pred_depth_norm = pred_depth - pred_depth_ori.min() + 0.5
+    pred_depth_norm = pred_depth_ori - pred_depth_ori.min() + 0.5
     dmax = np.percentile(pred_depth_norm, 98)
     depth_shift = 0.6
     depth_scaleinv = pred_depth_norm - depth_shift
