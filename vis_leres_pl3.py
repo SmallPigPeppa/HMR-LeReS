@@ -12,6 +12,7 @@ from LeReS.Minist_Test.lib_test.spvcnn_classsification import SPVCNN_CLASSIFICAT
 from LeReS.Minist_Test.lib_test.test_utils import reconstruct_depth
 from leres_model_pl import LeReS
 
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description='Configs for LeReS')
@@ -20,6 +21,7 @@ def parse_args():
 
     args = parser.parse_args()
     return args
+
 
 def scale_torch(img):
     """
@@ -32,12 +34,13 @@ def scale_torch(img):
         img = img[np.newaxis, :, :]
     if img.shape[2] == 3:
         transform = transforms.Compose([transforms.ToTensor(),
-		                                transforms.Normalize((0.485, 0.456, 0.406) , (0.229, 0.224, 0.225) )])
+                                        transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))])
         img = transform(img)
     else:
         img = img.astype(np.float32)
         img = torch.from_numpy(img)
     return img
+
 
 def make_shift_focallength_models():
     shift_model = SPVCNN_CLASSIFICATION(input_channel=3,
@@ -56,6 +59,7 @@ def make_shift_focallength_models():
     focal_model.eval()
     return shift_model, focal_model
 
+
 def reconstruct3D_from_depth(rgb, pred_depth, shift_model, focal_model):
     cam_u0 = rgb.shape[1] / 2.0
     cam_v0 = rgb.shape[0] / 2.0
@@ -65,7 +69,7 @@ def reconstruct3D_from_depth(rgb, pred_depth, shift_model, focal_model):
     pred_depth_norm = pred_depth_norm / dmax
 
     # proposed focal length, FOV is 60', Note that 60~80' are acceptable.
-    proposed_scaled_focal = (rgb.shape[0] // 2 / np.tan((60/2.0)*np.pi/180))
+    proposed_scaled_focal = (rgb.shape[0] // 2 / np.tan((60 / 2.0) * np.pi / 180))
 
     # recover focal
     focal_scale_1 = refine_focal(pred_depth_norm, proposed_scaled_focal, focal_model, u0=cam_u0, v0=cam_v0)
@@ -92,10 +96,10 @@ def load_ckpt(ckpt_path, depth_model, shift_model, focal_model):
         checkpoint = torch.load(ckpt_path)
         if shift_model is not None:
             shift_model.load_state_dict(strip_prefix_if_present(checkpoint['shift_model'], 'module.'),
-                                    strict=True)
+                                        strict=True)
         if focal_model is not None:
             focal_model.load_state_dict(strip_prefix_if_present(checkpoint['focal_model'], 'module.'),
-                                    strict=True)
+                                        strict=True)
         depth_model.load_state_dict(strip_prefix_if_present(checkpoint['depth_model'], "module."),
                                     strict=True)
         del checkpoint
@@ -111,13 +115,14 @@ def strip_prefix_if_present(state_dict, prefix):
         stripped_state_dict[key.replace(prefix, "")] = value
     return stripped_state_dict
 
+
 if __name__ == '__main__':
     pl_ckpt_path = 'leres-ckpt-backup/last.ckpt'
     leres_model = LeReS.load_from_checkpoint(pl_ckpt_path)
     depth_model = leres_model.depth_model.eval()
     image = leres_model.train_dataloader()
 
-    sf_ckpt_path='res50.pth'
+    sf_ckpt_path = 'res50.pth'
     shift_model, focal_model = make_shift_focallength_models()
     sf_ckpt = torch.load(sf_ckpt_path)
     shift_model.load_state_dict(strip_prefix_if_present(sf_ckpt['shift_model'], 'module.'),
@@ -128,29 +133,29 @@ if __name__ == '__main__':
     shift_model.cuda()
     focal_model.cuda()
 
-    image_dir_out='leres_vis_out'
-    image_name= 'demo-559'
-    image_input='/share/wenzhuoliu/torch_ds/HMR-LeReS/2020-06-11-10-06-48/00559.jpg'
+    image_dir_out = 'leres_vis_out'
+    image_name = 'demo-559'
+    image_input = '/share/wenzhuoliu/torch_ds/HMR-LeReS/2020-06-11-10-06-48/00559.jpg'
     rgb = cv2.imread(image_input)
     rgb_c = rgb[:, :, ::-1].copy()
     A_resize = cv2.resize(rgb_c, (448, 448))
 
     img_torch = scale_torch(A_resize)[None, :, :, :]
     # pred_depth = depth_model.inference(img_torch).cpu().numpy().squeeze()
-    depth,_ = depth_model(img_torch)
+    depth, _ = depth_model(img_torch)
     pred_depth_out = depth - depth.min() + 0.01
-    pred_depth=pred_depth_out.cpu().detach().numpy().squeeze()
+    pred_depth = pred_depth_out.cpu().detach().numpy().squeeze()
     pred_depth_ori = cv2.resize(pred_depth, (rgb.shape[1], rgb.shape[0]))
 
     # recover focal length, shift, and scale-invariant depth
     # shift, focal_length, depth_scaleinv = reconstruct3D_from_depth(rgb, pred_depth_ori,
     #                                                                shift_model, focal_model)
 
-    focal_length=1.15803374e+03
+    focal_length = 1.15803374e+03
     pred_depth_norm = pred_depth_ori - pred_depth_ori.min() + 0.5
     dmax = np.percentile(pred_depth_norm, 98)
+    pred_depth_norm = pred_depth_norm / dmax
     depth_shift = 0.6
     depth_scaleinv = pred_depth_norm - depth_shift
-
 
     reconstruct_depth(depth_scaleinv, rgb[:, :, ::-1], image_dir_out, image_name + '-pcd', focal=focal_length)
