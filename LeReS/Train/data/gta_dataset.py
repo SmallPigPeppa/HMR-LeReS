@@ -138,7 +138,7 @@ class GTADataset(Dataset):
 
         # resize rgb, depth, disp
         flip_flg, resize_size, crop_size, pad, resize_ratio = self.set_flip_resize_crop_pad(rgb_aug)
-        # flip_flg, resize_size, crop_size,pad = False, [540, 960],[290,28,448,448],[0,0,0,0]
+        flip_flg, resize_size, crop_size,pad = False, [540, 960],[290,28,448,448],[0,0,0,0]
         rgb_resize = self.flip_reshape_crop_pad(rgb_aug, flip_flg, resize_size, crop_size, pad, 0)
         depth_resize = self.flip_reshape_crop_pad(depth, flip_flg, resize_size, crop_size, pad, -1,
                                                   resize_method='nearest')
