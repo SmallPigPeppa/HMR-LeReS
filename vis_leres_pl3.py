@@ -8,7 +8,6 @@ import torchvision.transforms as transforms
 from collections import OrderedDict
 
 from LeReS.Minist_Test.lib_test.test_utils import refine_focal, refine_shift
-from LeReS.Minist_Test.lib_test.multi_depth_model_woauxi import RelDepthModel
 from LeReS.Minist_Test.lib_test.spvcnn_classsification import SPVCNN_CLASSIFICATION
 from LeReS.Minist_Test.lib_test.test_utils import reconstruct_depth
 from leres_model_pl import LeReS
@@ -119,13 +118,7 @@ if __name__ == '__main__':
     image = leres_model.train_dataloader()
 
     sf_ckpt_path='res50.pth'
-    # # create depth model
-    # depth_model = RelDepthModel(backbone='resnet50')
-    # depth_model.eval()
-
-    # create shift and focal length model
     shift_model, focal_model = make_shift_focallength_models()
-    # load checkpoint
     sf_ckpt = torch.load(sf_ckpt_path)
     shift_model.load_state_dict(strip_prefix_if_present(sf_ckpt['shift_model'], 'module.'),
                                 strict=True)
@@ -150,19 +143,14 @@ if __name__ == '__main__':
     pred_depth_ori = cv2.resize(pred_depth, (rgb.shape[1], rgb.shape[0]))
 
     # recover focal length, shift, and scale-invariant depth
-    shift, focal_length, depth_scaleinv = reconstruct3D_from_depth(rgb, pred_depth_ori,
-                                                                   shift_model, focal_model)
-    disp = 1 / depth_scaleinv
-    disp = (disp / disp.max() * 60000).astype(np.uint16)
+    # shift, focal_length, depth_scaleinv = reconstruct3D_from_depth(rgb, pred_depth_ori,
+    #                                                                shift_model, focal_model)
 
-    # if GT depth is available, uncomment the following part to recover the metric depth
-    #pred_depth_metric = recover_metric_depth(pred_depth_ori, gt_depth)
+    focal_length=1.15803374e+03
+    pred_depth_norm = pred_depth - pred_depth_ori.min() + 0.5
+    dmax = np.percentile(pred_depth_norm, 98)
+    depth_shift = 0.6
+    depth_scaleinv = pred_depth_norm - depth_shift
 
-    cv2.imwrite( image_name + '.png', rgb)
-    # save depth
-    plt.imsave( image_name + '-depth.png', pred_depth_ori, cmap='rainbow')
-    cv2.imwrite(image_name + '-depth_raw.png', (pred_depth_ori / pred_depth_ori.max() * 60000).astype(np.uint16))
-    # save disp
-    cv2.imwrite(image_name + '.png', disp)
 
     reconstruct_depth(depth_scaleinv, rgb[:, :, ::-1], image_dir_out, image_name + '-pcd', focal=focal_length)
