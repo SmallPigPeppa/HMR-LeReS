@@ -159,8 +159,9 @@ class GTADataset(Dataset):
 
         # to torch, normalize
         rgb_torch = self.scale_torch(rgb_resize.copy())
-        depth_resize = depth_resize[np.newaxis, :, :].astype(float)
-        depth_torch = torch.from_numpy(depth_resize)
+        depth_torch = self.scale_torch(depth_resize)
+        # depth_resize = depth_resize[np.newaxis, :, :].astype(float)
+        # depth_torch = torch.from_numpy(depth_resize)
 
         # TODO: add transforms for joints and camera_trans
 
