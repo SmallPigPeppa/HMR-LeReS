@@ -1,6 +1,5 @@
 import torch.nn.functional
 from lib_train.models import network_auxi as network
-from lib_train.configs.config import cfg
 import hmr_leres_config as config
 from lib_train.utils.net_tools import *
 from lib_train.models.PWN_edges import EdgeguidedNormalRegressionLoss
@@ -24,7 +23,7 @@ class LeReS(pl.LightningModule):
         self.msg_normal_loss = MSGIL_NORM_Loss(scale=4, valid_threshold=-1e-8)
         # Scale shift invariant. SSIMAEL_Loss is MIDAS loss. MEADSTD_TANH_NORM_Loss is our normalization loss.
         self.meanstd_tanh_loss = MEADSTD_TANH_NORM_Loss(valid_threshold=-1e-8)
-        self.ranking_edge_loss = EdgeguidedRankingLoss(mask_value=-1e-8)
+        self.ranking_edgeda_loss = EdgeguidedRankingLoss(mask_value=-1e-8)
 
     def train_dataloader(self):
         pix_format = 'NCHW'
@@ -99,8 +98,6 @@ class LeReS(pl.LightningModule):
 
     def loss(self, pred_logit, data):
         pred_depth = pred_logit
-        # gt_depth = data['depth'].to(device=self.device)
-        # gt_depth = data['depth'].to(device=pred_depth.device)
         gt_depth = data['depth']
         gt_depth_mid = gt_depth
         pred_depth_mid = pred_depth
@@ -108,22 +105,19 @@ class LeReS(pl.LightningModule):
         if gt_depth_mid.ndim == 3:
             gt_depth_mid = gt_depth_mid[None, :, :, :]
             pred_depth_mid = pred_depth_mid[None, :, :, :]
+
         loss = {}
+        loss['meanstd-tanh_loss'] = self.meanstd_tanh_loss(pred_depth_mid, gt_depth_mid)  # L-ILNR
 
-        pred_ssinv = recover_scale_shift_depth(pred_depth, gt_depth, min_threshold=-1e-8, max_threshold=10.1)
-        loss['pairwise-normal-regress-edge_loss'] = self.pn_edge(pred_ssinv,
-                                                                 gt_depth,
-                                                                 data['rgb'],
-                                                                 focal_length=data['focal_length'])
-
-        loss_ssi = self.meanstd_tanh_loss(pred_depth_mid, gt_depth_mid)  # L-ILNR
-        loss['meanstd-tanh_loss'] = loss_ssi
-
-        loss['ranking-edge_loss'] = self.ranking_edge_loss(pred_depth, gt_depth, data['rgb'])
-
-        loss['msg_normal_loss'] = (self.msg_normal_loss(pred_depth_mid, gt_depth_mid) * 0.5).float()
-        # loss['msg_normal_loss'] = self.msg_normal_loss(pred_depth_mid, gt_depth_mid) * 0.5
-
+        # loss['ranking-edge_loss'] = self.ranking_edge_loss(pred_depth, gt_depth, data['rgb'])
+        #
+        # loss['msg_normal_loss'] = (self.msg_normal_loss(pred_depth_mid, gt_depth_mid) * 0.5)
+        #
+        # pred_ssinv = recover_scale_shift_depth(pred_depth, gt_depth, min_threshold=-1e-8, max_threshold=10.1)
+        # loss['pairwise-normal-regress-edge_loss'] = self.pn_edge(pred_ssinv,
+        #                                                          gt_depth,
+        #                                                          data['rgb'],
+        #                                                          focal_length=data['focal_length'])
         total_loss = sum(loss.values())
         loss['total_loss'] = total_loss
         return loss
@@ -132,10 +126,7 @@ class LeReS(pl.LightningModule):
         leres_data = batch['leres_loader']
         out = self.forward(leres_data)
         loss_dict = out['losses']
-        self.log('total_loss', loss_dict['total_loss'])
-        self.log('pairwise-normal-regress-edge_loss', loss_dict['pairwise-normal-regress-edge_loss'])
-        self.log('ranking-edge_loss', loss_dict['ranking-edge_loss'])
-        self.log('msg_normal_loss', loss_dict['msg_normal_loss'])
+        self.log_dict(loss_dict)
         return loss_dict['total_loss']
 
     def configure_optimizers(self):

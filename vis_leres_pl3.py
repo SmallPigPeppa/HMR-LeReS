@@ -31,7 +31,7 @@ def scale_torch(img):
 
 if __name__ == '__main__':
     # pl_ckpt_path = 'leres-ckpt-backup/last.ckpt'
-    pl_ckpt_path = 'leres-ckpt-v4.0/epoch=108-step=51993.ckpt'
+    pl_ckpt_path = 'leres-ckpt/last.ckpt'
     leres_model = LeReS.load_from_checkpoint(pl_ckpt_path)
     depth_model = leres_model.depth_model.eval()
     image = leres_model.train_dataloader()
