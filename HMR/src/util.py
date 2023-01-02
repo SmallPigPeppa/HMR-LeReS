@@ -9,7 +9,7 @@
 import h5py
 import torch
 import numpy as np
-from merge_config import args
+from hmr_leres_config import args
 import json
 from torch.autograd import Variable
 import torch.nn.functional as F

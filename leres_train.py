@@ -1,6 +1,6 @@
 from leres_model_pl import LeReS
 from leres_model_pl import ModelOptimizer
-from merge_config import args as train_args
+from hmr_leres_config import args as train_args
 from merge_gta_dataset import MergeGTADataset
 from torch.utils.data import DataLoader
 from tqdm import tqdm

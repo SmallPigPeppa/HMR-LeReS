@@ -7,7 +7,7 @@
     mark:   the algorithm is cited from original SMPL
 '''
 import torch
-from merge_config import args
+from hmr_leres_config import args
 import json
 import sys
 import numpy as np

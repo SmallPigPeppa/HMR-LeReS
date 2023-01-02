@@ -1,7 +1,7 @@
 import torch
 from merge_gta_dataset import MergeGTADataset
 import numpy as np
-from merge_config import args
+from hmr_leres_config import args
 from hmr_model_pl import HMR
 
 if __name__=='__main__':

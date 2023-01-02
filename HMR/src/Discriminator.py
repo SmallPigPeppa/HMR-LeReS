@@ -7,12 +7,12 @@
 '''
 
 from LinearModel import LinearModel
-import merge_config as config
+import hmr_leres_config as config
 import util
 import torch
 import numpy as np
 import torch.nn as nn
-from merge_config import args
+from hmr_leres_config import args
 
 '''
     shape discriminator is used for shape discriminator

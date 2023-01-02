@@ -1,5 +1,5 @@
 from hmr_model_pl import HMR
-from merge_config import args as train_args
+from hmr_leres_config import args as train_args
 from pytorch_lightning.loggers import WandbLogger
 import torch
 from pytorch_lightning import LightningModule, Trainer, seed_everything

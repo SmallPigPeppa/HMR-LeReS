@@ -20,7 +20,7 @@ from util import calc_aabb, cut_image, draw_lsp_14kp__bone, rectangle_intersect,
     get_rectangle_intersect_ratio, convert_image_by_pixformat_normalize, reflect_pose
 
 from util_gta import flip_image_with_smpl_2dkp,reflect_smpl_3dkp
-from merge_config import args
+from hmr_leres_config import args
 from timer import Clock
 
 

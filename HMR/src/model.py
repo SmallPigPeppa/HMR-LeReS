@@ -14,8 +14,8 @@ import torch
 import util
 from Discriminator import ShapeDiscriminator, PoseDiscriminator, FullPoseDiscriminator
 from SMPL import SMPL
-from merge_config import args
-import merge_config as config
+from hmr_leres_config import args
+import hmr_leres_config as config
 import Resnet
 from HourGlass import _create_hourglass_net
 from densenet import load_denseNet

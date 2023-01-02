@@ -8,8 +8,8 @@
 import sys
 from model import HMRNetBase
 from Discriminator import Discriminator
-from merge_config import args
-import merge_config as config
+from hmr_leres_config import args
+import hmr_leres_config as config
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader, ConcatDataset

@@ -18,7 +18,7 @@ import torch
 sys.path.append('./src')
 
 from util import calc_aabb, cut_image, flip_image, draw_lsp_14kp__bone, convert_image_by_pixformat_normalize, reflect_lsp_kp
-from merge_config import args
+from hmr_leres_config import args
 from timer import Clock
 
 class LspLoader(Dataset):

@@ -1,7 +1,7 @@
 from model import HMRNetBase
 from Discriminator import Discriminator
-from merge_config import args
-import merge_config as config
+from hmr_leres_config import args
+import hmr_leres_config as config
 import torch
 from util import align_by_pelvis, batch_rodrigues
 from dataloader.mosh_dataloader import mosh_dataloader

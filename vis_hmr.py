@@ -7,7 +7,7 @@ import numpy as np
 from Discriminator import Discriminator
 
 
-from merge_config import args
+from hmr_leres_config import args
 from hmr_model_pl import HMR
 
 data_set_path = 'C:/Users/90532/Desktop/Datasets/HMR-LeReS/2020-06-11-10-06-48'

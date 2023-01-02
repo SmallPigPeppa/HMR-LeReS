@@ -19,7 +19,7 @@ import torch
 
 sys.path.append('./src')
 from util import calc_aabb, cut_image, flip_image, draw_lsp_14kp__bone, rectangle_intersect, get_rectangle_intersect_ratio, convert_image_by_pixformat_normalize, reflect_pose
-from merge_config import args
+from hmr_leres_config import args
 # from timer import Clock
 
 class eval_dataloader(Dataset):

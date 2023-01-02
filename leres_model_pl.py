@@ -1,7 +1,7 @@
 import torch.nn.functional
 from lib_train.models import network_auxi as network
 from lib_train.configs.config import cfg
-import merge_config as config
+import hmr_leres_config as config
 from lib_train.utils.net_tools import *
 from lib_train.models.PWN_edges import EdgeguidedNormalRegressionLoss
 from lib_train.models.ranking_loss import EdgeguidedRankingLoss
@@ -35,9 +35,9 @@ class LeReS(pl.LightningModule):
         hmr_2d_path = 'C:/Users/90532/Desktop/Datasets/HMR-LeReS/2020-06-11-10-06-48'
         hmr_mosh_path = 'C:/Users/90532/Desktop/Datasets/HMR/mosh'
 
-        hmr_3d_path = '/share/wenzhuoliu/torch_ds/HMR-LeReS/2020-06-11-10-06-48'
-        hmr_2d_path = '/share/wenzhuoliu/torch_ds/HMR-LeReS/2020-06-11-10-06-48'
-        hmr_mosh_path = '/share/wenzhuoliu/torch_ds/HMR-LeReS/mosh'
+        # hmr_3d_path = '/share/wenzhuoliu/torch_ds/HMR-LeReS/2020-06-11-10-06-48'
+        # hmr_2d_path = '/share/wenzhuoliu/torch_ds/HMR-LeReS/2020-06-11-10-06-48'
+        # hmr_mosh_path = '/share/wenzhuoliu/torch_ds/HMR-LeReS/mosh'
 
         use_crop = True
         scale_range = [1.1, 2.0]
@@ -75,7 +75,7 @@ class LeReS(pl.LightningModule):
         leres_loader = DataLoader(
             dataset=leres_dataset,
             batch_size=config.args.batchsize,
-            num_workers=config.args.thread,
+            num_workers=config.args.num_worker,
             shuffle=True,
             drop_last=True,
             pin_memory=True, )
