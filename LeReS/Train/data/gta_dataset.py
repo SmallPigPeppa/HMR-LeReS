@@ -64,7 +64,7 @@ class GTADataset(Dataset):
     #     return data
     def __getitem__(self, anno_index):
         if 'train' in self.opt.phase:
-            data = self.online_aug(559)
+            data = self.load_train_data(559)
         else:
             data = self.load_test_data(559)
         return data
@@ -83,16 +83,56 @@ class GTADataset(Dataset):
         )
         return np.squeeze(depth)
 
-    def load_test_data(self, anno_index):
+    def load_train_data(self, index):
+        """
+        Augment data for training online randomly.
+        :param anno_index: data index.
+        """
+        # print(anno_index)
+        rgb_path = self.rgb_paths[index]
+        depth_path = self.depth_paths[index]
+        rgb = cv2.imread(rgb_path)[:, :, ::-1]  # rgb, H*W*C
+
+        info_npz = np.load(os.path.join(self.data_path, 'info_frames.npz'))
+        intrinsics = info_npz['intrinsics'][index]
+        focal_length = (intrinsics[0][0]).astype(np.float32)
+
+        depth = self.read_depthmap(name=self.depth_paths[index], cam_near_clip=self.cam_near_clips[index],
+                                   cam_far_clip=self.cam_far_clips[index]).astype(np.uint16)
+        sem_mask = cv2.imread(self.mask_paths[index], cv2.IMREAD_ANYDEPTH).astype(np.uint8)
+        sem_mask = np.squeeze(sem_mask)
+
+        # rgb_aug = rgb
+
+        # resize rgb, depth, disp
+        rgb_resize = cv2.resize(rgb, (448, 448),interpolation=cv2.INTER_LINEAR)
+        depth_resize = cv2.resize(depth, (448, 448),interpolation=cv2.INTER_NEAREST)
+
+        # depth_resize = (depth_resize / (depth_resize.max() + 1e-8))
+
+
+        # to torch, normalize
+        rgb_torch = self.scale_torch(rgb_resize)
+        depth_torch = self.scale_torch(depth_resize)
+
+        # TODO: add transforms for joints and camera_trans
+
+        data = {
+            'rgb': rgb_torch, 'depth': depth_torch, 'focal_length': torch.tensor(focal_length),'debug-depth':self.scale_torch(depth),
+        }
+
+        return data
+
+    def load_test_data(self, index):
         """
         Augment data for training online randomly. The invalid parts in the depth map are set to -1.0, while the parts
         in depth bins are set to cfg.MODEL.DECODER_OUTPUT_C + 1.
-        :param anno_index: data index.
+        :param index: data index.
         """
-        rgb_path = self.rgb_paths[anno_index]
+        rgb_path = self.rgb_paths[index]
         rgb = cv2.imread(rgb_path)[:, :, ::-1]  # bgr, H*W*C
-        depth = self.read_depthmap(name=self.depth_paths[anno_index], cam_near_clip=self.cam_near_clips[anno_index],
-                                   cam_far_clip=self.cam_far_clips[anno_index])
+        depth = self.read_depthmap(name=self.depth_paths[index], cam_near_clip=self.cam_near_clips[index],
+                                   cam_far_clip=self.cam_far_clips[index])
         drange = depth.max()
         depth_norm = depth / drange
         mask_valid = (depth_norm > 1e-8).astype(np.float)
@@ -138,7 +178,7 @@ class GTADataset(Dataset):
 
         # resize rgb, depth, disp
         flip_flg, resize_size, crop_size, pad, resize_ratio = self.set_flip_resize_crop_pad(rgb_aug)
-        flip_flg, resize_size, crop_size,pad = False, [540, 960],[290,28,448,448],[0,0,0,0]
+        flip_flg, resize_size, crop_size, pad = False, [540, 960], [290, 28, 448, 448], [0, 0, 0, 0]
         rgb_resize = self.flip_reshape_crop_pad(rgb_aug, flip_flg, resize_size, crop_size, pad, 0)
         depth_resize = self.flip_reshape_crop_pad(depth, flip_flg, resize_size, crop_size, pad, -1,
                                                   resize_method='nearest')

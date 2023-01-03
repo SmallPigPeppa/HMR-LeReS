@@ -4,7 +4,7 @@ import hmr_leres_config as config
 from lib_train.utils.net_tools import *
 from lib_train.models.PWN_edges import EdgeguidedNormalRegressionLoss
 from lib_train.models.ranking_loss import EdgeguidedRankingLoss
-from lib_train.models.ILNR_loss import MEADSTD_TANH_NORM_Loss
+from lib_train.models.ILNR_loss import MEADSTD_TANH_NORM_Loss, DepthRegressionLoss
 from lib_train.models.MSGIL_loss import MSGIL_NORM_Loss
 import pytorch_lightning as pl
 from dataloader.mosh_dataloader import mosh_dataloader
@@ -23,7 +23,8 @@ class LeReS(pl.LightningModule):
         self.msg_normal_loss = MSGIL_NORM_Loss(scale=4, valid_threshold=-1e-8)
         # Scale shift invariant. SSIMAEL_Loss is MIDAS loss. MEADSTD_TANH_NORM_Loss is our normalization loss.
         self.meanstd_tanh_loss = MEADSTD_TANH_NORM_Loss(valid_threshold=-1e-8)
-        self.ranking_edgeda_loss = EdgeguidedRankingLoss(mask_value=-1e-8)
+        self.depth_regression_loss = DepthRegressionLoss(valid_threshold=-1e-8)
+        self.ranking_edge_loss = EdgeguidedRankingLoss(mask_value=-1e-8)
 
     def train_dataloader(self):
         pix_format = 'NCHW'
@@ -107,7 +108,8 @@ class LeReS(pl.LightningModule):
             pred_depth_mid = pred_depth_mid[None, :, :, :]
 
         loss = {}
-        loss['meanstd-tanh_loss'] = self.meanstd_tanh_loss(pred_depth_mid, gt_depth_mid)  # L-ILNR
+        # loss['meanstd-tanh_loss'] = self.meanstd_tanh_loss(pred_depth_mid, gt_depth_mid)  # L-ILNR
+        loss['depth-regression-loss'] = self.depth_regression_loss(pred_depth_mid, gt_depth_mid)  # L-ILNR
 
         # loss['ranking-edge_loss'] = self.ranking_edge_loss(pred_depth, gt_depth, data['rgb'])
         #

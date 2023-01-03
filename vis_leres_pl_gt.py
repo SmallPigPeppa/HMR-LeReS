@@ -8,8 +8,6 @@ from LeReS.Minist_Test.lib_test.test_utils import reconstruct_depth
 from leres_model_pl import LeReS
 
 
-
-
 def scale_torch(img):
     """
     Scale the image and output it in torch.tensor.
@@ -30,35 +28,26 @@ def scale_torch(img):
 
 
 if __name__ == '__main__':
-    # pl_ckpt_path = 'leres-ckpt-backup/last.ckpt'
-    pl_ckpt_path = 'leres-ckpt-v4.0-debug/last-v1.ckpt'
-    leres_model = LeReS.load_from_checkpoint(pl_ckpt_path)
+    leres_model = LeReS()
     depth_model = leres_model.depth_model.eval()
-    image = leres_model.train_dataloader()
-
     image_dir_out = 'leres-vis-out'
-    image_name = 'debug-559'
-    # '/share/wenzhuoliu/torch_ds/HMR-LeReS/2020-06-11-10-06-48/00559.jpg'
+    image_name = 'gt-448-559'
     image_input = os.path.join(image_dir_out, '00559.jpg')
-    rgb = cv2.imread(image_input)
-    rgb_c = rgb[:, :, ::-1].copy()
-    A_resize = cv2.resize(rgb_c, (448, 448))
+    image = cv2.imread(image_input)
 
-    img_torch = scale_torch(A_resize)[None, :, :, :]
-    # pred_depth = depth_model.inference(img_torch).cpu().numpy().squeeze()
-    depth, _ = depth_model(img_torch)
-
-    # depth = depth - depth.min() + 0.01
+    leres_loader = leres_model.train_dataloader()['leres_loader']
+    depth = next(iter(leres_loader))['depth'].numpy().squeeze()
     depth = depth - depth.min()
-    # pred_depth_out = depth - depth.min()
-    depth = depth.cpu().detach().numpy().squeeze()
     dmax = np.percentile(depth, 90)
     dmin = np.percentile(depth, 10)
     depth = np.maximum(depth, dmin)
     depth = np.minimum(depth, dmax)
-    depth_ori = cv2.resize(depth, (rgb.shape[1], rgb.shape[0]),interpolation=cv2.INTER_NEAREST)
+    depth_ori = cv2.resize(depth, (image.shape[1], image.shape[0]),interpolation=cv2.INTER_NEAREST)
+    # depth_ori=depth
+
+    rgb = next(iter(leres_loader))['rgb'].numpy().squeeze()
+    rgb = np.transpose(rgb, (2,1, 0))
+    rgb_ori = cv2.resize(rgb, (image.shape[1], image.shape[0]))
 
     focal_length = 1.15803374e+03
-    # focal_length = 3000
-
-    reconstruct_depth(depth_ori, rgb[:, :, ::-1], image_dir_out, image_name + '-pcd', focal=focal_length)
+    reconstruct_depth(depth_ori, image[:,:,::-1], image_dir_out, image_name + '-pcd', focal=focal_length)
