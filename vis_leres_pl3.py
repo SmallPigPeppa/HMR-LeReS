@@ -4,10 +4,9 @@ import numpy as np
 import torch
 import torchvision.transforms as transforms
 
-from LeReS.Minist_Test.lib_test.test_utils import reconstruct_depth
+# from LeReS.Minist_Test.lib_test.test_utils import reconstruct_depth
+from LeReS.Minist_Test.lib_test.test_utils import reconstruct_depth_new as reconstruct_depth
 from leres_model_pl import LeReS
-
-
 
 
 def scale_torch(img):
@@ -31,7 +30,7 @@ def scale_torch(img):
 
 if __name__ == '__main__':
     # pl_ckpt_path = 'leres-ckpt-backup/last.ckpt'
-    pl_ckpt_path = 'leres-ckpt-v4.0-debug/last-v1.ckpt'
+    pl_ckpt_path = 'leres-ckpt-v4.0-debug/last-v3.ckpt'
     leres_model = LeReS.load_from_checkpoint(pl_ckpt_path)
     depth_model = leres_model.depth_model.eval()
     image = leres_model.train_dataloader()
@@ -49,7 +48,7 @@ if __name__ == '__main__':
     depth, _ = depth_model(img_torch)
 
     # depth = depth - depth.min() + 0.01
-    depth = depth - depth.min()
+    # depth = depth - depth.min()
     # pred_depth_out = depth - depth.min()
     depth = depth.cpu().detach().numpy().squeeze()
     dmax = np.percentile(depth, 90)
@@ -61,4 +60,4 @@ if __name__ == '__main__':
     focal_length = 1.15803374e+03
     # focal_length = 3000
 
-    reconstruct_depth(depth_ori, rgb[:, :, ::-1], image_dir_out, image_name + '-pcd', focal=focal_length)
+    reconstruct_depth(depth_ori, rgb[:, :, ::-1], image_dir_out, image_name + '-pcd-v3', focal=focal_length)

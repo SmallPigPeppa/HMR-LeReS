@@ -250,6 +250,39 @@ def reconstruct_depth(depth, rgb, dir, pcd_name, focal):
     save_point_cloud(pcd, rgb_n, os.path.join(dir, pcd_name + '.ply'))
 
 
+
+def reconstruct_depth_new(depth, rgb, dir, pcd_name, focal):
+    """
+    para disp: disparity, [h, w]
+    para rgb: rgb image, [h, w, 3], in rgb format
+    """
+    rgb = np.squeeze(rgb)
+    depth = np.squeeze(depth)
+
+
+    depth = depth / depth.max() * 10000
+
+    pcd = reconstruct_3D(depth, f=focal)
+    rgb_n = np.reshape(rgb, (-1, 3))
+    save_point_cloud(pcd, rgb_n, os.path.join(dir, pcd_name + '.ply'))
+
+def reconstruct_depth_not_save(depth, rgb, dir, pcd_name, focal):
+    """
+    para disp: disparity, [h, w]
+    para rgb: rgb image, [h, w, 3], in rgb format
+    """
+    rgb = np.squeeze(rgb)
+    depth = np.squeeze(depth)
+
+    mask = depth < 1e-8
+    depth[mask] = 0
+    depth = depth / depth.max() * 10000
+
+    pcd = reconstruct_3D(depth, f=focal)
+    rgb_n = np.reshape(rgb, (-1, 3))
+    save_point_cloud(pcd, rgb_n, os.path.join(dir, pcd_name + '.ply'))
+
+
 def recover_metric_depth(pred, gt):
     if type(pred).__module__ == torch.__name__:
         pred = pred.cpu().numpy()

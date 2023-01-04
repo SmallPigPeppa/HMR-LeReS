@@ -23,7 +23,7 @@ class LeReS(pl.LightningModule):
         self.msg_normal_loss = MSGIL_NORM_Loss(scale=4, valid_threshold=-1e-8)
         # Scale shift invariant. SSIMAEL_Loss is MIDAS loss. MEADSTD_TANH_NORM_Loss is our normalization loss.
         self.meanstd_tanh_loss = MEADSTD_TANH_NORM_Loss(valid_threshold=-1e-8)
-        self.depth_regression_loss = DepthRegressionLoss(valid_threshold=-1e-8)
+        self.depth_regression_loss = DepthRegressionLoss(valid_threshold=-1e-8,max_threshold=15)
         self.ranking_edge_loss = EdgeguidedRankingLoss(mask_value=-1e-8)
 
     def train_dataloader(self):

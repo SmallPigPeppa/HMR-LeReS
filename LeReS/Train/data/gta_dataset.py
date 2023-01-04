@@ -62,11 +62,17 @@ class GTADataset(Dataset):
     #     else:
     #         data = self.load_test_data(anno_index)
     #     return data
-    def __getitem__(self, anno_index):
+    # def __getitem__(self, anno_index):
+    #     if 'train' in self.opt.phase:
+    #         data = self.load_train_data(559)
+    #     else:
+    #         data = self.load_test_data(559)
+    #     return data
+    def __getitem__(self, index):
         if 'train' in self.opt.phase:
-            data = self.load_train_data(559)
+            data = self.load_train_data(index)
         else:
-            data = self.load_test_data(559)
+            data = self.load_test_data(index)
         return data
 
     def read_depthmap(self, name, cam_near_clip, cam_far_clip):
@@ -98,7 +104,11 @@ class GTADataset(Dataset):
         focal_length = (intrinsics[0][0]).astype(np.float32)
 
         depth = self.read_depthmap(name=self.depth_paths[index], cam_near_clip=self.cam_near_clips[index],
-                                   cam_far_clip=self.cam_far_clips[index]).astype(np.uint16)
+                                   cam_far_clip=self.cam_far_clips[index])
+
+        # depth = self.read_depthmap(name=self.depth_paths[index], cam_near_clip=self.cam_near_clips[index],
+        #                            cam_far_clip=self.cam_far_clips[index]).astype(np.uint16)
+
         sem_mask = cv2.imread(self.mask_paths[index], cv2.IMREAD_ANYDEPTH).astype(np.uint8)
         sem_mask = np.squeeze(sem_mask)
 
