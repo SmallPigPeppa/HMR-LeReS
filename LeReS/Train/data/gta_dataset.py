@@ -69,6 +69,7 @@ class GTADataset(Dataset):
     #         data = self.load_test_data(559)
     #     return data
     def __getitem__(self, index):
+        index=559
         if 'train' in self.opt.phase:
             data = self.load_train_data(index)
         else:

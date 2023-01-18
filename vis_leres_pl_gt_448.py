@@ -50,4 +50,4 @@ if __name__ == '__main__':
     rgb_ori = cv2.resize(rgb, (image.shape[1], image.shape[0]))
 
     focal_length = 1.15803374e+03
-    reconstruct_depth(depth_ori, image[:,:,::-1], image_dir_out, image_name + '-pcd-2', focal=focal_length)
+    reconstruct_depth(depth_ori, image[:,:,::-1], image_dir_out, image_name + '-pcd-3', focal=focal_length)
