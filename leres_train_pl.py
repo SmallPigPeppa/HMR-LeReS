@@ -19,9 +19,8 @@ if __name__ == '__main__':
     trainer = Trainer(
         gradient_clip_val=10.0,
         max_epochs=200,
-        strategy="ddp",
         accelerator="gpu",
-        devices=2,
+        devices=1,
         logger=wandb_logger,
         callbacks=[LearningRateMonitor(logging_interval="step"), TQDMProgressBar(refresh_rate=10), checkpoint_callback],
     )

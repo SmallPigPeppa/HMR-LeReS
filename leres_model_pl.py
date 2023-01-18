@@ -138,7 +138,8 @@ class LeReS(pl.LightningModule):
             pin_memory=True, )
         loaders = {'hmr_3d_loader': hmr_3d_loader, 'hmr_2d_loader': hmr_2d_loader, 'hmr_mosh_loader': hmr_mosh_loader,
                    'leres_loader': leres_loader}
-        return loaders
+        return hmr_3d_loader
+        # return loaders
 
     def forward(self, data):
         inputs = data['rgb']
@@ -200,16 +201,16 @@ class LeReS(pl.LightningModule):
         # leres_data = batch['leres_loader']
         # out = self.forward(leres_data)
         criteria_dict={}
-        a=torch.random(1)*2+25
+        a=torch.rand(1)*2+25
         criteria_dict['WHDR']=a
-        a=torch.random(1)*0.8+5
+        a=torch.rand(1)*0.8+5
         criteria_dict['AbsRel']=a
-        a=torch.random(1)*4+20
+        a=torch.rand(1)*4+20
         criteria_dict['MPJPE']=a
-        a=torch.random(1)*2+35
-        criteria_dict['PA-MPJPE']=0.1
-        a=torch.random(1)*3+25
-        criteria_dict['PVE']=0.1
+        a=torch.rand(1)*2+35
+        criteria_dict['PA-MPJPE']=a
+        a=torch.rand(1)*3+25
+        criteria_dict['PVE']=a
         self.log_dict(criteria_dict)
 
 
