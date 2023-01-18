@@ -21,6 +21,7 @@ if __name__ == '__main__':
         max_epochs=200,
         accelerator="gpu",
         devices=1,
+        log_every_n_steps=1,
         logger=wandb_logger,
         callbacks=[LearningRateMonitor(logging_interval="step"), TQDMProgressBar(refresh_rate=10), checkpoint_callback],
     )
