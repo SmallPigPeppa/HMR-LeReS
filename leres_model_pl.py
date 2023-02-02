@@ -12,6 +12,8 @@ from dataloader.mosh_dataloader import mosh_dataloader
 from torch.utils.data import DataLoader
 from HMR.src.dataloader.gta_dataloader import gta_dataloader as hmr_dataset
 from LeReS.Train.data.gta_dataset import GTADataset as leres_gta_dataset
+from pytorch_lightning.trainer.supporters import CombinedLoader
+from leres_val_utils import validate_rel_depth_err
 
 
 class LeReS(pl.LightningModule):
@@ -138,7 +140,8 @@ class LeReS(pl.LightningModule):
             pin_memory=True, )
         loaders = {'hmr_3d_loader': hmr_3d_loader, 'hmr_2d_loader': hmr_2d_loader, 'hmr_mosh_loader': hmr_mosh_loader,
                    'leres_loader': leres_loader}
-        return hmr_3d_loader
+        combined_loaders = CombinedLoader(loaders, mode="max_size_cycle")
+        return combined_loaders
         # return loaders
 
     def forward(self, data):
@@ -196,26 +199,47 @@ class LeReS(pl.LightningModule):
         self.log('msg_normal_loss', loss_dict['msg_normal_loss'])
         return loss_dict['total_loss']
 
+    # def validation_step(self, batch, batch_index):
+    #     # leres_data = batch['leres_loader']
+    #     # out = self.forward(leres_data)
+    #     criteria_dict={}
+    #     a=torch.rand(1)*2+25
+    #     criteria_dict['WHDR']=a
+    #     a=torch.rand(1)*0.8+5
+    #     criteria_dict['AbsRel']=a
+    #     a=torch.rand(1)*4+20
+    #     criteria_dict['MPJPE']=a
+    #     a=torch.rand(1)*2+35
+    #     criteria_dict['PA-MPJPE']=a
+    #     a=torch.rand(1)*3+25
+    #     criteria_dict['PVE']=a
+    #     # self.log_dict(criteria_dict,on_step=True)
+    #     self.log_dict(criteria_dict,on_step=True)
+    #
+    #     return criteria_dict
 
     def validation_step(self, batch, batch_index):
-        # leres_data = batch['leres_loader']
-        # out = self.forward(leres_data)
-        criteria_dict={}
-        a=torch.rand(1)*2+25
-        criteria_dict['WHDR']=a
-        a=torch.rand(1)*0.8+5
-        criteria_dict['AbsRel']=a
-        a=torch.rand(1)*4+20
-        criteria_dict['MPJPE']=a
-        a=torch.rand(1)*2+35
-        criteria_dict['PA-MPJPE']=a
-        a=torch.rand(1)*3+25
-        criteria_dict['PVE']=a
-        self.log_dict(criteria_dict)
+        criteria_dict = {}
+        leres_data = batch['leres_loader']
+        pred_depth, _ = self.depth_model(leres_data['rgb'])
+        gt_depth = leres_data['depth']
+        criteria_dict.update(validate_rel_depth_err(pred=pred_depth,gt=gt_depth))
 
+        #
+        # a = torch.rand(1) * 2 + 25
+        # criteria_dict['WHDR'] = a
+        # a = torch.rand(1) * 0.8 + 5
+        # criteria_dict['AbsRel'] = a
+        # a = torch.rand(1) * 4 + 20
+        # criteria_dict['MPJPE'] = a
+        # a = torch.rand(1) * 2 + 35
+        # criteria_dict['PA-MPJPE'] = a
+        # a = torch.rand(1) * 3 + 25
+        # criteria_dict['PVE'] = a
+        # # self.log_dict(criteria_dict,on_step=True)
+        self.log_dict(criteria_dict, on_step=True)
 
-
-
+        return criteria_dict
 
     def configure_optimizers(self):
         encoder_params = []
