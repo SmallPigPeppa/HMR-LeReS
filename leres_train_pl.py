@@ -10,11 +10,11 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 if __name__ == '__main__':
     leres_model = LeReS()
     callbacks = []
-    wandb_logger = WandbLogger(name='leres-val-v5.0', project='HMR-LeReS', entity='pigpeppa', offline=False)
+    wandb_logger = WandbLogger(name='leres-val-v4.0-val', project='HMR-LeReS', entity='pigpeppa', offline=False)
     wandb_logger.watch(leres_model, log="gradients", log_freq=100)
     wandb_logger.log_hyperparams(train_args)
 
-    checkpoint_callback = ModelCheckpoint(dirpath="leres-ckpt", save_last=True, save_top_k=2, monitor="total_loss")
+    checkpoint_callback = ModelCheckpoint(dirpath="leres-ckpt-v4.0-val", save_last=True, save_top_k=2, monitor="total_loss")
 
     trainer = Trainer(
         gradient_clip_val=10.0,
@@ -26,7 +26,6 @@ if __name__ == '__main__':
         callbacks=[LearningRateMonitor(logging_interval="step"), TQDMProgressBar(refresh_rate=10), checkpoint_callback],
     )
 
-    # trainer.fit(depth_model)
-    # trainer.test(depth_model)
-    trainer.validate(leres_model)
+    trainer.fit(leres_model)
+    # trainer.validate(leres_model)
 
