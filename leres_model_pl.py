@@ -189,6 +189,13 @@ class LeReS(pl.LightningModule):
         self.log_dict(loss_dict)
         return loss_dict['total_loss']
 
+    def validation_step(self, batch, batch_index):
+        criteria_dict = {}
+        leres_data = batch['leres_loader']
+        pred_depth, _ = self.depth_model(leres_data['rgb'])
+        gt_depth = leres_data['depth']
+        criteria_dict.update(validate_rel_depth_err(pred=pred_depth,gt=gt_depth))
+
     def configure_optimizers(self):
         encoder_params = []
         encoder_params_names = []
