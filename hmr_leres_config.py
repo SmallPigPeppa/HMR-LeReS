@@ -28,13 +28,13 @@ parser.add_argument('--e-3d-kp-ratio', type=float, default=10.0, help='multiple 
 parser.add_argument('--e-pose-ratio', type=float, default=20, help='multiple weight of pose')
 parser.add_argument('--enable-inter-supervision', type=bool, default=False, help='enable inter supervision or not.')
 parser.add_argument('--encoder-network', type=str, default='resnet50', help='the encoder network name')
-parser.add_argument('--batch-size', type=int, default=2, help='batch size')
+parser.add_argument('--batch-size', type=int, default=4, help='batch size')
 parser.add_argument('--batch-3d-size', type=int, default=8, help='3d data batch size')
 parser.add_argument('--adv-batch-size', type=int, default=24, help='default adv batch size')
 
 # LeReS
 parser.add_argument('--backbone', type=str, default='resnet50', help='Select backbone type, resnet50 or resnext101')
-parser.add_argument('--batchsize', type=int, default=2, help='Batch size')
+parser.add_argument('--batchsize', type=int, default=4, help='Batch size')
 parser.add_argument('--base_lr', type=float, default=0.001, help='Initial learning rate')
 parser.add_argument('--dataroot', default='./datasets', required=True, help='Path to images')
 parser.add_argument('--loss_mode', default='_vnl_ssil_ranking_', help='Select loss to supervise, joint or ranking')

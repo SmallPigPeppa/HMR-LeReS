@@ -10,14 +10,14 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 if __name__ == '__main__':
     depth_model = LeReS()
     callbacks = []
-    wandb_logger = WandbLogger(name='leres-test-v4.0-debug', project='HMR-LeReS', entity='pigpeppa', offline=False)
+    wandb_logger = WandbLogger(name='leres-v5.0', project='HMR-LeReS0-v5.0', entity='pigpeppa', offline=False)
     wandb_logger.watch(depth_model, log="gradients", log_freq=100)
     wandb_logger.log_hyperparams(train_args)
-    checkpoint_callback = ModelCheckpoint(dirpath="leres-ckpt-v4.0-debug-all", save_last=True, save_top_k=2, monitor="total_loss")
+    checkpoint_callback = ModelCheckpoint(dirpath="leres-ckpt-v5.0", save_last=True, save_top_k=2, monitor="total_loss")
 
     trainer = Trainer(
         gradient_clip_val=10.0,
-        max_epochs=200,
+        max_epochs=100,
         accelerator="gpu",
         devices=1,
         logger=wandb_logger,

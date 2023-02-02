@@ -27,9 +27,9 @@ class HMR(pl.LightningModule):
         hmr_2d_path = 'C:/Users/90532/Desktop/Datasets/HMR-LeReS/2020-06-11-10-06-48'
         hmr_mosh_path = 'C:/Users/90532/Desktop/Datasets/HMR/mosh'
 
-        hmr_3d_path = '/share/wenzhuoliu/torch_ds/HMR-LeReS/2020-06-11-10-06-48'
-        hmr_2d_path = '/share/wenzhuoliu/torch_ds/HMR-LeReS/2020-06-11-10-06-48'
-        hmr_mosh_path = '/share/wenzhuoliu/torch_ds/HMR-LeReS/mosh'
+        # hmr_3d_path = '/share/wenzhuoliu/torch_ds/HMR-LeReS/2020-06-11-10-06-48'
+        # hmr_2d_path = '/share/wenzhuoliu/torch_ds/HMR-LeReS/2020-06-11-10-06-48'
+        # hmr_mosh_path = '/share/wenzhuoliu/torch_ds/HMR-LeReS/mosh'
         use_crop = True
         scale_range = [1.1, 2.0]
         min_pts_required = 5
