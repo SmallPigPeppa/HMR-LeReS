@@ -9,7 +9,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 
 if __name__ == '__main__':
     # leres_model = LeReS()
-    pl_ckpt_path = 'leres-ckpt-v4.0/epoch=108-step=51993.ckpt'
+    pl_ckpt_path = 'leres-ckpt-v4.0-debug/last-v4.ckpt'
     leres_model = LeReS.load_from_checkpoint(pl_ckpt_path)
     callbacks = []
     wandb_logger = WandbLogger(name='leres-val-v5.0', project='HMR-LeReS', entity='pigpeppa', offline=False)
@@ -31,4 +31,3 @@ if __name__ == '__main__':
     # trainer.fit(depth_model)
     # trainer.test(depth_model)
     trainer.validate(leres_model)
-
