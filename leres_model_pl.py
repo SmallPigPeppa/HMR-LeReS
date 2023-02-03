@@ -20,7 +20,7 @@ class LeReS(pl.LightningModule):
         super().__init__()
         self.depth_model = DepthModel()
         # leres pair-wise normal loss (pwn edge)
-        self.pn_edge = EdgeguidedNormalRegressionLoss(mask_value=-1e-8, max_threshold=10.1)
+        self.pn_edge = EdgeguidedNormalRegressionLoss(mask_value=-1e-8, max_threshold=15)
         # leres multi-scale gradient loss (msg)
         self.msg_normal_loss = MSGIL_NORM_Loss(scale=4, valid_threshold=-1e-8)
         # Scale shift invariant. SSIMAEL_Loss is MIDAS loss. MEADSTD_TANH_NORM_Loss is our normalization loss.
@@ -197,6 +197,9 @@ class LeReS(pl.LightningModule):
         pred_depth, _ = self.depth_model(leres_data['rgb'])
         gt_depth = leres_data['depth']
         criteria_dict.update(validate_rel_depth_err(pred=pred_depth,gt=gt_depth))
+        self.log_dict(criteria_dict, on_step=True)
+
+        return criteria_dict
 
     def configure_optimizers(self):
         encoder_params = []

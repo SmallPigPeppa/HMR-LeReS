@@ -28,16 +28,16 @@ def recover_metric_depth(pred, gt, mask0=None):
     return pred_metric
 
 
-def validate_rel_depth_err(pred, gt, scale=10.):
+def validate_rel_depth_err(pred, gt, min_threshold=1e-5, max_threshold=15):
     if type(pred).__module__ == torch.__name__:
         pred = pred.cpu().numpy()
     if type(gt).__module__ == torch.__name__:
         gt = gt.cpu().numpy()
     gt = np.squeeze(gt)
     pred = np.squeeze(pred)
-    mask2 = gt > 0
-    gt = gt[mask2]
-    pred = pred[mask2]
+    valid_mask = (gt > min_threshold) & (gt < max_threshold) & (pred>min_threshold)
+    gt = gt[valid_mask]
+    pred = pred[valid_mask]
 
     criteria = {}
 
@@ -45,17 +45,15 @@ def validate_rel_depth_err(pred, gt, scale=10.):
     pred = recover_metric_depth(pred, gt)
 
     n_pxl = gt.size
-    gt_scale = gt * scale
-    pred_scale = pred * scale
 
     # Mean Absolute Relative Error
-    rel = np.abs(gt_scale - pred_scale) / gt_scale  # compute errors
+    rel = np.abs(gt - pred)
     abs_rel_sum = np.sum(rel)
-    criteria['err_absRel'] = abs_rel_sum
+    criteria['err_absRel'] = abs_rel_sum / n_pxl
 
     # WHDR error
-    whdr_err_sum, eval_num = weighted_human_disagreement_rate(gt_scale, pred_scale)
-    criteria['err_whdr'] = whdr_err_sum
+    whdr_err_sum, eval_num = weighted_human_disagreement_rate(gt, pred)
+    criteria['err_whdr'] = whdr_err_sum / eval_num
     return criteria
 
 
