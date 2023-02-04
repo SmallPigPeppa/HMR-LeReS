@@ -30,6 +30,7 @@ parser.add_argument('--enable-inter-supervision', type=bool, default=False, help
 parser.add_argument('--encoder-network', type=str, default='resnet50', help='the encoder network name')
 parser.add_argument('--batch-size', type=int, default=4, help='batch size')
 parser.add_argument('--batch-3d-size', type=int, default=8, help='3d data batch size')
+parser.add_argument('--eval-batch-size', type=int, default=4, help='3d data batch size')
 parser.add_argument('--adv-batch-size', type=int, default=24, help='default adv batch size')
 
 # LeReS
