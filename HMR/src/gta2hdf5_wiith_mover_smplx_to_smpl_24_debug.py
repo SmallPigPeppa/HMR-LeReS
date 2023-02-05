@@ -26,8 +26,7 @@ kpts_pkl_names = [i['kpname'] for i in info_pkl]
 world2cam = np.array(info_npz['world2cam_trans'])
 kpts_world = np.concatenate((kpts_npz, kpts_pkl), axis=1)
 kpts_valid = np.zeros([len(kpts_world), len(kpts_world[0]), 1])
-print(
-    f'loading kpts...\nkpts_npz.shape, kpts_pkl.shape, kpts_world.shape: {kpts_npz.shape}, {kpts_pkl.shape}, {kpts_world.shape}')
+print(f'loading kpts...\nkpts_npz.shape, kpts_pkl.shape, kpts_world.shape: {kpts_npz.shape}, {kpts_pkl.shape}, {kpts_world.shape}')
 kpts_camera = []
 for i in range(len(kpts_world[0])):
     if sum(kpts_world[0, i, :]) != 0:
@@ -84,7 +83,7 @@ for i in range(len(kpts_smpl)):
             kpts_smpl[i][j] = kpts_gta[i][mapping_list2[j]]
 
 # step3: save smpl kpts as hdf5
-h5f = h5py.File(os.path.join(data_root, rec_idx, 'annot.h5'), 'w')
+h5f = h5py.File(os.path.join(data_root, rec_idx, 'annot_debug.h5'), 'w')
 gt3d = kpts_smpl
 print('gt3d.shape',gt3d.shape)
 gt2d = []
@@ -96,6 +95,21 @@ for i in range(len(gt3d)):
     gt3d_i = np.array(gt3d[i, :, :3], dtype=float)
     gt2d_i, _ = cv2.projectPoints(gt3d_i, rvec, tvec, camera_matrix_i, dist_coeffs)
     gt2d.append(gt2d_i)
+    data_folder="C:\\Users\\90532\\Desktop\\Datasets\\HMR-LeReS\\2020-06-11-10-06-48"
+    img_i = os.path.join(data_folder, '{:05d}'.format(i) + '.jpg')
+    img = cv2.imread(img_i)
+    import matplotlib.pyplot as plt
+    import numpy as np
+    plt.figure()
+    plt.imshow(img)
+    for j in range(24):
+        # plt.imshow(img)
+        plt.scatter(np.squeeze(gt2d_i)[j][0],np.squeeze(gt2d_i)[j][1], s=50, c='red', marker='o')
+    plt.show()
+
+
+
+
 gt2d = np.squeeze(np.array(gt2d, dtype=float))
 gt3d = np.array(gt3d, dtype=float)
 valid_kpts = gt3d[:, :, -1].reshape(len(gt3d), -1, 1)
@@ -141,7 +155,7 @@ h5f.create_dataset('pose', data=h5f_poses)
 h5f.close()
 
 
-with h5py.File(os.path.join(data_root, rec_idx, 'annot.h5'), "r+") as f:
+with h5py.File(os.path.join(data_root, rec_idx, 'annot_debug.h5'), "r+") as f:
     print("Keys: %s" % f.keys())
     print("np.array(f['gt2d']).shape",np.array(f['gt2d']).shape)
     print("np.array(f['gt3d']).shape",np.array(f['gt3d']).shape)

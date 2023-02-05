@@ -56,12 +56,12 @@ class gta_dataloader(Dataset):
         with h5py.File(anno_file_path) as fp:
             total_kp2d = np.array(fp['gt2d'])
             total_kp3d = np.array(fp['gt3d'])
-            total_shap = np.array(fp['shape'])
+            total_shape = np.array(fp['shape'])
             total_pose = np.array(fp['pose'])
             # print(total_pose.shape)
 
             assert len(total_kp2d) == len(total_kp3d) and \
-                   len(total_kp2d) == len(total_shap) and len(total_kp2d) == len(total_pose)
+                   len(total_kp2d) == len(total_shape) and len(total_kp2d) == len(total_pose)
 
             l = len(total_kp2d)
 
@@ -83,7 +83,7 @@ class gta_dataloader(Dataset):
                 self.boxs.append((lt, rb))
                 # self.kp3ds.append(total_kp3d[index].copy().reshape(-1, 3))
                 self.kp3ds.append(total_kp3d[index].copy())
-                self.shapes.append(total_shap[index].copy())
+                self.shapes.append(total_shape[index].copy())
                 self.poses.append(total_pose[index].copy())
 
                 img_i = os.path.join(self.data_folder, '{:05d}'.format(index) + '.jpg')
