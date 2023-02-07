@@ -75,7 +75,8 @@ class HMR(pl.LightningModule):
         generator_outputs = self.hmr_generator(images)
         loss_kp_2d, loss_kp_3d, loss_shape, loss_pose, e_disc_loss, d_disc_loss, d_disc_real, d_disc_predict = self._calc_loss(
             generator_outputs, hmr_input_2d, hmr_input_3d, hmr_input_mosh)
-        e_loss = loss_kp_2d + loss_kp_3d + loss_shape + loss_pose + e_disc_loss
+        # e_loss = loss_kp_2d + loss_kp_3d + loss_shape + loss_pose + e_disc_loss
+        e_loss =  loss_shape + loss_pose
         d_loss = d_disc_loss
 
         # if optimizer_idx ==0:

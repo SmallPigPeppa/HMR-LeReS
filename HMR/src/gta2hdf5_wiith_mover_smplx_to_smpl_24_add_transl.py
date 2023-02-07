@@ -17,7 +17,7 @@ from scipy.spatial.transform import Rotation as R
 
 
 data_root = './'
-rec_idx = '2020-06-11-10-06-48'
+rec_idx = '2020-06-11-10-06-48-add-transl'
 info_pkl = pickle.load(open(os.path.join(data_root, rec_idx, 'info_frames.pickle'), 'rb'))
 info_npz = np.load(open(os.path.join(data_root, rec_idx, 'info_frames.npz'), 'rb'))
 kpts_npz = np.array(info_npz['joints_3d_world'])
@@ -26,7 +26,11 @@ kpts_pkl_names = [i['kpname'] for i in info_pkl]
 world2cam = np.array(info_npz['world2cam_trans'])
 kpts_world = np.concatenate((kpts_npz, kpts_pkl), axis=1)
 kpts_valid = np.zeros([len(kpts_world), len(kpts_world[0]), 1])
-print(f'loading kpts...\nkpts_npz.shape, kpts_pkl.shape, kpts_world.shape: {kpts_npz.shape}, {kpts_pkl.shape}, {kpts_world.shape}')
+print(
+    f'loading kpts...\nkpts_npz.shape, kpts_pkl.shape, kpts_world.shape: {kpts_npz.shape}, {kpts_pkl.shape}, {kpts_world.shape}')
+
+# step0
+# 3d k[ts world system to camera system
 kpts_camera = []
 for i in range(len(kpts_world[0])):
     if sum(kpts_world[0, i, :]) != 0:
@@ -83,7 +87,7 @@ for i in range(len(kpts_smpl)):
             kpts_smpl[i][j] = kpts_gta[i][mapping_list2[j]]
 
 # step3: save smpl kpts as hdf5
-h5f = h5py.File(os.path.join(data_root, rec_idx, 'annot_debug.h5'), 'w')
+h5f = h5py.File(os.path.join(data_root, rec_idx, 'annot.h5'), 'w')
 gt3d = kpts_smpl
 print('gt3d.shape',gt3d.shape)
 gt2d = []
@@ -95,21 +99,6 @@ for i in range(len(gt3d)):
     gt3d_i = np.array(gt3d[i, :, :3], dtype=float)
     gt2d_i, _ = cv2.projectPoints(gt3d_i, rvec, tvec, camera_matrix_i, dist_coeffs)
     gt2d.append(gt2d_i)
-    # data_folder="C:\\Users\\90532\\Desktop\\Datasets\\HMR-LeReS\\2020-06-11-10-06-48"
-    # img_i = os.path.join(data_folder, '{:05d}'.format(i) + '.jpg')
-    # img = cv2.imread(img_i)
-    # import matplotlib.pyplot as plt
-    # import numpy as np
-    # plt.figure()
-    # plt.imshow(img)
-    # for j in range(24):
-    #     # plt.imshow(img)
-    #     plt.scatter(np.squeeze(gt2d_i)[j][0],np.squeeze(gt2d_i)[j][1], s=50, c='red', marker='o')
-    # plt.show()
-
-
-
-
 gt2d = np.squeeze(np.array(gt2d, dtype=float))
 gt3d = np.array(gt3d, dtype=float)
 valid_kpts = gt3d[:, :, -1].reshape(len(gt3d), -1, 1)
@@ -128,13 +117,14 @@ h5f.create_dataset('gt3d', data=gt3d)
 smpl_pkl_folder = 'C:\\Users\\90532\\Desktop\\code\\smplx\\output'
 smpl_poses_matrix = []
 smpl_betas = []
-
+smpl_transl=[]
 for filename in os.listdir(smpl_pkl_folder):
     if filename.endswith('.pkl'):
         file_i = open(os.path.join(smpl_pkl_folder, filename), "rb")
         smpl_parm_i = pickle.load(file_i)
         pose_matrix_i = smpl_parm_i['full_pose'].cpu().detach().numpy().reshape(-1, 3, 3)
         beta_i = smpl_parm_i['betas'].cpu().detach().numpy().reshape(-1)
+        transl_i = smpl_parm_i['transl'].cpu().detach().numpy().reshape(-1,3)
         smpl_poses_matrix.append(pose_matrix_i)
         smpl_betas.append(beta_i)
         file_i.close()
@@ -144,19 +134,23 @@ rot_matrix = R.from_matrix(smpl_poses_matrix)
 smpl_poses_rotvec = rot_matrix.as_rotvec().reshape(-1, 24, 3)
 
 smpl_betas = np.array(smpl_betas)
+smpl_transl = np.array(smpl_transl)
+
 # smpl_shapes = np.average(smpl_betas, axis=0)
 # h5f_shapes = np.repeat(smpl_shapes, len(kpts_smplx), axis=0)
 
+h5f_transl = smpl_transl.reshape(-1,3)
 h5f_shapes = smpl_betas.reshape(-1,10)
 h5f_poses = smpl_poses_rotvec.reshape(-1,72)
 print('h5f_poses.shape,h5f_shapes.shape',h5f_poses.shape,h5f_shapes.shape)
 
 h5f.create_dataset('shape', data=h5f_shapes)
 h5f.create_dataset('pose', data=h5f_poses)
+h5f.create_dataset('transl', data=h5f_transl)
 h5f.close()
 
 
-with h5py.File(os.path.join(data_root, rec_idx, 'annot_debug.h5'), "r+") as f:
+with h5py.File(os.path.join(data_root, rec_idx, 'annot.h5'), "r+") as f:
     print("Keys: %s" % f.keys())
     print("np.array(f['gt2d']).shape",np.array(f['gt2d']).shape)
     print("np.array(f['gt3d']).shape",np.array(f['gt3d']).shape)

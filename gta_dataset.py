@@ -141,6 +141,7 @@ class gta_dataloader(Dataset):
         # box = self.boxs[index]
         # kp_3d = self.kp3ds[index].copy()
         index=559
+
         image_path = self.images[index]
         kps = self.kp2ds[index]
         box = self.boxs[index]
@@ -148,7 +149,7 @@ class gta_dataloader(Dataset):
 
         # scale = np.random.rand(4) * (self.scale_range[1] - self.scale_range[0]) + self.scale_range[0]
         # scale = self.scale_range[1]
-        scale=1.0
+        scale = 1.0
         image, kps = cut_image(image_path, kps, scale, box[0], box[1])
 
         ratio = 1.0 * args.crop_size / image.shape[0]
@@ -174,7 +175,7 @@ class gta_dataloader(Dataset):
             'kp_2d': torch.from_numpy(kps).float(),
             'kp_3d': torch.from_numpy(kp_3d).float(),
             'theta': torch.from_numpy(theta).float(),
-            'image_name': self.images[559],
+            'image_name': self.images[index],
             'w_smpl': 1.0,
             'w_3d': 1.0,
             'data_set': 'gta-im'
