@@ -127,6 +127,7 @@ for filename in os.listdir(smpl_pkl_folder):
         transl_i = smpl_parm_i['transl'].cpu().detach().numpy().reshape(-1,3)
         smpl_poses_matrix.append(pose_matrix_i)
         smpl_betas.append(beta_i)
+        smpl_transl.append(transl_i)
         file_i.close()
 
 smpl_poses_matrix = np.array(smpl_poses_matrix).reshape(-1, 3, 3)
@@ -150,6 +151,12 @@ h5f.create_dataset('transl', data=h5f_transl)
 h5f.close()
 
 
+hmr_anno_dict={'shape':h5f_shapes,'pose':h5f_poses,'transl':h5f_transl,'kpts_2d':gt2d,'kpts_3d':gt3d}
+import pickle
+
+with open(os.path.join(data_root, rec_idx, 'info_hmr.pickle'), 'wb') as f:
+    pickle.dump(hmr_anno_dict, f)
+
 with h5py.File(os.path.join(data_root, rec_idx, 'annot.h5'), "r+") as f:
     print("Keys: %s" % f.keys())
     print("np.array(f['gt2d']).shape",np.array(f['gt2d']).shape)
@@ -158,3 +165,7 @@ with h5py.File(os.path.join(data_root, rec_idx, 'annot.h5'), "r+") as f:
     print("np.array(f['transl']).shape",np.array(f['transl']).shape)
     # print(np.array(f['shape']).shape)
     # print(str(np.array(f['pose'][0])).replace('  ', ',').replace(' ', ','))
+
+info_pkl = np.load(os.path.join(data_root, rec_idx, 'info_hmr.pickle'), allow_pickle=True)
+# a=info_pkl[0]
+# print(a)

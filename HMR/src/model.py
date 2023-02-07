@@ -132,11 +132,12 @@ class HMRNetBase(nn.Module):
         if self.encoder_name == 'resnet50':
             feature = self.encoder(inputs)
             thetas = self.regressor(feature)
-            detail_info = []
-            for theta in thetas:
-                detail_info.append(self._calc_detail_info(theta))
-            return detail_info
-        elif self.encoder_name.startswith('densenet'):
+            return thetas
+        #     detail_info = []
+        #     for theta in thetas:
+        #         detail_info.append(self._calc_detail_info(theta))
+        #     return detail_info
+        # elif self.encoder_name.startswith('densenet'):
             feature = self.encoder(inputs)
             thetas = self.regressor(feature)
             detail_info = []

@@ -8,7 +8,7 @@ from lib_train.models.ranking_loss import EdgeguidedRankingLoss
 from lib_train.models.ILNR_loss import MEADSTD_TANH_NORM_Loss, DepthRegressionLoss
 from lib_train.models.MSGIL_loss import MSGIL_NORM_Loss
 import pytorch_lightning as pl
-from dataloader.mosh_dataloader import mosh_dataloader
+from dataloader.mesh_dataloader import mesh_dataloader
 from torch.utils.data import DataLoader
 from HMR.src.dataloader.gta_dataloader import gta_dataloader as hmr_dataset
 from LeReS.Train.data.gta_dataset import GTADataset as leres_gta_dataset
@@ -58,7 +58,7 @@ class HMRLeReS(pl.LightningModule):
                                      normalize, flip_prob)
         hmr_2d_dataset = hmr_dataset(hmr_2d_path, use_crop, scale_range, use_flip, min_pts_required, pix_format,
                                      normalize, flip_prob)
-        hmr_mosh_dataset = mosh_dataloader(hmr_mosh_path, use_flip, flip_prob)
+        hmr_mosh_dataset = mesh_dataloader(hmr_mosh_path, use_flip, flip_prob)
         leres_dataset = leres_gta_dataset(config.args, '2020-06-11-10-06-48')
 
         hmr_3d_loader = DataLoader(
@@ -114,7 +114,7 @@ class HMRLeReS(pl.LightningModule):
                                      normalize, flip_prob)
         hmr_2d_dataset = hmr_dataset(hmr_2d_path, use_crop, scale_range, use_flip, min_pts_required, pix_format,
                                      normalize, flip_prob)
-        hmr_mosh_dataset = mosh_dataloader(hmr_mosh_path, use_flip, flip_prob)
+        hmr_mosh_dataset = mesh_dataloader(hmr_mosh_path, use_flip, flip_prob)
         leres_dataset = leres_gta_dataset(config.args, '2020-06-11-10-06-48')
 
         hmr_3d_loader = DataLoader(

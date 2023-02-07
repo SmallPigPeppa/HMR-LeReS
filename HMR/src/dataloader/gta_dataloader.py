@@ -35,9 +35,9 @@ class gta_dataloader(Dataset):
         self.min_pts_required = min_pts_required
         self.pix_format = pix_format
         self.normalize = normalize
-        self._load_data_set()
+        self.load_data_set()
 
-    def _load_data_set(self):
+    def load_data_set(self):
 
         clk = Clock()
 
@@ -140,7 +140,7 @@ class gta_dataloader(Dataset):
         # kps = self.kp2ds[index].copy()
         # box = self.boxs[index]
         # kp_3d = self.kp3ds[index].copy()
-        index=559
+        index=88
         image_path = self.images[index]
         kps = self.kp2ds[index]
         box = self.boxs[index]
@@ -155,7 +155,7 @@ class gta_dataloader(Dataset):
         kps[:, :2] *= ratio
         dst_image = cv2.resize(image, (args.crop_size, args.crop_size), interpolation=cv2.INTER_CUBIC)
 
-        trival, shape, pose = np.zeros(3), self.shapes[559], self.poses[559]
+        trival, shape, pose = np.zeros(3), self.shapes[index], self.poses[index]
 
         if self.use_flip and random.random() <= self.flip_prob:
             dst_image, kps = flip_image_with_smpl_2dkp(dst_image, kps)

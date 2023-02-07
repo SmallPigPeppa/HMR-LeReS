@@ -4,7 +4,7 @@ from hmr_leres_config import args
 import hmr_leres_config as config
 import torch
 from util import align_by_pelvis, batch_rodrigues
-from dataloader.mosh_dataloader import mosh_dataloader
+from dataloader.mesh_dataloader import mesh_dataloader
 from torch.utils.data import DataLoader
 from HMR.src.dataloader.gta_dataloader import gta_dataloader as hmr_dataset
 import pytorch_lightning as pl
@@ -37,7 +37,7 @@ class HMRLeReS(pl.LightningModule):
                                  normalize, flip_prob)
         hmr_2d_dataset = hmr_dataset(hmr_2d_path, use_crop, scale_range, use_flip, min_pts_required, pix_format,
                                   normalize, flip_prob)
-        hmr_mosh_dataset = mosh_dataloader(hmr_mosh_path, use_flip, flip_prob)
+        hmr_mosh_dataset = mesh_dataloader(hmr_mosh_path, use_flip, flip_prob)
         hmr_3d_loader=DataLoader(
             dataset=hmr_3d_dataset,
             batch_size=config.args.batch_3d_size,

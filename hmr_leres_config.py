@@ -37,7 +37,7 @@ parser.add_argument('--adv-batch-size', type=int, default=24, help='default adv 
 parser.add_argument('--backbone', type=str, default='resnet50', help='Select backbone type, resnet50 or resnext101')
 parser.add_argument('--batchsize', type=int, default=4, help='Batch size')
 parser.add_argument('--base_lr', type=float, default=0.001, help='Initial learning rate')
-parser.add_argument('--dataroot', default='./datasets', required=True, help='Path to images')
+parser.add_argument('--dataroot', default='./datasets', help='Path to images')
 parser.add_argument('--loss_mode', default='_vnl_ssil_ranking_', help='Select loss to supervise, joint or ranking')
 parser.add_argument('--lr_scheduler_multiepochs', default=[10, 25, 40], nargs='+', type=int,
                     help='Learning rate scheduler step')

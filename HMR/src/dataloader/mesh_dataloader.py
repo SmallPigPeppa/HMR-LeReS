@@ -1,6 +1,6 @@
 
 '''
-    file:   mosh_dataloader.py
+    file:   mesh_dataloader.py
 
     author: zhangxiong(1025679612@qq.com)
     date:   2018_05_09
@@ -25,7 +25,7 @@ from hmr_leres_config import args
 from timer import Clock
 
 
-class mosh_dataloader(Dataset):
+class mesh_dataloader(Dataset):
     def __init__(self, data_set_path, use_flip = True, flip_prob = 0.3):
         self.data_folder = data_set_path
         self.use_flip = use_flip
@@ -36,7 +36,7 @@ class mosh_dataloader(Dataset):
     def _load_data_set(self):
         clk = Clock()
         print('start loading mosh data.')
-        anno_file_path = os.path.join(self.data_folder, 'mosh_annot.h5')
+        anno_file_path = os.path.join(self.data_folder, 'mesh_annot.h5')
         with h5py.File(anno_file_path) as fp:
             self.shapes = np.array(fp['shape'])
             self.poses = np.array(fp['pose'])
@@ -58,7 +58,7 @@ class mosh_dataloader(Dataset):
 
 if __name__ == '__main__':
     print(random.rand(1))
-    mosh = mosh_dataloader('E:/HMR/data/mosh_gen')
+    mosh = mesh_dataloader('E:/HMR/data/mosh_gen')
     l = len(mosh)
     import time
     for _ in range(l):

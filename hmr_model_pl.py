@@ -4,28 +4,30 @@ from hmr_leres_config import args
 import hmr_leres_config as config
 import torch
 from util import align_by_pelvis, batch_rodrigues
-from dataloader.mosh_dataloader import mosh_dataloader
+from dataloader.mesh_dataloader import mesh_dataloader
 from torch.utils.data import DataLoader
 from HMR.src.dataloader.gta_dataloader import gta_dataloader as hmr_dataset
 import pytorch_lightning as pl
-
-
+from SMPL import SMPL
+from camera_utils import perspective_projection
 
 
 class HMR(pl.LightningModule):
     def __init__(self):
         super(HMR, self).__init__()
+        self.automatic_optimization = False
         self.hmr_generator = HMRNetBase()
         self.hmr_discriminator = Discriminator()
-        self.automatic_optimization = False
+        self.smpl = SMPL(args.smpl_model, obj_saveable=True)
+
     def train_dataloader(self):
         pix_format = 'NCHW'
         normalize = True
         flip_prob = 0.
         use_flip = False
-        hmr_3d_path = 'C:/Users/90532/Desktop/Datasets/HMR-LeReS/2020-06-11-10-06-48'
-        hmr_2d_path = 'C:/Users/90532/Desktop/Datasets/HMR-LeReS/2020-06-11-10-06-48'
-        hmr_mosh_path = 'C:/Users/90532/Desktop/Datasets/HMR/mosh'
+        hmr_3d_path = 'C:/Users/90532/Desktop/Datasets/HMR-LeReS/2020-06-11-10-06-48-add-transl'
+        hmr_2d_path = 'C:/Users/90532/Desktop/Datasets/HMR-LeReS/2020-06-11-10-06-48-add-transl'
+        hmr_mesh_path = 'C:/Users/90532/Desktop/Datasets/HMR/mosh-add-transl'
 
         # hmr_3d_path = '/share/wenzhuoliu/torch_ds/HMR-LeReS/2020-06-11-10-06-48'
         # hmr_2d_path = '/share/wenzhuoliu/torch_ds/HMR-LeReS/2020-06-11-10-06-48'
@@ -34,11 +36,11 @@ class HMR(pl.LightningModule):
         scale_range = [1.1, 2.0]
         min_pts_required = 5
         hmr_3d_dataset = hmr_dataset(hmr_3d_path, use_crop, scale_range, use_flip, min_pts_required, pix_format,
-                                 normalize, flip_prob)
+                                     normalize, flip_prob)
         hmr_2d_dataset = hmr_dataset(hmr_2d_path, use_crop, scale_range, use_flip, min_pts_required, pix_format,
-                                  normalize, flip_prob)
-        hmr_mosh_dataset = mosh_dataloader(hmr_mosh_path, use_flip, flip_prob)
-        hmr_3d_loader=DataLoader(
+                                     normalize, flip_prob)
+        hmr_mesh_dataset = mesh_dataloader(hmr_mesh_path, use_flip, flip_prob)
+        hmr_3d_loader = DataLoader(
             dataset=hmr_3d_dataset,
             batch_size=config.args.batch_3d_size,
             shuffle=True,
@@ -46,7 +48,7 @@ class HMR(pl.LightningModule):
             pin_memory=True,
             num_workers=config.args.num_worker
         )
-        hmr_2d_loader=DataLoader(
+        hmr_2d_loader = DataLoader(
             dataset=hmr_2d_dataset,
             batch_size=config.args.batch_size,
             shuffle=True,
@@ -54,68 +56,108 @@ class HMR(pl.LightningModule):
             pin_memory=True,
             num_workers=config.args.num_worker
         )
-        hmr_mosh_loader=DataLoader(
-            dataset=hmr_mosh_dataset,
+        hmr_mesh_loader = DataLoader(
+            dataset=hmr_mesh_dataset,
             batch_size=config.args.adv_batch_size,
             shuffle=True,
             drop_last=True,
             pin_memory=True,
         )
-        loaders = {'hmr_3d_loader': hmr_3d_loader, 'hmr_2d_loader': hmr_2d_loader, 'hmr_mosh_loader': hmr_mosh_loader}
+        loaders = {'hmr_3d_loader': hmr_3d_loader, 'hmr_2d_loader': hmr_2d_loader, 'hmr_mesh_loader': hmr_mesh_loader}
         return loaders
 
     # def training_step(self, batch, batch_index, optimizer_idx):
+
+    def get_smpl_kpts(self, transl, pose, shape, focal_length, normalize_kpts_2d=True):
+        verts, kpts_3d, Rs = self.smpl(beta=shape, theta=pose, get_skin=True)
+        kpts_3d += transl
+        batch_size = kpts_3d.shape[0]
+        kpts_2d = perspective_projection(
+            kpts_3d,
+            rotation=torch.eye(3, device=self.device).unsqueeze(0).expand(batch_size, -1, -1),
+            translation=transl,
+            focal_length=focal_length,
+            camera_center=torch.zeros(batch_size, 2, device=self.device)
+        )
+        if normalize_kpts_2d:
+            kpts_2d = kpts_2d / (self.crop_size / 2.)
+        kpts_3d += transl
+        verts += transl
+        return kpts_2d, kpts_3d
+
     def training_step(self, batch, batch_index):
+        hmr_data = batch['hmr_3d_loader']
+        hmr_data_mesh = batch['hmr_mesh_loader']
+        images = hmr_data['image']
 
-        hmr_input_3d = batch['hmr_3d_loader']
-        hmr_input_2d = batch['hmr_2d_loader']
-        hmr_input_mosh = batch['hmr_mosh_loader']
-        image_from_2d, image_from_3d = hmr_input_2d['image'], hmr_input_3d['image']
-        images = torch.cat((image_from_2d, image_from_3d), dim=0)
-        generator_outputs = self.hmr_generator(images)
-        loss_kp_2d, loss_kp_3d, loss_shape, loss_pose, e_disc_loss, d_disc_loss, d_disc_real, d_disc_predict = self._calc_loss(
-            generator_outputs, hmr_input_2d, hmr_input_3d, hmr_input_mosh)
-        # e_loss = loss_kp_2d + loss_kp_3d + loss_shape + loss_pose + e_disc_loss
-        e_loss =  loss_shape + loss_pose
-        d_loss = d_disc_loss
+        gt_smpl_shapes = None
+        gt_smpl_poses = None
+        w_smpl = None
+        w_3d = None
+        gt_kpts_2d = None
+        gt_kpts_3d = None
+        gt_focal_length = None
+        predict_smpl_transl = None
+        predict_smpl_thetas = self.hmr_generator(images)
+        predict_smpl_poses = predict_smpl_thetas[:, 3:75].contiguous()
+        predict_smpl_shapes = predict_smpl_thetas[:, 75:].contiguous()
+        predict_kpts_2d, predict_kpts_3d = self.get_smpl_kpts(transl=predict_smpl_transl, pose=predict_smpl_poses,
+                                                              shape=predict_smpl_shapes, focal_length=gt_focal_length)
 
-        # if optimizer_idx ==0:
-        #     return e_loss
-        # elif optimizer_idx ==1:
-        #     return d_loss
+        loss_shape = self.batch_shape_l2_loss(gt_smpl_shapes, predict_smpl_shapes,
+                                              w_smpl) * args.e_3d_loss_weight * args.e_shape_ratio
+        loss_pose = self.batch_pose_l2_loss(gt_smpl_poses, predict_smpl_poses,
+                                            w_smpl) * args.e_3d_loss_weight * args.e_pose_ratio
+        loss_kpts_2d = self.batch_kp_2d_l1_loss(gt_kpts_2d, predict_kpts_2d) * args.e_loss_weight
+        loss_kpts_3d = self.batch_kp_3d_l2_loss(gt_kpts_3d, predict_kpts_3d,
+                                              w_3d) * args.e_3d_loss_weight * args.e_3d_kp_ratio
+
+        predict_smpl_thetas[:, 3] = predict_smpl_transl
+        loss_generator_disc = self.batch_encoder_disc_l2_loss(
+            self.hmr_discriminator(predict_smpl_thetas)) * args.d_loss_weight * args.d_disc_ratio
+
+        real_thetas = hmr_data_mesh['theta']
+        fake_thetas = predict_smpl_thetas.detach()
+        fake_disc_value, real_disc_value = self.hmr_discriminator(fake_thetas), self.hmr_discriminator(real_thetas)
+        d_disc_real, d_disc_fake, d_disc_loss = self.batch_adv_disc_l2_loss(real_disc_value, fake_disc_value)
+        d_disc_real, d_disc_fake, d_disc_loss = d_disc_real * args.d_loss_weight * args.d_disc_ratio, d_disc_fake * args.d_loss_weight * args.d_disc_ratio, d_disc_loss * args.d_loss_w
+
+        loss_generator = loss_shape + loss_pose + loss_kpts_2d + loss_kpts_3d + loss_generator_disc
+        loss_discriminator=d_disc_loss
+
+
+
         hmr_generator_opt, hmr_discriminator_opt = self.optimizers()
         hmr_generator_opt.zero_grad()
-        self.manual_backward(e_loss)
+        self.manual_backward(loss_generator)
         hmr_generator_opt.step()
         hmr_discriminator_opt.zero_grad()
-        self.manual_backward(d_loss)
+        self.manual_backward(loss_discriminator)
         hmr_discriminator_opt.step()
 
         hmr_generator_sche, hmr_discriminator_sche = self.lr_schedulers()
         hmr_generator_sche.step()
         hmr_discriminator_sche.step()
 
-        loss_kp_2d = float(loss_kp_2d)
-        loss_shape = float(loss_shape / args.e_shape_ratio)
-        loss_kp_3d = float(loss_kp_3d / args.e_3d_kp_ratio)
-        loss_pose = float(loss_pose / args.e_pose_ratio)
-        e_disc_loss = float(e_disc_loss / args.d_disc_ratio)
-        d_disc_loss = float(d_disc_loss / args.d_disc_ratio)
+        # loss_kp_2d = float(loss_kp_2d)
+        # loss_shape = float(loss_shape / args.e_shape_ratio)
+        # loss_kp_3d = float(loss_kp_3d / args.e_3d_kp_ratio)
+        # loss_pose = float(loss_pose / args.e_pose_ratio)
+        # e_disc_loss = float(e_disc_loss / args.d_disc_ratio)
+        # d_disc_loss = float(d_disc_loss / args.d_disc_ratio)
+        #
+        # d_disc_real = float(d_disc_real / args.d_disc_ratio)
+        # d_disc_predict = float(d_disc_predict / args.d_disc_ratio)
+        #
+        # e_loss = loss_kp_2d + loss_kp_3d + loss_shape + loss_pose + e_disc_loss
 
-        d_disc_real = float(d_disc_real / args.d_disc_ratio)
-        d_disc_predict = float(d_disc_predict / args.d_disc_ratio)
-
-        e_loss = loss_kp_2d + loss_kp_3d + loss_shape + loss_pose + e_disc_loss
-
-        iter_msg = {'e_loss': e_loss,
-                    '2d_loss': loss_kp_2d,
-                    '3d_loss': loss_kp_3d,
-                    'shape_loss': loss_shape,
-                    'pose_loss': loss_pose,
-                    'e_disc_loss': float(e_disc_loss),
-                    'd_disc_loss': float(d_disc_loss),
-                    'd_disc_real': float(d_disc_real),
-                    'd_disc_predict': float(d_disc_predict)}
+        iter_msg = {'loss_generator': loss_generator,
+                    'loss_kpts_2d': loss_kpts_2d,
+                    'loss_kpts_3d': loss_kpts_3d,
+                    'loss_kpts_3d': loss_shape,
+                    'loss_pose': loss_pose,
+                    'loss_generator_disc': loss_generator_disc,
+                    'loss_discriminator': loss_discriminator,}
         self.log_dict(iter_msg)
 
     def configure_optimizers(self):
@@ -232,7 +274,7 @@ class HMR(pl.LightningModule):
         k = torch.sum(w_3d) * shape[1] * 3.0 * 2.0 + 1e-8
         vis = real_3d_kp[:, :, 3]
         # first align it
-        real_3d_kp, fake_3d_kp = align_by_pelvis(real_3d_kp), align_by_pelvis(fake_3d_kp)
+        # real_3d_kp, fake_3d_kp = align_by_pelvis(real_3d_kp), align_by_pelvis(fake_3d_kp)
         kp_gt = real_3d_kp[:, :, :3]
         kp_pred = fake_3d_kp
         kp_dif = (kp_gt - kp_pred) ** 2

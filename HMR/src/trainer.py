@@ -19,7 +19,7 @@ from dataloader.COCO2017_dataloader import COCO2017_dataloader
 from dataloader.hum36m_dataloader import hum36m_dataloader
 from dataloader.lsp_dataloader import LspLoader
 from dataloader.lsp_ext_dataloader import LspExtLoader
-from dataloader.mosh_dataloader import mosh_dataloader
+from dataloader.mesh_dataloader import mesh_dataloader
 from dataloader.mpi_inf_3dhp_dataloader import mpi_inf_3dhp_dataloader
 from dataloader.eval_dataloader import eval_dataloader
 from dataloader.gta_dataloader import gta_dataloader
@@ -267,7 +267,7 @@ class HMRTrainer(object):
         for data_set_name in data_adv_set:
             data_set_path = config.data_set_path[data_set_name]
             if data_set_name == 'mosh':
-                mosh = mosh_dataloader(
+                mosh = mesh_dataloader(
                     data_set_path=data_set_path,
                     use_flip=self.use_flip,
                     flip_prob=self.flip_prob
