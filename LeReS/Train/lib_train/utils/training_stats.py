@@ -47,7 +47,7 @@ class TrainingStats(object):
         """Update tracked iteration statistics."""
         total_loss = 0
         for k in loss:
-            # all losses except the total loss: loss['all']
+            # all losses except the total d_loss: d_loss['all']
             if k != 'total_loss':
                 self.smoothed_losses[k].AddValue(float(loss[k]))
 

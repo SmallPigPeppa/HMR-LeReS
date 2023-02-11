@@ -1,4 +1,3 @@
-
 import h5py
 import numpy
 import numpy as np
@@ -86,47 +85,61 @@ for i in range(len(kpts_smpl)):
         if mapping_list2[j] != -1:
             kpts_smpl[i][j] = kpts_gta[i][mapping_list2[j]]
 
-# step3: save smpl kpts as hdf5
-h5f = h5py.File(os.path.join(data_root, rec_idx, 'annot.h5'), 'w')
-gt3d = kpts_smpl
-print('gt3d.shape',gt3d.shape)
-gt2d = []
+# step3: transfer kpts3d joints3d to 2d
+smpl_pkl_folder = 'C:\\Users\\90532\\Desktop\\code\\smplx\\output'
+kpts_3d = kpts_smpl
+print('kpts3d.shape', kpts_3d.shape)
+kpts_2d = []
+joints_2d = []
+joints_3d = []
 rvec = np.zeros([3, 1], dtype=float)
 tvec = np.zeros([3, 1], dtype=float)
 dist_coeffs = np.zeros([4, 1], dtype=float)
-for i in range(len(gt3d)):
+for i in range(len(kpts_3d)):
     camera_matrix_i = info_npz['intrinsics'][i]
-    gt3d_i = np.array(gt3d[i, :, :3], dtype=float)
-    gt2d_i, _ = cv2.projectPoints(gt3d_i, rvec, tvec, camera_matrix_i, dist_coeffs)
-    gt2d.append(gt2d_i)
-gt2d = np.squeeze(np.array(gt2d, dtype=float))
-gt3d = np.array(gt3d, dtype=float)
-valid_kpts = gt3d[:, :, -1].reshape(len(gt3d), -1, 1)
-print('gt2d.shape, valid_kpts.shape',gt2d.shape, valid_kpts.shape)
-gt2d = np.concatenate((gt2d, valid_kpts), axis=-1)
+    kpts3d_i = np.array(kpts_3d[i, :, :3], dtype=float)
 
-h5f.create_dataset('gt2d', data=gt2d)
-h5f.create_dataset('gt3d', data=gt3d)
-# h5f.create_dataset('gt2d', data=gt2d[:, :, :3])
-# h5f.create_dataset('gt3d', data=gt3d[:, :, :3])
-# h5f.create_dataset('gt2d', data=gt2d[:, :14, :3])
-# h5f.create_dataset('gt3d', data=gt3d[:, :14, :3])
+    filename = '{:03d}'.format(i + 1) + '.pkl'
+    file_i = open(os.path.join(smpl_pkl_folder, filename), "rb")
+    smpl_parm_i = pickle.load(file_i)
+    joints3d_i = smpl_parm_i['joints'].cpu().detach().numpy().reshape(-1, 3)[:24]
+
+    kpts2d_i, _ = cv2.projectPoints(kpts3d_i, rvec, tvec, camera_matrix_i, dist_coeffs)
+    joints2d_i, _ = cv2.projectPoints(joints3d_i, rvec, tvec, camera_matrix_i, dist_coeffs)
+
+    kpts_2d.append(kpts2d_i)
+    joints_3d.append(joints3d_i)
+    joints_2d.append(joints2d_i)
+
+# add valid label
+kpts_2d = np.squeeze(np.array(kpts_2d, dtype=float))
+kpts_3d = np.array(kpts_3d, dtype=float)
+valid_kpts = kpts_3d[:, :, -1].reshape(len(kpts_3d), -1, 1)
+print('gt2d.shape, valid_kpts.shape', kpts_2d.shape, valid_kpts.shape)
+kpts_2d = np.concatenate((kpts_2d, valid_kpts), axis=-1)
+
+valid_joints = np.ones_like(valid_kpts)
+joints_3d = np.array(joints_3d, dtype=float)
+joints_2d = np.squeeze(np.array(joints_2d, dtype=float))
+joints_2d = np.concatenate((joints_2d, valid_joints), axis=-1)
+joints_3d = np.concatenate((joints_3d, valid_joints), axis=-1)
 
 
-# step3: get smplx mesh pose and shape
-smpl_pkl_folder = 'C:\\Users\\90532\\Desktop\\code\\smplx\\output'
+
+
+# step4: get smplx mesh pose and shape
 smpl_poses_matrix = []
-smpl_betas = []
-smpl_transl=[]
+smpl_shapes = []
+smpl_transl = []
 for filename in os.listdir(smpl_pkl_folder):
     if filename.endswith('.pkl'):
         file_i = open(os.path.join(smpl_pkl_folder, filename), "rb")
         smpl_parm_i = pickle.load(file_i)
         pose_matrix_i = smpl_parm_i['full_pose'].cpu().detach().numpy().reshape(-1, 3, 3)
-        beta_i = smpl_parm_i['betas'].cpu().detach().numpy().reshape(-1)
-        transl_i = smpl_parm_i['transl'].cpu().detach().numpy().reshape(-1,3)
+        shape_i = smpl_parm_i['betas'].cpu().detach().numpy().reshape(-1)
+        transl_i = smpl_parm_i['transl'].cpu().detach().numpy().reshape(-1, 3)
         smpl_poses_matrix.append(pose_matrix_i)
-        smpl_betas.append(beta_i)
+        smpl_shapes.append(shape_i)
         smpl_transl.append(transl_i)
         file_i.close()
 
@@ -134,38 +147,26 @@ smpl_poses_matrix = np.array(smpl_poses_matrix).reshape(-1, 3, 3)
 rot_matrix = R.from_matrix(smpl_poses_matrix)
 smpl_poses_rotvec = rot_matrix.as_rotvec().reshape(-1, 24, 3)
 
-smpl_betas = np.array(smpl_betas)
+smpl_shapes = np.array(smpl_shapes)
 smpl_transl = np.array(smpl_transl)
 
 # smpl_shapes = np.average(smpl_betas, axis=0)
 # h5f_shapes = np.repeat(smpl_shapes, len(kpts_smplx), axis=0)
 
-h5f_transl = smpl_transl.reshape(-1,3)
-h5f_shapes = smpl_betas.reshape(-1,10)
-h5f_poses = smpl_poses_rotvec.reshape(-1,72)
-print('h5f_poses.shape,h5f_shapes.shape',h5f_poses.shape,h5f_shapes.shape)
-
-h5f.create_dataset('shape', data=h5f_shapes)
-h5f.create_dataset('pose', data=h5f_poses)
-h5f.create_dataset('transl', data=h5f_transl)
-h5f.close()
+smpl_transl = smpl_transl.reshape(-1, 3)
+smpl_shapes = smpl_shapes.reshape(-1, 10)
+smpl_poses = smpl_poses_rotvec.reshape(-1, 72)
+print('smpl_poses.shape, smpl_shapes.shape', smpl_poses.shape, smpl_shapes.shape)
 
 
-hmr_anno_dict={'shape':h5f_shapes,'pose':h5f_poses,'transl':h5f_transl,'kpts_2d':gt2d,'kpts_3d':gt3d}
+
+hmr_anno_dict = {'shape': smpl_shapes, 'pose': smpl_poses, 'transl': smpl_transl, 'kpts_2d': kpts_2d, 'kpts_3d': kpts_3d, 'joints_2d':joints_2d, 'joints_3d':joints_3d}
 import pickle
 
 with open(os.path.join(data_root, rec_idx, 'info_hmr.pickle'), 'wb') as f:
     pickle.dump(hmr_anno_dict, f)
 
-with h5py.File(os.path.join(data_root, rec_idx, 'annot.h5'), "r+") as f:
-    print("Keys: %s" % f.keys())
-    print("np.array(f['gt2d']).shape",np.array(f['gt2d']).shape)
-    print("np.array(f['gt3d']).shape",np.array(f['gt3d']).shape)
-    print("np.array(f['pose']).shape,np.array(f['shape']).shape",np.array(f['pose']).shape,np.array(f['shape']).shape)
-    print("np.array(f['transl']).shape",np.array(f['transl']).shape)
-    # print(np.array(f['shape']).shape)
-    # print(str(np.array(f['pose'][0])).replace('  ', ',').replace(' ', ','))
 
-info_pkl = np.load(os.path.join(data_root, rec_idx, 'info_hmr.pickle'), allow_pickle=True)
-# a=info_pkl[0]
-# print(a)
+info_hmr = np.load(os.path.join(data_root, rec_idx, 'info_hmr.pickle'), allow_pickle=True)
+print(info_hmr)
+

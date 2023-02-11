@@ -29,7 +29,7 @@ def increase_sample_ratio_steps(step, base_ratio=0.1, step_size=10000):
 
 def reduce_loss_dict(loss_dict):
     """
-    Reduce the loss dictionary from all processes so that process with rank
+    Reduce the d_loss dictionary from all processes so that process with rank
     0 has the averaged results. Returns a dict with the same fields as
     loss_dict, after reduction.
     """

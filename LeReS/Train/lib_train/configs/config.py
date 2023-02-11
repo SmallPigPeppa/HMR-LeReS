@@ -93,7 +93,7 @@ __C.TRAIN.GPU_NUM = 1
 # Steps for LOG interval
 __C.TRAIN.LOG_INTERVAL = 10
 __C.TRAIN.LOAD_CKPT = None
-# Configs for loss
+# Configs for d_loss
 __C.TRAIN.LOSS_MODE = '_vnl_ssil_ranking_'
 __C.TRAIN.LOSS_AUXI_WEIGHT = 0.5
 #__C.TRAIN.DIFF_LOSS_WEIGHT = 5

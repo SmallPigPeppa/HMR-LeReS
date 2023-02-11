@@ -50,7 +50,7 @@ class ModelLoss(nn.Module):
         # the scale can be adjusted
         self.msg_normal_loss = MSGIL_NORM_Loss(scale=4, valid_threshold=-1e-8)
 
-        # Scale shift invariant. SSIMAEL_Loss is MIDAS loss. MEADSTD_TANH_NORM_Loss is our normalization loss.
+        # Scale shift invariant. SSIMAEL_Loss is MIDAS d_loss. MEADSTD_TANH_NORM_Loss is our normalization d_loss.
         self.meanstd_tanh_loss = MEADSTD_TANH_NORM_Loss(valid_threshold=-1e-8)
 
         self.ranking_edge_loss = EdgeguidedRankingLoss(mask_value=-1e-8)
@@ -59,7 +59,7 @@ class ModelLoss(nn.Module):
         # the scale can be adjusted
         self.msg_normal_auxiloss = MSGIL_NORM_Loss(scale=4, valid_threshold=-1e-8)
 
-        # Scale shift invariant. SSIMAEL_Loss is MIDAS loss. MEADSTD_TANH_NORM_Loss is our normalization loss.
+        # Scale shift invariant. SSIMAEL_Loss is MIDAS d_loss. MEADSTD_TANH_NORM_Loss is our normalization d_loss.
         self.meanstd_tanh_auxiloss = MEADSTD_TANH_NORM_Loss(valid_threshold=-1e-8)
 
         self.ranking_edge_auxiloss = EdgeguidedRankingLoss(mask_value=-1e-8)
@@ -98,7 +98,7 @@ class ModelLoss(nn.Module):
         # L-PWN
         # if '_pairwise-normal-regress-plane_' in cfg.TRAIN.LOSS_MODE.lower():
         #     focal_length = data['focal_length'] if 'focal_length' in data else None
-        #     loss['pairwise-normal-regress-plane_loss'] = self.pn_plane(gt_depth,
+        #     d_loss['pairwise-normal-regress-plane_loss'] = self.pn_plane(gt_depth,
         #                                                                pred_ssinv,
         #                                                                data['planes'],
         #                                                                focal_length)

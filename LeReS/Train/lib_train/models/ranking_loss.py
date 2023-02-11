@@ -150,7 +150,7 @@ class EdgeguidedRankingLoss(pl.LightningModule):
             unequal_loss = torch.log(1 + torch.exp((-inputs_A + inputs_B) * labels)) * (
                 ~mask_eq).double() * consistency_mask
 
-            # Please comment the regularization term if you don't want to use the multi-scale gradient matching loss !!!
+            # Please comment the regularization term if you don't want to use the multi-scale gradient matching d_loss !!!
             loss = loss + self.alpha * equal_loss.mean() + 1.0 * unequal_loss.mean()  # + 0.2 * regularization_loss.double()
 
         return loss[0].float() / n

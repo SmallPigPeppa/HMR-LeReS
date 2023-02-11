@@ -11,7 +11,7 @@ class PWNPlanesLoss(nn.Module):
                  delta_cos=0.867, delta_diff_x=0.007,
                  delta_diff_y=0.007, sample_groups=5000, xyz_mode = 'uvd'):
         """
-        Virtual normal planes loss, which constrain points to be on the same 3D plane.
+        Virtual normal planes d_loss, which constrain points to be on the same 3D plane.
         :para focal_x: folcal length fx
         :para focal_y: folcal length fy
         :para input_size: input image size
@@ -212,7 +212,7 @@ class PWNPlanesLoss(nn.Module):
 
     def forward(self, gt_depth, pred_depth, mask, focal_length=None):
         """
-        Virtual normal loss.
+        Virtual normal d_loss.
         :param pred_depth: predicted depth map, [B,C,H,W]
         :param mask: mask for planes, each plane is noted with a value, [B, C, H, W]
         :param focal_length: focal length

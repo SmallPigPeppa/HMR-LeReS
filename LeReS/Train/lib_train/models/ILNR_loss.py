@@ -5,7 +5,7 @@ import pytorch_lightning as pl
 
 class MEADSTD_TANH_NORM_Loss(pl.LightningModule):
     """
-    loss = MAE((d-u)/s - d') + MAE(tanh(0.01*(d-u)/s) - tanh(0.01*d'))
+    d_loss = MAE((d-u)/s - d') + MAE(tanh(0.01*(d-u)/s) - tanh(0.01*d'))
     """
     def __init__(self, valid_threshold=-1e-8, max_threshold=1e8):
         super(MEADSTD_TANH_NORM_Loss, self).__init__()
@@ -37,7 +37,7 @@ class MEADSTD_TANH_NORM_Loss(pl.LightningModule):
 
     def forward(self, pred, gt):
         """
-        Calculate loss.
+        Calculate d_loss.
         """
         mask = (gt > self.valid_threshold) & (gt < self.max_threshold)   # [b, c, h, w]
         mask_sum = torch.sum(mask, dim=(1, 2, 3))
@@ -73,7 +73,7 @@ class MEADSTD_TANH_NORM_Loss(pl.LightningModule):
 
 class DepthRegressionLoss(pl.LightningModule):
     """
-    loss = MAE((d-u)/s - d') + MAE(tanh(0.01*(d-u)/s) - tanh(0.01*d'))
+    d_loss = MAE((d-u)/s - d') + MAE(tanh(0.01*(d-u)/s) - tanh(0.01*d'))
     """
     def __init__(self, valid_threshold=-1e-8, max_threshold=1e8):
         super(DepthRegressionLoss, self).__init__()
@@ -105,7 +105,7 @@ class DepthRegressionLoss(pl.LightningModule):
 
     def forward(self, pred, gt):
         """
-        Calculate loss.
+        Calculate d_loss.
         """
         mask = (gt > self.valid_threshold) & (gt < self.max_threshold)   # [b, c, h, w]
         mask_sum = torch.sum(mask, dim=(1, 2, 3))

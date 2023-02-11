@@ -151,14 +151,14 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    '--e-loss-weight', 
+    '--e-d_loss-weight',
     type = float,
     default = 60, 
     help = 'weight on encoder 2d kp losses.'
 )
 
 parser.add_argument(
-    '--d-loss-weight',
+    '--d-d_loss-weight',
     type = float,
     default = 1,
     help = 'weight on discriminator losses'
@@ -169,11 +169,11 @@ parser.add_argument(
     '--d-disc-ratio',
     type = float,
     default = 1.0,
-    help = 'multiple weight of discriminator loss'
+    help = 'multiple weight of discriminator d_loss'
 )
 
 parser.add_argument(
-    '--e-3d-loss-weight',
+    '--e-3d-d_loss-weight',
     type = float,
     default = 60,
     help = 'weight on encoder thetas losses.'
@@ -183,7 +183,7 @@ parser.add_argument(
     '--e-shape-ratio',
     type = float,
     default = 5,
-    help = 'multiple weight of shape loss'
+    help = 'multiple weight of shape d_loss'
 )
 
 parser.add_argument(

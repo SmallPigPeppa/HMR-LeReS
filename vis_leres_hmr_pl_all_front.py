@@ -144,10 +144,10 @@ def main(index):
     for node in light_nodes:
         scene.add_node(node)
 
-    pyrender.Viewer(scene)
+    # pyrender.Viewer(scene)
 
     cam_t = np.array([0, 0, 0]).reshape([3, 1])
-    cam_rotate = pcd.get_rotation_matrix_from_xyz((np.pi * 1.0, np.pi * 0, np.pi * 0))
+    cam_rotate = pcd.get_rotation_matrix_from_xyz((np.pi * 1.0, np.pi * 0, np.pi * 1.0))
     camera_pose = np.hstack([cam_rotate, cam_t])
     camera_pose = np.vstack([camera_pose, [0, 0, 0, 1]])
     camera = pyrender.camera.IntrinsicsCamera(
@@ -155,7 +155,7 @@ def main(index):
         cx=9.59500000e+02, cy=5.39500000e+02, zfar=10e20
     )
     scene.add(camera, pose=camera_pose)
-    # pyrender.Viewer(scene)
+    pyrender.Viewer(scene)
     r = pyrender.OffscreenRenderer(
         viewport_width=1920,
         viewport_height=1080,

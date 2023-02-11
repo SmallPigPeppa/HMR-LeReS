@@ -19,11 +19,11 @@ def log_stats(stats, args):
     lines = "[Step %d/%d] [Epoch %d/%d]  [%s]\n" % (
             stats['iter'], cfg.TRAIN.MAX_ITER, stats['epoch'], args.epoch, args.dataset)
 
-    lines += "\t\tloss: %.3f,    time: %.6f,    eta: %s\n" % (
+    lines += "\t\td_loss: %.3f,    time: %.6f,    eta: %s\n" % (
         stats['total_loss'], stats['time'], stats['eta'])
 
     for k in stats:
-        if 'loss' in k and 'total_loss' not in k:
+        if 'd_loss' in k and 'total_loss' not in k:
             lines += "\t\t" + ", ".join("%s: %.3f" % (k, v) for k, v in stats[k].items()) + ", "
 
     # validate criteria

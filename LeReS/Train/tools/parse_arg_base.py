@@ -12,7 +12,7 @@ class BaseOptions():
         parser.add_argument('--resume', action='store_true', help='Resume to train')
         parser.add_argument('--epoch', default=50, type=int, help='Total training epochs')
         parser.add_argument('--dataset_list', default=None, nargs='+', help='The names of multiple datasets')
-        parser.add_argument('--loss_mode', default='_vnl_ssil_ranking_', help='Select loss to supervise, joint or ranking')
+        parser.add_argument('--loss_mode', default='_vnl_ssil_ranking_', help='Select d_loss to supervise, joint or ranking')
         parser.add_argument('--lr_scheduler_multiepochs', default=[10, 25, 40], nargs='+', type=int, help='Learning rate scheduler step')
 
         parser.add_argument('--val_step', default=5000, type=int, help='Validation steps')

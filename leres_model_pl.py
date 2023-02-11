@@ -19,11 +19,11 @@ class LeReS(pl.LightningModule):
     def __init__(self):
         super().__init__()
         self.depth_model = DepthModel()
-        # leres pair-wise normal loss (pwn edge)
+        # leres pair-wise normal d_loss (pwn edge)
         self.pn_edge = EdgeguidedNormalRegressionLoss(mask_value=-1e-8, max_threshold=15)
-        # leres multi-scale gradient loss (msg)
+        # leres multi-scale gradient d_loss (msg)
         self.msg_normal_loss = MSGIL_NORM_Loss(scale=4, valid_threshold=-1e-8)
-        # Scale shift invariant. SSIMAEL_Loss is MIDAS loss. MEADSTD_TANH_NORM_Loss is our normalization loss.
+        # Scale shift invariant. SSIMAEL_Loss is MIDAS d_loss. MEADSTD_TANH_NORM_Loss is our normalization d_loss.
         self.meanstd_tanh_loss = MEADSTD_TANH_NORM_Loss(valid_threshold=-1e-8)
         self.depth_regression_loss = DepthRegressionLoss(valid_threshold=-1e-8,max_threshold=15)
         self.ranking_edge_loss = EdgeguidedRankingLoss(mask_value=-1e-8)
@@ -168,15 +168,15 @@ class LeReS(pl.LightningModule):
             pred_depth_mid = pred_depth_mid[None, :, :, :]
 
         loss = {}
-        # loss['meanstd-tanh_loss'] = self.meanstd_tanh_loss(pred_depth_mid, gt_depth_mid)  # L-ILNR
-        loss['depth-regression-loss'] = self.depth_regression_loss(pred_depth_mid, gt_depth_mid)  # L-ILNR
+        # d_loss['meanstd-tanh_loss'] = self.meanstd_tanh_loss(pred_depth_mid, gt_depth_mid)  # L-ILNR
+        loss['depth-regression-d_loss'] = self.depth_regression_loss(pred_depth_mid, gt_depth_mid)  # L-ILNR
 
-        # loss['ranking-edge_loss'] = self.ranking_edge_loss(pred_depth, gt_depth, data['rgb'])
+        # d_loss['ranking-edge_loss'] = self.ranking_edge_loss(pred_depth, gt_depth, data['rgb'])
         #
-        # loss['msg_normal_loss'] = (self.msg_normal_loss(pred_depth_mid, gt_depth_mid) * 0.5)
+        # d_loss['msg_normal_loss'] = (self.msg_normal_loss(pred_depth_mid, gt_depth_mid) * 0.5)
         #
         # pred_ssinv = recover_scale_shift_depth(pred_depth, gt_depth, min_threshold=-1e-8, max_threshold=10.1)
-        # loss['pairwise-normal-regress-edge_loss'] = self.pn_edge(pred_ssinv,
+        # d_loss['pairwise-normal-regress-edge_loss'] = self.pn_edge(pred_ssinv,
         #                                                          gt_depth,
         #                                                          data['rgb'],
         #                                                          focal_length=data['focal_length'])

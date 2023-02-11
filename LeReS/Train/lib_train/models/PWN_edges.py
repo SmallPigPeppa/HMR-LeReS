@@ -225,7 +225,7 @@ class EdgeguidedNormalRegressionLoss(pl.LightningModule):
             target_cos = torch.abs(torch.sum(targets_A * targets_B, dim=0))
             input_cos = torch.abs(torch.sum(inputs_A * inputs_B, dim=0))
             # ranking regression
-            #loss += torch.mean(torch.abs(target_cos[consistency_mask] - input_cos[consistency_mask]))
+            #d_loss += torch.mean(torch.abs(target_cos[consistency_mask] - input_cos[consistency_mask]))
 
             # Ranking for samples
             mask_cos75 = target_cos < self.cos_theta1

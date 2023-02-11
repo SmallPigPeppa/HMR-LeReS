@@ -193,7 +193,7 @@ class HMRNetBase(nn.Module):
         #     global_orient=pose[:, 0].unsqueeze(1).contiguous(),
         #     pose2rot=False,
         # ).joints[:, :24]
-        verts, j3d, Rs = self.smpl(beta = shape, theta = pose, get_skin = True)
+        verts, j3d, Rs = self.smpl(shape = shape, pose = pose, get_skin = True)
 
         j2d = util.batch_orth_proj(j3d, cam)
 
