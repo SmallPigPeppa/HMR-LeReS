@@ -94,3 +94,7 @@ args = parser.parse_args()
 encoder_network = args.encoder_network
 args.feature_count = encoder_feature_count[encoder_network]
 args.crop_size = crop_size[encoder_network]
+
+args.origin_size=[1080,1920]
+args.leres_size=448
+args.hmr_size=crop_size

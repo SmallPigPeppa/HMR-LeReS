@@ -1,5 +1,5 @@
 import pytorch_lightning as pl
-
+from utils import crop_and_resize
 import torch
 import pytorch3d
 import trimesh
@@ -26,14 +26,12 @@ import os
 import matplotlib.pyplot as plt
 import matplotlib
 from PIL import Image
+from hmr_leres_config import args
 
 
 class AlignLoss(pl.LightningModule):
-    def __init__(self, K_intrin, image_size):
+    def __init__(self):
         super(AlignLoss, self).__init__()
-        self.K_intrin = K_intrin
-        self.image_size = image_size
-        self.init_pytorch3d_render(K_intrin, image_size)
 
     def init_pytorch3d_render(self, K_intrin, image_size):
         R = torch.Tensor([[[-1, 0, 0], [0, -1, 0], [0, 0, 1]]], device=self.device)
@@ -43,9 +41,6 @@ class AlignLoss(pl.LightningModule):
         K_intrin_pt3d[0, 0, 2] = K_intrin[0, 0, 2]
         K_intrin_pt3d[0, 1, 1] = K_intrin[0, 1, 1]
         K_intrin_pt3d[0, 1, 2] = K_intrin[0, 1, 2]
-
-
-
 
         K_intrin_pt3d[0, 2, 3] = 1.0
         K_intrin_pt3d[0, 3, 2] = 1.0
@@ -94,5 +89,23 @@ class AlignLoss(pl.LightningModule):
 
         return vismask, nearest_depth_map, farrest_depth_map
 
-    def align_loss(self, verts, faces, depth):
+    def batch_align_loss(self, verts, faces, depth, batch):
+        for idx,sample in enumerate (batch):
+            self.sample_align_loss(verts[idx],faces, depth[idx], sample)
+
+
+    def sample_align_loss(self, verts, faces, depth, sample):
+        cut_box=sample['leres_cut_box']
+        leres_size=args.leres_size
+        origin_size=args.origin_size
+        K_intrin=sample['intrinsic']
+        self.init_pytorch3d_render(K_intrin=K_intrin,image_size=[origin_size])
         vismask, nearest_depth_map, farrest_depth_map = self.get_depth_map_pytorch3d(verts, faces)
+
+        vismask = crop_and_resize(vismask, cut_box=cut_box, img_size=leres_size)
+        nearest_depth_map=crop_and_resize(nearest_depth_map, cut_box=cut_box, img_size=leres_size)
+        leres_human_depth = depth[vismask]
+        hmr_huamn_depth=nearest_depth_map[vismask]
+
+        align_loss= torch.abs(leres_human_depth-hmr_huamn_depth)
+        return align_loss
