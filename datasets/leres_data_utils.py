@@ -21,5 +21,12 @@ def read_depthmap(depth_path, cam_near_clip, cam_far_clip):
     return np.squeeze(depth)
 
 
-def read_human_mask(mask_path,kpts_2d):
-    return np.array([1])
+def read_human_mask(mask_path,gta_head_2d):
+    sem_mask = cv2.imread(mask_path, cv2.IMREAD_ANYDEPTH)
+    human_id = sem_mask[
+        np.clip(int(gta_head_2d[1]), 0, 1079), np.clip(int(gta_head_2d[0]), 0, 1919)
+    ]
+    # human_id=37
+
+    human_mask = sem_mask == human_id
+    return human_mask

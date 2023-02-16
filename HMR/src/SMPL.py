@@ -62,7 +62,7 @@ class SMPL(nn.Module):
         vertex_count = np_weights.shape[0]
         vertex_component = np_weights.shape[1]
 
-        batch_size = max(args.batch_size + args.batch_3d_size, args.eval_batch_size)
+        batch_size = max(args.batch_size, args.eval_batch_size)
         np_weights = np.tile(np_weights, (batch_size, 1))
         self.register_buffer('weight', torch.from_numpy(np_weights).float().reshape(-1, vertex_count, vertex_component))
 

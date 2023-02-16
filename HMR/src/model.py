@@ -27,7 +27,7 @@ class ThetaRegressor(LinearModel):
     def __init__(self, fc_layers, use_dropout, drop_prob, use_ac_func, iterations):
         super(ThetaRegressor, self).__init__(fc_layers, use_dropout, drop_prob, use_ac_func)
         self.iterations = iterations
-        batch_size = max(args.batch_size + args.batch_3d_size, args.eval_batch_size)
+        batch_size = max(args.batch_size, args.eval_batch_size)
         mean_theta = np.tile(util.load_mean_theta(), batch_size).reshape((batch_size, -1))
         self.register_buffer('mean_theta', torch.from_numpy(mean_theta).float())
     '''

@@ -1,4 +1,6 @@
 import sys
+
+sys.path.append('./src')
 import os
 import numpy as np
 import random
@@ -10,16 +12,16 @@ import torchvision.transforms as T
 from torchvision.transforms import InterpolationMode
 from torch.utils.data import Dataset, DataLoader
 from hmr_leres_config import args
-from datasets.hmr_data_utils import get_torch_image_cut_box, collect_valid_kpts, calc_aabb, off_set_scale_kpts
-from datasets.leres_data_utils import read_depthmap, read_human_mask, pil_loader
+from hmr_data_utils import get_torch_image_cut_box, collect_valid_kpts, calc_aabb, off_set_kpts, scale_kpts,off_set_scale_kpts
+from leres_data_utils import read_depthmap, read_human_mask, pil_loader
 from PIL import Image
 
 
-class GTADataset(Dataset):
+class GTA_Dataset(Dataset):
     def __init__(self, data_dir, scale_range=[1.2, 1.4], use_flip=False, flip_prob=0.3):
         self.data_dir = data_dir
-        self.hmr_scale_range = [1.3, 1.5]
-        self.leres_scale_range = [2.5, 5.0]
+        self.hmr_scale_range = [1.3,1.5]
+        self.leres_scale_range = [2.5,5.0]
         self.use_flip = use_flip
         self.flip_prob = flip_prob
         self.hmr_size = 224
@@ -55,7 +57,7 @@ class GTADataset(Dataset):
         self.cam_focal_length = []
         self.cam_near_clips = []
         self.cam_far_clips = []
-        self.gta_heads_2d = []
+        self.gta_heads_2d=[]
 
         total_kpts2d = np.array(self.info_hmr['kpts_2d'])
         total_kpts3d = np.array(self.info_hmr['kpts_3d'])
@@ -64,7 +66,7 @@ class GTADataset(Dataset):
         total_shape = np.array(self.info_hmr['shape'])
         total_pose = np.array(self.info_hmr['pose'])
         total_transl = np.array(self.info_hmr['transl'])
-        total_gta_heads_2d = np.array(self.info_hmr['gta_heads_2d'])
+        total_gta_heads_2d=np.array(self.info_hmr['gta_heads_2d'])
 
         # assert len(total_kp2d) == len(total_kp3d) and \
         #        len(total_kp2d) == len(total_shape) and len(total_kp2d) == len(total_pose)
@@ -115,14 +117,15 @@ class GTADataset(Dataset):
         box = self.boxs[index]
         kpts_2d = self.kpts_2d[index]
         kpts_3d = self.kpts_3d[index]
-        joints_2d = self.joints_2d[index]
-        joints_3d = self.joints_3d[index]
-        gta_head_2d = self.gta_heads_2d[index]
+        joints_2d=self.joints_2d[index]
+        joints_3d=self.joints_3d[index]
+        gta_head_2d=self.gta_heads_2d[index]
 
         # leres
         # origin_image = cv2.imread(image_path)
         # leres_image = Image.fromarray(origin_image)
         origin_image = pil_loader(image_path)
+        leres_image = origin_image  # image aug
         info_npz = np.load(os.path.join(self.data_dir, 'info_frames.npz'))
         intrinsic = info_npz['intrinsics'][index]
         focal_length = np.array(intrinsic[0][0]).astype(np.float32)
@@ -131,31 +134,36 @@ class GTADataset(Dataset):
         human_mask = read_human_mask(self.mask_paths[index], gta_head_2d)
         human_mask = Image.fromarray(human_mask)
 
-        # crop and rescale leres_image,depth,human_mask,kpts2d,joints2d,human_mask
-        leres_scale = np.random.rand(4) * (self.leres_scale_range[1] - self.leres_scale_range[0]) + \
-                      self.leres_scale_range[0]
-        top, left, height, width = get_torch_image_cut_box(leftTop=box[0], rightBottom=box[1], ExpandsRatio=leres_scale)
-        leres_cut_box = np.array([top, left, height, width])
-        leres_image = T.functional.crop(origin_image, top, left, height, width)
-        depth = T.functional.crop(depth, top, left, height, width)
-        human_mask = T.functional.crop(human_mask, top, left, height, width)
 
-        kpts_2d = off_set_scale_kpts(kpts_2d, left=left, top=top, height_ratio=self.leres_size / height,
-                                     width_ratio=self.leres_size / width)
-        joints_2d_origin = joints_2d.copy()
+        # crop and rescale leres_image,depth,human_mask,kpts2d,joints2d,human_mask
+        leres_scale = np.random.rand(4) * (self.leres_scale_range[1] - self.leres_scale_range[0]) + self.leres_scale_range[0]
+        top, left, height, width = get_torch_image_cut_box(leftTop=box[0], rightBottom=box[1], ExpandsRatio=leres_scale)
+        leres_cut_box=np.array([top, left, height, width])
+        leres_image = T.functional.crop(origin_image, top, left, height, width)
+        depth=T.functional.crop(depth, top, left, height, width)
+        human_mask=T.functional.crop(human_mask, top, left, height, width)
+
+
+
+
+        kpts_2d=off_set_scale_kpts(kpts_2d,left=left,top=top,height_ratio=self.leres_size/height,width_ratio=self.leres_size/width)
         joints_2d = off_set_scale_kpts(joints_2d, left=left, top=top, height_ratio=self.leres_size / height,
-                                       width_ratio=self.leres_size / width)
+                                     width_ratio=self.leres_size / width)
+
+        # # 2d kpts
+        # kpts_2d = off_set_kpts(kpts=kpts_2d, leftTop=[0, 0])
+        # joints_2d=off_set_kpts(kpts=joints_2d,leftTop=[0, 0])
+        # # kpts_2d = scale_kpts(kpts=kpts_2d, height_ratio=1.0 * self.leres_size / origin_image.size[0],
+        # #                      width_ratio=1.0 * self.leres_size / origin_image.size[1])
 
         # hmr
         hmr_scale = np.random.rand(4) * (self.hmr_scale_range[1] - self.hmr_scale_range[0]) + self.hmr_scale_range[0]
-        hmr_top, hmr_left, hmr_height, hmr_width = get_torch_image_cut_box(leftTop=box[0], rightBottom=box[1],
-                                                                           ExpandsRatio=hmr_scale)
+        # scale = 1.4
+        hmr_top, hmr_left, hmr_height, hmr_width = get_torch_image_cut_box(leftTop=box[0], rightBottom=box[1], ExpandsRatio=hmr_scale)
         hmr_image = torchvision.transforms.functional.crop(origin_image, hmr_top, hmr_left, hmr_height, hmr_width)
         transl, shape, pose = self.transls[index], self.shapes[index], self.poses[index]
         theta = np.concatenate((transl, pose, shape), axis=0)
 
-        boody_pose = pose[3:]
-        global_pose = pose[:3]
 
         return {
             'leres_image': self.leres_transforms(leres_image),
@@ -166,43 +174,86 @@ class GTADataset(Dataset):
             'kpts_3d': torch.from_numpy(kpts_3d).float(),
             'joints_2d': torch.from_numpy(joints_2d).float(),
             'joints_3d': torch.from_numpy(joints_3d).float(),
-            'joints_2d_origin': torch.from_numpy(joints_2d_origin).float(),
             'theta': torch.from_numpy(theta).float(),
-            'body_pose': torch.from_numpy(boody_pose).float(),
-            'global_pose': torch.from_numpy(global_pose).float(),
             'focal_length': torch.from_numpy(focal_length).float(),
             'intrinsic': torch.from_numpy(intrinsic).float(),
-            'leres_cut_box': torch.from_numpy(leres_cut_box)
+            'leres_cut_box':torch.from_numpy(leres_cut_box)
         }
 
 
 if __name__ == '__main__':
     data_dir = 'C:/Users/90532/Desktop/Datasets/HMR-LeReS/2020-06-11-10-06-48-add-transl'
-    gta_dataset = GTADataset(data_dir)
-    # for idx,i in enumerate(iter(gta_loader)):
-    #     if i['kp_2d'].shape!=i['kp_3d'].shape:
-    #         print('frame{idx}'.format(idx=idx))
-    #         print(i['kp_2d'].shape,i['kp_3d'].shape)
-    for idx, i in enumerate(iter(gta_dataset)):
-        # if len(i['kp_2d']) != 23:
-        #     print('frame{idx}'.format(idx=idx))
-        #     print(i['kp_2d'].shape, i['kp_3d'].shape)
-        leres_image = i['leres_image']
-        hmr_image = i['hmr_image']
-        kpts_2d = i['kpts_2d']
+    gta_dataset = GTA_Dataset(data_dir)
+    gta_loader = DataLoader(
+        dataset=gta_dataset,
+        batch_size=8,
+        shuffle=True,
+        drop_last=True,
+        pin_memory=True,
+        num_workers=0
+    )
+    batch = next(iter(gta_loader))
+    from d_loss.align_loss import AlignLoss
+    loss_align = AlignLoss()
+    smpl_model = '../HMR/HMR-data/neutral_smpl_with_cocoplus_reg.txt'
+    smpl_model_dir = '../HMR/HMR-data/smpl'
+    from SMPL import SMPL
 
-        import matplotlib.pyplot as plt
-        import numpy as np
+    smpl = SMPL(smpl_model, obj_saveable=True)
+    transl = batch['theta'][:, :3].contiguous()
+    pose = batch['theta'][:, 3:75].contiguous()
+    shape = batch['theta'][:, 75:].contiguous()
+    verts, kpts_3d, Rs = smpl.forward(shape, pose, get_skin=True)
 
-        f, axarr = plt.subplots(1, 2)
-        plt.figure()
-        leres_image = leres_image.permute(1, 2, 0)
-        hmr_image = hmr_image.permute(1, 2, 0)
-        axarr[0].imshow(leres_image)
-        axarr[1].imshow(hmr_image)
-        # plt.imshow(hmr_image.permute(1, 2, 0))
-        for j in range(24):
-            # plt.imshow(img)
-            axarr[0].scatter(np.squeeze(kpts_2d)[j][0], np.squeeze(kpts_2d)[j][1], s=50, c='red', marker='o')
-        plt.show()
-        # break
+    kpts_3d += transl.unsqueeze(dim=1)
+    verts += transl.unsqueeze(dim=1)
+    # smpl.save_obj(verts=verts[0], obj_mesh_name='debug.obj')
+
+    # verts = torch.unsqueeze(verts[0], 0)
+    faces = torch.Tensor([smpl.faces])
+
+
+
+    origin_size=[1080,1920]
+    loss_align.init_pytorch3d_render(K_intrin=batch['intrinsic'], image_size=[origin_size])
+    depth=batch['depth']
+    loss_align.vis_batch_align_loss(verts,faces,depth,batch)
+
+
+    # vismask, nearest_depth_map, farrest_depth_map = loss_align.get_depth_map_pytorch3d(verts, faces)
+    #
+    # leres_image = batch['leres_image'][0]
+    #
+    #
+    #
+    # #
+    # # leres_cut_box=batch['leres_cut_box']
+    # [top, left, height, width]=batch['leres_cut_box'][0]
+    # # vismask=vismask.to(torch.long)
+    # vismask=torchvision.transforms.functional.crop(vismask,top, left, height, width)
+    #
+    # vismask=torchvision.transforms.functional.resize(vismask,size=[448,448],interpolation = InterpolationMode.NEAREST)
+    #
+    #
+    # leres_image[~(vismask.repeat(3, 1, 1))] *= 0
+    # hmr_image = batch['hmr_image'][0]
+    # kpts_2d = batch['kpts_2d'][0]
+    # kpts_2d = batch['joints_2d'][0]
+    #
+    # import matplotlib.pyplot as plt
+    # import numpy as np
+    #
+    # f, axarr = plt.subplots(1, 2)
+    # plt.figure()
+    # leres_image = leres_image.permute(1, 2, 0)
+    # hmr_image = hmr_image.permute(1, 2, 0)
+    # axarr[0].imshow(leres_image)
+    # axarr[1].imshow(hmr_image)
+    # # plt.imshow(hmr_image.permute(1, 2, 0))
+    # for j in range(24):
+    #     # plt.imshow(img)
+    #     axarr[0].scatter(np.squeeze(kpts_2d)[j][0], np.squeeze(kpts_2d)[j][1], s=50, c='red', marker='o')
+    # plt.show()
+    #
+    #
+    #

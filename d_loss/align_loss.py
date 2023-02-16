@@ -1,11 +1,6 @@
-import pytorch_lightning as pl
-from utils import crop_and_resize
 import torch
-import pytorch3d
-import trimesh
+import pytorch_lightning as pl
 from pytorch3d.structures import Meshes
-from pytorch3d.io import load_obj
-from pytorch3d.renderer.mesh import rasterize_meshes
 from pytorch3d.renderer import (
     PerspectiveCameras,
     FoVPerspectiveCameras,
@@ -18,15 +13,10 @@ from pytorch3d.renderer import (
     TexturesVertex,
 )
 from pytorch3d.renderer.mesh.renderer import MeshRendererWithFragments
-
-import numpy as np
-import pickle
-import glob
-import os
-import matplotlib.pyplot as plt
-import matplotlib
-from PIL import Image
 from hmr_leres_config import args
+from d_loss.utils import crop_and_resize
+
+
 
 
 class AlignLoss(pl.LightningModule):
@@ -90,22 +80,106 @@ class AlignLoss(pl.LightningModule):
         return vismask, nearest_depth_map, farrest_depth_map
 
     def batch_align_loss(self, verts, faces, depth, batch):
-        for idx,sample in enumerate (batch):
-            self.sample_align_loss(verts[idx],faces, depth[idx], sample)
+        loss = 0.
+        batchsize = batch['leres_image'].shape[0]
+        for idx in range(batchsize):
+            cut_box_i = batch['leres_cut_box'][idx]
+            K_intrin_i = batch['intrinsic'][idx]
+            human_mask_i = batch['human_mask'][idx]
+            verts_i = verts[idx]
+            depth_i = depth[idx]
+            loss += self.sample_align_loss(verts_i, faces, depth_i, cut_box_i, K_intrin_i, human_mask_i)
+        return loss
 
+    def sample_align_loss(self, verts, faces, depth, cut_box, K_intrin, human_mask):
 
-    def sample_align_loss(self, verts, faces, depth, sample):
-        cut_box=sample['leres_cut_box']
-        leres_size=args.leres_size
-        origin_size=args.origin_size
-        K_intrin=sample['intrinsic']
-        self.init_pytorch3d_render(K_intrin=K_intrin,image_size=[origin_size])
-        vismask, nearest_depth_map, farrest_depth_map = self.get_depth_map_pytorch3d(verts, faces)
+        leres_size = args.leres_size
+        origin_size = args.origin_size
 
-        vismask = crop_and_resize(vismask, cut_box=cut_box, img_size=leres_size)
-        nearest_depth_map=crop_and_resize(nearest_depth_map, cut_box=cut_box, img_size=leres_size)
+        # unzqueeze
+        human_mask = human_mask.unsqueeze(0)
+        verts = verts.unsqueeze(0)
+        depth = depth.unsqueeze(0)
+        K_intrin = K_intrin.unsqueeze(0)
+        cut_box = cut_box
+        faces = faces
+
+        self.init_pytorch3d_render(K_intrin=K_intrin, image_size=[origin_size])
+        mesh_mask, nearest_depth_map, farrest_depth_map = self.get_depth_map_pytorch3d(verts, faces)
+
+        mesh_mask = crop_and_resize(mesh_mask, cut_box=cut_box, img_size=leres_size)
+        vismask = torch.logical_and(mesh_mask, human_mask)
+
+        nearest_depth_map = crop_and_resize(nearest_depth_map, cut_box=cut_box, img_size=leres_size)
         leres_human_depth = depth[vismask]
-        hmr_huamn_depth=nearest_depth_map[vismask]
+        hmr_huamn_depth = nearest_depth_map[vismask]
 
-        align_loss= torch.abs(leres_human_depth-hmr_huamn_depth)
+        align_loss = torch.abs(leres_human_depth - hmr_huamn_depth)
+        align_loss = torch.mean(align_loss)
+        return align_loss
+
+    def vis_batch_align_loss(self, verts, faces, depth, batch):
+        loss = 0.
+        batchsize = batch['leres_image'].shape[0]
+        for idx in range(batchsize):
+            cut_box_i = batch['leres_cut_box'][idx]
+            K_intrin_i = batch['intrinsic'][idx]
+            leres_image_i = batch['leres_image'][idx]
+            hmr_image_i = batch['hmr_image'][idx]
+            kpts_2d_i = batch['kpts_2d'][idx]
+            kpts_2d_i = batch['joints_2d'][idx]
+            human_mask_i = batch['human_mask'][idx]
+            verts_i = verts[idx]
+            depth_i = depth[idx]
+            loss += self.vis_sample_align_loss(verts_i, faces, depth_i, cut_box_i, K_intrin_i, human_mask_i,
+                                               leres_image_i, hmr_image_i,
+                                               kpts_2d_i)
+        return loss
+
+    def vis_sample_align_loss(self, verts, faces, depth, cut_box, K_intrin, human_mask, leres_image, hmr_image,
+                              kpts_2d):
+
+        leres_size = args.leres_size
+        origin_size = args.origin_size
+
+        # unzqueeze
+        human_mask = human_mask.unsqueeze(0)
+        verts = verts.unsqueeze(0)
+        depth = depth.unsqueeze(0)
+        K_intrin = K_intrin.unsqueeze(0)
+        cut_box = cut_box
+        faces = faces
+
+        self.init_pytorch3d_render(K_intrin=K_intrin, image_size=[origin_size])
+        mesh_mask, nearest_depth_map, farrest_depth_map = self.get_depth_map_pytorch3d(verts, faces)
+
+        mesh_mask = crop_and_resize(mesh_mask, cut_box=cut_box, img_size=leres_size)
+        vismask = torch.logical_and(mesh_mask, human_mask)
+
+        nearest_depth_map = crop_and_resize(nearest_depth_map, cut_box=cut_box, img_size=leres_size)
+        leres_human_depth = depth[vismask]
+        hmr_huamn_depth = nearest_depth_map[vismask]
+
+        # align_loss = torch.mean(torch.abs(leres_human_depth - hmr_huamn_depth))
+        align_loss = torch.abs(leres_human_depth - hmr_huamn_depth)
+        align_loss = torch.mean(align_loss)
+
+        # leres_image[~(vismask[0].repeat(3, 1, 1))] *= 0
+        leres_image[~(human_mask[0].repeat(3, 1, 1))] *= 0
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        f, axarr = plt.subplots(1, 2)
+        plt.figure()
+        leres_image = leres_image.permute(1, 2, 0)
+        hmr_image = hmr_image.permute(1, 2, 0)
+        axarr[0].imshow(leres_image)
+        axarr[1].imshow(hmr_image)
+        # plt.imshow(hmr_image.permute(1, 2, 0))
+        for j in range(24):
+            # plt.imshow(img)
+            axarr[0].scatter(np.squeeze(kpts_2d)[j][0], np.squeeze(kpts_2d)[j][1], s=50, c='red', marker='o')
+        plt.show()
+
         return align_loss

@@ -16,7 +16,7 @@ if __name__ == '__main__':
     wandb_logger.watch(hmr_model, log="gradients", log_freq=100)
     wandb_logger.log_hyperparams(train_args)
 
-    checkpoint_callback = ModelCheckpoint(dirpath="hmr-ckpt-v6.0",save_last=True, save_top_k=2, monitor="e_loss")
+    checkpoint_callback = ModelCheckpoint(dirpath="hmr-ckpt-v6.0",save_last=True, save_top_k=2, monitor="loss_generator")
 
     trainer = Trainer(
         max_epochs=200,
