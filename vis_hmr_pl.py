@@ -37,5 +37,5 @@ if __name__=='__main__':
     pose = predict_theta[:, 3:75]
     shape = predict_theta[:, 75:]
     mesh=np.squeeze(predict_verts.cpu().detach().numpy())
-    hmr_model.hmr_generator.smpl.save_obj(verts=mesh,obj_mesh_name='debug_mesh.obj')
+    hmr_model.hmr_generator.smpl_model.save_obj(verts=mesh, obj_mesh_name='debug_mesh.obj')
     print('finished')

@@ -155,6 +155,7 @@ class AlignLoss(pl.LightningModule):
 
         mesh_mask = crop_and_resize(mesh_mask, cut_box=cut_box, img_size=leres_size)
         vismask = torch.logical_and(mesh_mask, human_mask)
+        # vismask = mesh_mask
 
         nearest_depth_map = crop_and_resize(nearest_depth_map, cut_box=cut_box, img_size=leres_size)
         leres_human_depth = depth[vismask]

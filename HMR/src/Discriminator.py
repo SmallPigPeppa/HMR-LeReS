@@ -80,7 +80,6 @@ class Discriminator(nn.Module):
 
     def _read_configs(self):
         self.beta_count = args.beta_count
-        self.smpl_model = args.smpl_model
         self.smpl_mean_theta_path = args.smpl_mean_theta_path
         self.total_theta_count = args.total_theta_count
         self.joint_count = args.joint_count

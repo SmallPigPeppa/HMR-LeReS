@@ -20,7 +20,7 @@ if __name__ == '__main__':
     checkpoint_callback = ModelCheckpoint(dirpath="hmr-ckpt-v6.0",save_last=True, save_top_k=2, monitor="loss_generator")
 
     trainer = Trainer(
-        max_epochs=200,
+        max_epochs=100,
         accelerator="auto",
         devices=1 if torch.cuda.is_available() else None,  # limiting got iPython runs
         logger=wandb_logger,

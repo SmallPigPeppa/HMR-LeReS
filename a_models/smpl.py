@@ -12,18 +12,15 @@ import sys
 import numpy as np
 from util import batch_global_rigid_transformation, batch_rodrigues, batch_lrotmin, reflect_pose
 import torch.nn as nn
+import pytorch_lightning as pl
 
 
-class SMPL(nn.Module):
-    def __init__(self, model_path, joint_type='cocoplus', obj_saveable=False):
+class SMPL(pl.LightningModule):
+    def __init__(self, model_path, obj_saveable=False):
         super(SMPL, self).__init__()
 
-        if joint_type not in ['cocoplus', 'lsp']:
-            msg = 'unknow joint type: {}, it must be either "cocoplus" or "lsp"'.format(joint_type)
-            sys.exit(msg)
 
         self.model_path = model_path
-        self.joint_type = joint_type
         with open(model_path, 'r') as reader:
             model = json.load(reader)
 
@@ -51,11 +48,6 @@ class SMPL(nn.Module):
 
         self.parents = np.array(model['kintree_table'])[0].astype(np.int32)
 
-        np_joint_regressor = np.array(model['cocoplus_regressor'], dtype=np.float)
-        if joint_type == 'lsp':
-            self.register_buffer('joint_regressor', torch.from_numpy(np_joint_regressor[:, :14]).float())
-        else:
-            self.register_buffer('joint_regressor', torch.from_numpy(np_joint_regressor).float())
 
         np_weights = np.array(model['weights'], dtype=np.float)
 
@@ -65,7 +57,6 @@ class SMPL(nn.Module):
         batch_size = max(args.batch_size, args.eval_batch_size)
         np_weights = np.tile(np_weights, (batch_size, 1))
         self.register_buffer('weight', torch.from_numpy(np_weights).float().reshape(-1, vertex_count, vertex_component))
-
         self.register_buffer('e3', torch.eye(3).float())
 
         self.cur_device = None
@@ -113,9 +104,6 @@ class SMPL(nn.Module):
 
         verts = v_homo[:, :, :3, 0]
 
-        # joint_x = torch.matmul(verts[:, :, 0], self.joint_regressor)
-        # joint_y = torch.matmul(verts[:, :, 1], self.joint_regressor)
-        # joint_z = torch.matmul(verts[:, :, 2], self.joint_regressor)
         joint_x = torch.matmul(verts[:, :, 0], self.J_regressor)
         joint_y = torch.matmul(verts[:, :, 1], self.J_regressor)
         joint_z = torch.matmul(verts[:, :, 2], self.J_regressor)

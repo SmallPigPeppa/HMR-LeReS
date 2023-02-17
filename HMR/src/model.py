@@ -78,27 +78,17 @@ class HMRNetBase(nn.Module):
         
         self.encoder_name = args.encoder_network
         self.beta_count = args.beta_count
-        self.smpl_model = args.smpl_model
         self.smpl_mean_theta_path = args.smpl_mean_theta_path
         self.total_theta_count = args.total_theta_count
         self.joint_count = args.joint_count
         self.feature_count = args.feature_count
-        self.smpl_model_dir=args.smpl_model_dir
 
         self.crop_size=args.crop_size
-        self.focal_length=5000.
-        self.normalize_joints2d=True
         
     def _create_sub_modules(self):
         '''
             ddd smpl model, SMPL can create a mesh from beta & theta
         '''
-        self.smpl_native = SMPL_native(
-            self.smpl_model_dir,
-            # batch_size=self.hparams.DATASET.BATCH_SIZE,
-            create_transl=False
-        )
-        self.smpl = SMPL(self.smpl_model, obj_saveable = True)
 
 
         '''

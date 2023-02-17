@@ -3,12 +3,11 @@ import argparse
 parser = argparse.ArgumentParser(description='HMR-LeReS model')
 
 # HMR
-parser.add_argument('--smpl-mean-theta-path', type=str, default='E:/HMR/model/neutral_smpl_mean_params.h5',
+parser.add_argument('--smpl-mean-theta-path', type=str, default='HMR/HMR-data/neutral_smpl_mean_params.h5',
                     help='the path for mean smpl theta value')
-parser.add_argument('--smpl-model', type=str, default='E:/HMR/model/neutral_smpl_with_cocoplus_reg.txt',
+parser.add_argument('--smpl-model', type=str, default='HMR/HMR-data/neutral_smpl_with_cocoplus_reg.txt',
                     help='smpl model path')
-parser.add_argument('--smpl-model-dir', type=str, default='HMR/HMR-data/smpl',
-                    help='smpl model path')
+
 parser.add_argument('--total-theta-count', type=int, default=85, help='the count of theta param')
 parser.add_argument('--joint-count', type=int, default=24, help='the count of joints')
 parser.add_argument('--beta-count', type=int, default=10, help='the count of beta')
@@ -20,18 +19,18 @@ parser.add_argument('--d-lr', type=float, default=0.0001, help='Adversarial prio
 parser.add_argument('--e-wd', type=float, default=0.0001, help='encoder weight decay rate.')
 parser.add_argument('--d-wd', type=float, default=0.0001, help='Adversarial prior weight decay')
 
-parser.add_argument('--e-loss-weight', type=float, default=60, help='weight on encoder losses.')
-parser.add_argument('--e-2d-kpts-weight', type=float, default=10.0, help='multiple weight of 2d keypoint.')
-parser.add_argument('--e-3d-kpts-weight', type=float, default=10.0, help='multiple weight of 3d keypoint.')
-parser.add_argument('--e-shape-weight', type=float, default=5, help='multiple weight of shape d_loss')
-parser.add_argument('--e-pose-weight', type=float, default=20, help='multiple weight of pose')
-parser.add_argument('--d-loss-weight', type=float, default=1, help='weight on discriminator losses')
+parser.add_argument('--e-loss-weight', type=float, default=1.0, help='weight on encoder losses.')
+parser.add_argument('--e-2d-kpts-weight', type=float, default=0.005, help='multiple weight of 2d keypoint.')
+parser.add_argument('--e-3d-kpts-weight', type=float, default=100.0, help='multiple weight of 3d keypoint.')
+parser.add_argument('--e-shape-weight', type=float, default=1.0, help='multiple weight of shape d_loss')
+parser.add_argument('--e-pose-weight', type=float, default=100, help='multiple weight of pose')
+parser.add_argument('--d-loss-weight', type=float, default=0.02, help='weight on discriminator losses')
 # parser.add_argument('--d-disc-ratio', type=float, default=1.0, help='multiple weight of discriminator d_loss')
 
 parser.add_argument('--enable-inter-supervision', type=bool, default=False, help='enable inter supervision or not.')
 parser.add_argument('--encoder-network', type=str, default='resnet50', help='the encoder network name')
 parser.add_argument('--batch-size', type=int, default=2, help='batch size')
-parser.add_argument('--eval-batch-size', type=int, default=4, help='3d data batch size')
+parser.add_argument('--eval-batch-size', type=int, default=2, help='eval data batch size')
 parser.add_argument('--adv-batch-size', type=int, default=24, help='default adv batch size')
 
 # LeReS
@@ -49,7 +48,7 @@ parser.add_argument('--phase_anno', type=str, default='train', help='Annotations
 
 # Shared
 parser.add_argument('--epoch', default=50, type=int, help='Total training epochs')
-parser.add_argument('--num-worker', type=int, default=1, help='pytorch number worker.')
+parser.add_argument('--num-worker', type=int, default=0, help='pytorch number worker.')
 
 
 
@@ -94,7 +93,6 @@ args = parser.parse_args()
 encoder_network = args.encoder_network
 args.feature_count = encoder_feature_count[encoder_network]
 args.crop_size = crop_size[encoder_network]
-
 args.origin_size=[1080,1920]
 args.leres_size=448
 args.hmr_size=crop_size

@@ -14,7 +14,6 @@ from ast import literal_eval
 from lib_train.utils.collections import AttrDict
 from lib_train.utils.misc import get_run_name
 
-
 __C = AttrDict()
 # Consumers can get config by:
 cfg = __C
@@ -30,7 +29,7 @@ __C.DATASET.NAME = 'diversedepth'
 __C.DATASET.RGB_PIXEL_MEANS = (0.485, 0.456, 0.406)  # (102.9801, 115.9465, 122.7717)
 __C.DATASET.RGB_PIXEL_VARS = (0.229, 0.224, 0.225)  # (1, 1, 1)
 # Scale the depth map
-#__C.DATASET.DEPTH_SCALE = 10.0
+# __C.DATASET.DEPTH_SCALE = 10.0
 __C.DATASET.CROP_SIZE = (448, 448)  # (height, width)
 
 # Camera Parameters
@@ -62,7 +61,7 @@ __C.MODEL.ENCODER_INPUT_C = 3
 __C.MODEL.DECODER_OUTPUT_C = 1
 # Configure weight for different losses
 __C.MODEL.FREEZE_BACKBONE_BN = False
-#__C.MODEL.USE_SYNCBN = True
+# __C.MODEL.USE_SYNCBN = True
 __C.MODEL.DEVICE = "cuda"
 # ---------------------------------------------------------------------------- #
 # Training configurations
@@ -96,9 +95,10 @@ __C.TRAIN.LOAD_CKPT = None
 # Configs for d_loss
 __C.TRAIN.LOSS_MODE = '_vnl_ssil_ranking_'
 __C.TRAIN.LOSS_AUXI_WEIGHT = 0.5
-#__C.TRAIN.DIFF_LOSS_WEIGHT = 5
+# __C.TRAIN.DIFF_LOSS_WEIGHT = 5
 
 __C.TRAIN.OPTIM = 'SGD'
+
 
 def print_configs(cfg):
     import logging
@@ -150,7 +150,7 @@ def merge_cfg_from_file(train_args):
     for k, v in vars(train_args).items():
         if k.upper() in __C.TRAIN.keys():
             __C.TRAIN[k.upper()] = getattr(train_args, k)
-    
+
     __C.TRAIN.LOG_DIR = os.path.join(__C.TRAIN.OUTPUT_DIR, cfg.TRAIN.RUN_NAME)
 
 

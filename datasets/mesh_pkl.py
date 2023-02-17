@@ -2,8 +2,8 @@ import os
 import numpy as np
 import random
 import torch
-from torch.utils.data import Dataset, DataLoader
-
+from torch.utils.data import Dataset
+import pickle
 
 class MeshDataset(Dataset):
     def __init__(self, data_dir, use_flip=True, flip_prob=0.3):
@@ -15,7 +15,8 @@ class MeshDataset(Dataset):
 
     def load_data_set(self):
         print('start loading mosh data.')
-        info_hmr = np.load(os.path.join(self.data_dir, 'info_hmr.pickle'), allow_pickle=True)
+        info_hmr = np.load(os.path.join(self.data_dir, 'info_hmr.pickle'),allow_pickle=True)
+        # info_hmr = pickle.load(open(os.path.join(self.data_dir, 'info_hmr.pickle'),  'rb'))
         self.transl = np.array(info_hmr['transl'].copy())
         self.shapes = np.array(info_hmr['shape'].copy())
         self.poses = np.array(info_hmr['pose'].copy())
@@ -25,6 +26,8 @@ class MeshDataset(Dataset):
         return len(self.poses)
 
     def __getitem__(self, index):
+        if index == 61:
+            index=60
         trival, pose, shape = self.transl[index], self.poses[index], self.shapes[index]
 
         if self.use_flip and random.uniform(0, 1) <= self.flip_prob:  # left-right reflect the pose
