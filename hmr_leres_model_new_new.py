@@ -1,34 +1,38 @@
-from model import HMRNetBase
-from Discriminator import Discriminator
-from hmr_leres_config import args
 import torch
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
+from model import HMRNetBase
+from Discriminator import Discriminator
+from hmr_leres_config import args
+
 from datasets.gta_im import GTADataset
 from datasets.mesh_pkl import MeshDataset
 
 from a_models.smpl import SMPL
 from camera_utils import perspective_projection
 from d_loss.hmr_loss import HMRLoss
+from d_loss.leres_loss import DepthRegressionLoss, EdgeguidedNormalRegressionLoss, MultiScaleGradLoss, \
+    recover_scale_shift_depth, EdgeguidedRankingLoss
 
+from lib_train.configs.config import cfg as leres_net_cfg
 
-class HMRLeRes(pl.LightningModule):
+from a_models.leres import DepthModel
+from datasets.hmr_data_utils import off_set_scale_kpts
+
+class HMRLeReS(pl.LightningModule):
     def __init__(self):
-        super(HMRLeRes, self).__init__()
+        super(HMRLeReS, self).__init__()
         self.automatic_optimization = False
         self.hmr_generator = HMRNetBase()
         self.hmr_discriminator = Discriminator()
         self.smpl_model = SMPL(args.smpl_model, obj_saveable=True)
         self.hmr_loss = HMRLoss()
-        self.depth_model = DepthModel()
-        # leres pair-wise normal d_loss (pwn edge)
-        self.pn_edge = EdgeguidedNormalRegressionLoss(mask_value=-1e-8, max_threshold=15)
-        # leres multi-scale gradient d_loss (msg)
-        self.msg_normal_loss = MSGIL_NORM_Loss(scale=4, valid_threshold=-1e-8)
-        # Scale shift invariant. SSIMAEL_Loss is MIDAS d_loss. MEADSTD_TANH_NORM_Loss is our normalization d_loss.
-        self.meanstd_tanh_loss = MEADSTD_TANH_NORM_Loss(valid_threshold=-1e-8)
-        self.depth_regression_loss = DepthRegressionLoss(valid_threshold=-1e-8,max_threshold=15)
-        self.ranking_edge_loss = EdgeguidedRankingLoss(mask_value=-1e-8)
+        self.leres_model = DepthModel()
+
+        self.depth_regression_loss = DepthRegressionLoss(min_threshold=0., max_threshold=15)
+        self.pwn_edge_loss = EdgeguidedNormalRegressionLoss(min_threshold=0., max_threshold=15)
+        self.msg_loss = MultiScaleGradLoss(scale=4, min_threshold=0., max_threshold=15)
+        self.edge_ranking_loss = EdgeguidedRankingLoss(min_threshold=0., max_threshold=15)
 
     def train_dataloader(self):
         gta_dataset_dir = 'C:/Users/90532/Desktop/Datasets/HMR-LeReS/2020-06-11-10-06-48-add-transl'
@@ -39,6 +43,7 @@ class HMRLeRes(pl.LightningModule):
 
         gta_dataset = GTADataset(gta_dataset_dir)
         mesh_dataset = MeshDataset(mesh_dataset_dir)
+        self.gta_dataset=gta_dataset
 
         gta_loader = DataLoader(
             dataset=gta_dataset,
@@ -66,11 +71,10 @@ class HMRLeRes(pl.LightningModule):
         kpts_2d = perspective_projection(
             kpts_3d,
             rotation=torch.eye(3, device=self.device).unsqueeze(0).expand(batch_size, -1, -1),
-            translation=torch.zeros(size=[batch_size,3], device=self.device),
+            translation=torch.zeros(size=[batch_size, 3], device=self.device),
             focal_length=focal_length,
-            camera_center=torch.zeros(batch_size, 2, device=self.device)
+            camera_center=torch.Tensor([960.0, 540.0]).to(self.device).expand(batch_size, -1)
         )
-
 
         return kpts_2d, kpts_3d
 
@@ -87,6 +91,7 @@ class HMRLeRes(pl.LightningModule):
         gt_kpts_3d = gta_data['joints_3d']
         gt_intrinsic = gta_data['intrinsic']
         gt_focal_length = gta_data['focal_length']
+        top, left, height, width=gta_data['leres_cut_box'][:,0],gta_data['leres_cut_box'][:,1],gta_data['leres_cut_box'][:,2],gta_data['leres_cut_box'][:,3]
 
         predict_smpl_thetas = self.hmr_generator(hmr_images)[-1]
         predict_smpl_transl = predict_smpl_thetas[:, :3].contiguous()
@@ -95,13 +100,21 @@ class HMRLeRes(pl.LightningModule):
 
         predict_kpts_2d, predict_kpts_3d = self.get_smpl_kpts(transl=gt_smpl_transl, pose=predict_smpl_poses,
                                                               shape=predict_smpl_shapes, focal_length=gt_focal_length)
-        #
+
+        height_ratio = self.gta_dataset.leres_size / height
+        width_ratio = self.gta_dataset.leres_size / width
+        predict_kpts_2d[:,:,0]-=left[:,None]
+        predict_kpts_2d[:,:,1]-=top[:,None]
+        predict_kpts_2d[:, :, 0] *= height_ratio[:,None]
+        predict_kpts_2d[:, :, 1] *= width_ratio[:,None]
+
+
         loss_shape = self.hmr_loss.shape_loss(gt_smpl_shapes, predict_smpl_shapes) * args.e_shape_weight
         loss_pose = self.hmr_loss.pose_loss(gt_smpl_poses, predict_smpl_poses) * args.e_pose_weight
         loss_kpts_2d = self.hmr_loss.batch_kp_2d_l1_loss(gt_kpts_2d, predict_kpts_2d) * args.e_2d_kpts_weight
-        loss_kpts_2d=0.
+        # loss_kpts_2d = 0.
+
         loss_kpts_3d = self.hmr_loss.batch_kp_3d_l2_loss(gt_kpts_3d, predict_kpts_3d) * args.e_3d_kpts_weight
-        loss_kpts_3d=0.
 
         predict_smpl_thetas[:, :3] = gt_smpl_transl
         loss_generator_disc = self.hmr_loss.batch_encoder_disc_l2_loss(
@@ -115,40 +128,58 @@ class HMRLeRes(pl.LightningModule):
         # loss_generator = (loss_shape + loss_pose + loss_kpts_2d + loss_kpts_3d) * args.e_loss_weight + \
         #                  loss_generator_disc * args.d_loss_weight
 
-
         loss_generator = (loss_shape + loss_pose + loss_kpts_2d + loss_kpts_3d) * args.e_loss_weight + \
                          loss_generator_disc * args.d_loss_weight
 
-
         loss_discriminator = d_disc_loss * args.d_loss_weight
 
-        if self.trainer.global_step==60:
-            a=1
+        leres_images = gta_data['leres_image']
+        predict_depth, auxi = self.leres_model(leres_images)
+        gt_depth = gta_data['depth']
+        gt_depth = gt_depth[:, None, :, :]
+        loss_depth_regression = self.depth_regression_loss(predict_depth, gt_depth)
+        loss_edge_ranking = self.edge_ranking_loss(predict_depth, gt_depth, leres_images)
+        loss_msg = self.msg_loss(predict_depth, gt_depth) * 0.5
+        pred_ssinv = recover_scale_shift_depth(predict_depth, gt_depth, min_threshold=0., max_threshold=15.0)
+        loss_pwn_edge = self.pwn_edge_loss(pred_ssinv, gt_depth, leres_images, focal_length=gt_focal_length)
+        loss_leres = (loss_depth_regression + loss_edge_ranking + loss_msg + loss_pwn_edge)
+        leres_log_dict = {
+            'loss_depth_regression': loss_depth_regression,
+            'loss_edge_ranking': loss_edge_ranking,
+            'loss_msg': loss_msg,
+            'loss_pwn_edge': loss_pwn_edge,
+            'loss_leres': loss_leres
+        }
 
-        hmr_generator_opt, hmr_discriminator_opt = self.optimizers()
+        hmr_generator_opt, hmr_discriminator_opt, leres_opt = self.optimizers()
+
+        leres_opt.zero_grad()
+        self.manual_backward(loss_leres)
+        torch.nn.utils.clip_grad_norm_(self.leres_model.parameters(), max_norm=10.0)
+        leres_opt.step()
+
         hmr_generator_opt.zero_grad()
         self.manual_backward(loss_generator)
         hmr_generator_opt.step()
+
         hmr_discriminator_opt.zero_grad()
         self.manual_backward(loss_discriminator)
         hmr_discriminator_opt.step()
 
+        hmr_log_dict = {'loss_generator': loss_generator,
+                        'loss_kpts_2d': loss_kpts_2d,
+                        'loss_kpts_3d': loss_kpts_3d,
+                        'loss_shape': loss_shape,
+                        'loss_pose': loss_pose,
+                        'loss_generator_disc': loss_generator_disc,
+                        'loss_discriminator': loss_discriminator,
+                        'd_disc_real': d_disc_real,
+                        'd_disc_fake': d_disc_fake
+                        }
 
+        all_log_dict = {**leres_log_dict,**hmr_log_dict}
+        self.log_dict(all_log_dict)
 
-
-
-
-        iter_msg = {'loss_generator': loss_generator,
-                    'loss_kpts_2d': loss_kpts_2d,
-                    'loss_kpts_3d': loss_kpts_3d,
-                    'loss_shape': loss_shape,
-                    'loss_pose': loss_pose,
-                    'loss_generator_disc': loss_generator_disc,
-                    'loss_discriminator': loss_discriminator,
-                    'd_disc_real': d_disc_real,
-                    'd_disc_fake': d_disc_fake
-                    }
-        self.log_dict(iter_msg)
     def training_epoch_end(self, training_step_outputs):
         hmr_generator_sche, hmr_discriminator_sche = self.lr_schedulers()
         hmr_generator_sche.step()
@@ -175,4 +206,35 @@ class HMRLeRes(pl.LightningModule):
             step_size=500,
             gamma=0.9
         )
-        return [hmr_generator_opt, hmr_discriminator_opt], [hmr_generator_sche, hmr_discriminator_sche]
+
+        leres_encoder_params = []
+        leres_encoder_params_names = []
+        leres_decoder_params = []
+        leres_decoder_params_names = []
+        leres_nograd_param_names = []
+        for key, value in self.named_parameters():
+            if 'leres_model' in key and value.requires_grad:
+                if 'res' in key:
+                    leres_encoder_params.append(value)
+                    leres_encoder_params_names.append(key)
+                else:
+                    leres_decoder_params.append(value)
+                    leres_decoder_params_names.append(key)
+            else:
+                leres_nograd_param_names.append(key)
+
+        leres_lr_encoder = leres_net_cfg.TRAIN.BASE_LR
+        leres_lr_decoder = leres_net_cfg.TRAIN.BASE_LR * leres_net_cfg.TRAIN.SCALE_DECODER_LR
+        leres_weight_decay = 0.0005
+
+        leres_net_params = [
+            {'params': leres_encoder_params,
+             'lr': leres_lr_encoder,
+             'weight_decay': leres_weight_decay},
+            {'params': leres_decoder_params,
+             'lr': leres_lr_decoder,
+             'weight_decay': leres_weight_decay},
+        ]
+        leres_opt = torch.optim.SGD(leres_net_params, momentum=0.9)
+
+        return [hmr_generator_opt, hmr_discriminator_opt, leres_opt], [hmr_generator_sche, hmr_discriminator_sche]

@@ -184,33 +184,125 @@ class GTADataset(Dataset):
             'leres_cut_box': torch.from_numpy(leres_cut_box)
         }
 
+
+def perspective_projection(points, rotation, translation,
+                           focal_length, camera_center):
+    """
+    This function computes the perspective projection of a set of points.
+    Input:
+        points (bs, N, 3): 3D points
+        rotation (bs, 3, 3): Camera rotation
+        translation (bs, 3): Camera translation
+        focal_length (bs,) or scalar: Focal length
+        camera_center (bs, 2): Camera center
+    """
+    batch_size = points.shape[0]
+    K = torch.zeros([batch_size, 3, 3], device=points.device)
+    K[:,0,0] = focal_length
+    K[:,1,1] = focal_length
+    K[:,2,2] = 1.
+    K[:,:-1, -1] = camera_center
+
+    # Transform points
+    points = torch.einsum('bij,bkj->bki', rotation, points)
+    points = points + translation.unsqueeze(1)
+
+    # Apply perspective distortion
+    projected_points = points / points[:,:,-1].unsqueeze(-1)
+
+    # Apply camera intrinsics
+    projected_points = torch.einsum('bij,bkj->bki', K, projected_points)
+
+    return projected_points[:, :, :-1]
+
+
+def get_smpl_kpts(smpl_model, transl, pose, shape, focal_length,kpts3d):
+    verts, kpts_3d, Rs = smpl_model(shape=shape, pose=pose, get_skin=True)
+    device=kpts_3d.device
+    batch_size = kpts_3d.shape[0]
+    kpts_3d += transl.unsqueeze(dim=1)
+
+    # kpts_3d=kpts3d[:,:,:3]
+    camera_center=torch.Tensor([960.0,540.0],device=device).expand(batch_size, -1)
+    camera_center2=torch.zeros(batch_size, 2, device=device)
+
+    kpts_2d = perspective_projection(
+        kpts_3d,
+        rotation=torch.eye(3, device=device).unsqueeze(0).expand(batch_size, -1, -1),
+        translation=torch.zeros(size=[batch_size, 3], device=device),
+        focal_length=focal_length,
+        camera_center=camera_center)
+
+
+    return kpts_2d, kpts_2d
+
+
 if __name__ == '__main__':
     data_dir = 'C:/Users/90532/Desktop/Datasets/HMR-LeReS/2020-06-11-10-06-48-add-transl'
     gta_dataset = GTADataset(data_dir)
-    # for idx,i in enumerate(iter(gta_loader)):
-    #     if i['kp_2d'].shape!=i['kp_3d'].shape:
-    #         print('frame{idx}'.format(idx=idx))
-    #         print(i['kp_2d'].shape,i['kp_3d'].shape)
-    for idx, i in enumerate(iter(gta_dataset)):
-        # if len(i['kp_2d']) != 23:
-        #     print('frame{idx}'.format(idx=idx))
-        #     print(i['kp_2d'].shape, i['kp_3d'].shape)
-        leres_image = i['leres_image']
-        hmr_image = i['hmr_image']
-        kpts_2d = i['kpts_2d']
+    gta_loader = DataLoader(
+        dataset=gta_dataset,
+        batch_size=4,
+        shuffle=True,
+        drop_last=True,
+        pin_memory=True,
+        num_workers=0
+    )
+    batch = next(iter(gta_loader))
+
+    from hmr_leres_model_new_new import HMRLeReS
+
+    ckpt_path = 'hmr-leres-ckpt/last-v6.ckpt'
+    model = HMRLeReS.load_from_checkpoint(ckpt_path, strict=False)
+    top, left, height, width = batch['leres_cut_box'][:, 0], batch['leres_cut_box'][:, 1], batch[
+                                                                                               'leres_cut_box'][:,
+                                                                                           2], batch[
+                                                                                                   'leres_cut_box'][
+                                                                                               :, 3]
+    height_ratio = 448 / height
+    width_ratio = 448 / width
+
+    transl = batch['theta'][:, :3].contiguous()
+
+    predict_smpl_thetas=model.hmr_generator(batch['hmr_image'])[-1]
+
+    predict_smpl_transl = predict_smpl_thetas[:, :3].contiguous()
+    predict_smpl_poses = predict_smpl_thetas[:, 3:75].contiguous()
+    predict_smpl_shapes = predict_smpl_thetas[:, 75:].contiguous()
+
+
+    pose = batch['theta'][:, 3:75].contiguous()
+    shape = batch['theta'][:, 75:].contiguous()
+    kpts3d=batch['joints_3d']
+    focal_length = batch['focal_length']
+    # kpts2d, kpts3d = get_smpl_kpts(model.smpl_model, transl, pose, shape, focal_length,kpts3d)
+    kpts2d, kpts3d = get_smpl_kpts(model.smpl_model, transl, predict_smpl_poses, predict_smpl_shapes, focal_length,kpts3d)
+    predict_kpts_2d = kpts2d
+
+    predict_kpts_2d[:, :, 0] -= left[:, None]
+    predict_kpts_2d[:, :, 1] -= top[:, None]
+    predict_kpts_2d[:, :, 0] *= height_ratio[:, None]
+    predict_kpts_2d[:, :, 1] *= width_ratio[:, None]
+    for i in range(8):
+        leres_image = batch['leres_image'][i]
+        hmr_image = batch['hmr_image'][i]
+        kpts_2d = batch['joints_2d'][i]
+        kpts_2d = predict_kpts_2d[i].detach().numpy()
+        depth = batch['depth'][i]
 
         import matplotlib.pyplot as plt
         import numpy as np
 
-        f, axarr = plt.subplots(1, 2)
+        f, axarr = plt.subplots(1, 3)
         plt.figure()
         leres_image = leres_image.permute(1, 2, 0)
         hmr_image = hmr_image.permute(1, 2, 0)
+        depth_image = torch.clamp(input=depth, min=0, max=15)
         axarr[0].imshow(leres_image)
         axarr[1].imshow(hmr_image)
+        axarr[2].imshow(depth_image)
         # plt.imshow(hmr_image.permute(1, 2, 0))
         for j in range(24):
             # plt.imshow(img)
             axarr[0].scatter(np.squeeze(kpts_2d)[j][0], np.squeeze(kpts_2d)[j][1], s=50, c='red', marker='o')
         plt.show()
-        # break

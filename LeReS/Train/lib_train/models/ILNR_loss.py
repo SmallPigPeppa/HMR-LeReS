@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-
+import torch.nn.functional as F
 import pytorch_lightning as pl
 
 class MEADSTD_TANH_NORM_Loss(pl.LightningModule):
@@ -137,6 +137,38 @@ class DepthRegressionLoss(pl.LightningModule):
             loss_tanh += torch.mean(torch.abs(tanh_norm_gt - tanh_norm_pred))
         loss_out = loss/B
         return loss_out.float()
+
+
+
+
+class DepthRegressionLoss2(pl.LightningModule):
+    """
+    d_loss = MAE((d-u)/s - d') + MAE(tanh(0.01*(d-u)/s) - tanh(0.01*d'))
+    """
+    def __init__(self, min_threshold=-1e-8, max_threshold=1e8):
+        super(DepthRegressionLoss2, self).__init__()
+        self.valid_threshold = min_threshold
+        self.max_threshold = max_threshold
+        #self.thres1 = 0.9
+
+
+    def forward(self, pred_depth, gt_depth):
+        """
+        Calculate d_loss.
+        """
+        valid_mask = (gt_depth > self.valid_threshold) & (gt_depth < self.max_threshold)   # [b, c, h, w]
+        valid_pred_depth=pred_depth[valid_mask]
+        valid_gt_depth=gt_depth[valid_mask]
+        mse_loss=F.mse_loss(valid_pred_depth,valid_gt_depth)
+
+        tanh_valid_pred_depth=torch.tanh(0.01*valid_pred_depth)
+        tanh_valid_gt_depth=torch.tanh(0.01*valid_gt_depth)
+        tanh_mse_loss=F.mse_loss(tanh_valid_pred_depth,tanh_valid_gt_depth)
+
+
+
+        return mse_loss
+
 
 if __name__ == '__main__':
     ilnr_loss = MEADSTD_TANH_NORM_Loss()

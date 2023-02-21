@@ -90,9 +90,9 @@ class HMR(pl.LightningModule):
         loss_shape = self.hmr_loss.shape_loss(gt_smpl_shapes, predict_smpl_shapes) * args.e_shape_weight
         loss_pose = self.hmr_loss.pose_loss(gt_smpl_poses, predict_smpl_poses) * args.e_pose_weight
         loss_kpts_2d = self.hmr_loss.batch_kp_2d_l1_loss(gt_kpts_2d, predict_kpts_2d) * args.e_2d_kpts_weight
-        loss_kpts_2d=0.
+        # loss_kpts_2d=0.
         loss_kpts_3d = self.hmr_loss.batch_kp_3d_l2_loss(gt_kpts_3d, predict_kpts_3d) * args.e_3d_kpts_weight
-        loss_kpts_3d=0.
+        # loss_kpts_3d=0.
 
         predict_smpl_thetas[:, :3] = gt_smpl_transl
         loss_generator_disc = self.hmr_loss.batch_encoder_disc_l2_loss(
@@ -113,8 +113,6 @@ class HMR(pl.LightningModule):
 
         loss_discriminator = d_disc_loss * args.d_loss_weight
 
-        if self.trainer.global_step==60:
-            a=1
 
         hmr_generator_opt, hmr_discriminator_opt = self.optimizers()
         hmr_generator_opt.zero_grad()

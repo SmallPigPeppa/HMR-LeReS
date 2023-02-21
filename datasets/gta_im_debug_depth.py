@@ -5,8 +5,6 @@ import random
 import matplotlib.pyplot as plt
 import cv2
 import pickle
-
-import pytorch3d.renderer
 import torch
 import torchvision
 import torchvision.transforms as T
@@ -45,6 +43,8 @@ class GTADataset(Dataset):
         self.info_hmr = np.load(os.path.join(self.data_dir, 'info_hmr.pickle'), allow_pickle=True)
         # self.info_hmr = pickle.load(open(os.path.join(self.data_dir, 'info_hmr.pickle'), 'rb'))
         # self.info_pkl = pickle.load(open(os.path.join(self.data_dir, 'info_frames.pickle'),  'rb'))
+
+
 
         self.image_paths = []
         self.depth_paths = []
@@ -110,14 +110,16 @@ class GTADataset(Dataset):
             self.cam_far_clips.append(cam_far_clip_i)
 
         print('finished load gta-im data, total {} samples'.format(self.num_samples))
-        self.shape_average = np.average(self.shapes, axis=0)
+        self.shape_average=np.average(self.shapes, axis=0)
+
+
 
     def __len__(self):
         return len(self.image_paths)
 
     def __getitem__(self, index):
         if index == 61:
-            index = 60
+            index=60
         image_path = self.image_paths[index]
         box = self.boxs[index]
         kpts_2d = self.kpts_2d[index]
@@ -184,6 +186,7 @@ class GTADataset(Dataset):
             'leres_cut_box': torch.from_numpy(leres_cut_box)
         }
 
+
 if __name__ == '__main__':
     data_dir = 'C:/Users/90532/Desktop/Datasets/HMR-LeReS/2020-06-11-10-06-48-add-transl'
     gta_dataset = GTADataset(data_dir)
@@ -198,19 +201,24 @@ if __name__ == '__main__':
         leres_image = i['leres_image']
         hmr_image = i['hmr_image']
         kpts_2d = i['kpts_2d']
+        depth=i['depth']
 
         import matplotlib.pyplot as plt
         import numpy as np
 
-        f, axarr = plt.subplots(1, 2)
+        f, axarr = plt.subplots(1, 3)
         plt.figure()
         leres_image = leres_image.permute(1, 2, 0)
         hmr_image = hmr_image.permute(1, 2, 0)
+        depth_image=torch.clamp(input=depth,min=0,max=15)
         axarr[0].imshow(leres_image)
         axarr[1].imshow(hmr_image)
+        axarr[2].imshow(depth_image)
         # plt.imshow(hmr_image.permute(1, 2, 0))
         for j in range(24):
             # plt.imshow(img)
             axarr[0].scatter(np.squeeze(kpts_2d)[j][0], np.squeeze(kpts_2d)[j][1], s=50, c='red', marker='o')
         plt.show()
-        # break
+
+        if idx ==10:
+            break

@@ -5,8 +5,6 @@ import random
 import matplotlib.pyplot as plt
 import cv2
 import pickle
-
-import pytorch3d.renderer
 import torch
 import torchvision
 import torchvision.transforms as T
@@ -184,33 +182,63 @@ class GTADataset(Dataset):
             'leres_cut_box': torch.from_numpy(leres_cut_box)
         }
 
+
 if __name__ == '__main__':
     data_dir = 'C:/Users/90532/Desktop/Datasets/HMR-LeReS/2020-06-11-10-06-48-add-transl'
     gta_dataset = GTADataset(data_dir)
-    # for idx,i in enumerate(iter(gta_loader)):
-    #     if i['kp_2d'].shape!=i['kp_3d'].shape:
-    #         print('frame{idx}'.format(idx=idx))
-    #         print(i['kp_2d'].shape,i['kp_3d'].shape)
-    for idx, i in enumerate(iter(gta_dataset)):
-        # if len(i['kp_2d']) != 23:
-        #     print('frame{idx}'.format(idx=idx))
-        #     print(i['kp_2d'].shape, i['kp_3d'].shape)
-        leres_image = i['leres_image']
-        hmr_image = i['hmr_image']
-        kpts_2d = i['kpts_2d']
+    gta_loader = DataLoader(
+        dataset=gta_dataset,
+        batch_size=4,
+        shuffle=True,
+        drop_last=True,
+        pin_memory=True,
+        num_workers=0
+    )
+    batch = next(iter(gta_loader))
+
+    from hmr_leres_model_new_new import HMRLeReS
+
+    ckpt_path = 'hmr-leres-ckpt/last-v5.ckpt'
+    model = HMRLeReS.load_from_checkpoint(ckpt_path, strict=False)
+    top, left, height, width = batch['leres_cut_box'][:, 0], batch['leres_cut_box'][:, 1], batch[
+                                                                                               'leres_cut_box'][:,
+                                                                                           2], batch[
+                                                                                                   'leres_cut_box'][
+                                                                                               :, 3]
+    height_ratio = 448 / height
+    width_ratio = 448 / width
+
+    transl = batch['theta'][:, :3].contiguous()
+    pose = batch['theta'][:, 3:75].contiguous()
+    shape = batch['theta'][:, 75:].contiguous()
+    focal_length=batch['focal_length']
+    kpts2d,kpts3d = model.get_smpl_kpts(transl, pose, shape, focal_length)
+    predict_kpts_2d=kpts2d
+
+    predict_kpts_2d[:, :, 0] -= left[:, None]
+    predict_kpts_2d[:, :, 1] -= top[:, None]
+    predict_kpts_2d[:, :, 0] *= height_ratio[:, None]
+    predict_kpts_2d[:, :, 1] *= width_ratio[:, None]
+    for i in range(8):
+        leres_image = batch['leres_image'][i]
+        hmr_image = batch['hmr_image'][i]
+        kpts_2d = batch['joints_2d'][i]
+        kpts_2d =predict_kpts_2d[i]
+        depth = batch['depth'][i]
 
         import matplotlib.pyplot as plt
         import numpy as np
 
-        f, axarr = plt.subplots(1, 2)
+        f, axarr = plt.subplots(1, 3)
         plt.figure()
         leres_image = leres_image.permute(1, 2, 0)
         hmr_image = hmr_image.permute(1, 2, 0)
+        depth_image = torch.clamp(input=depth, min=0, max=15)
         axarr[0].imshow(leres_image)
         axarr[1].imshow(hmr_image)
+        axarr[2].imshow(depth_image)
         # plt.imshow(hmr_image.permute(1, 2, 0))
         for j in range(24):
             # plt.imshow(img)
             axarr[0].scatter(np.squeeze(kpts_2d)[j][0], np.squeeze(kpts_2d)[j][1], s=50, c='red', marker='o')
         plt.show()
-        # break

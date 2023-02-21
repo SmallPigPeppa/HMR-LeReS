@@ -23,6 +23,10 @@ def convert_weak_perspective_to_perspective(
     return perspective_camera
 
 
+
+
+
+
 def perspective_projection(points, rotation, translation,
                            focal_length, camera_center):
     """

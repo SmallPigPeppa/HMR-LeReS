@@ -29,8 +29,8 @@ parser.add_argument('--d-loss-weight', type=float, default=0.02, help='weight on
 
 parser.add_argument('--enable-inter-supervision', type=bool, default=False, help='enable inter supervision or not.')
 parser.add_argument('--encoder-network', type=str, default='resnet50', help='the encoder network name')
-parser.add_argument('--batch-size', type=int, default=2, help='batch size')
-parser.add_argument('--eval-batch-size', type=int, default=2, help='eval data batch size')
+parser.add_argument('--batch-size', type=int, default=4, help='batch size')
+parser.add_argument('--eval-batch-size', type=int, default=4, help='eval data batch size')
 parser.add_argument('--adv-batch-size', type=int, default=24, help='default adv batch size')
 
 # LeReS
