@@ -64,6 +64,7 @@ class HMRLeReS(pl.LightningModule):
         loaders = {'gta_loader': gta_loader, 'mesh_loader': mesh_loader}
         return loaders
 
+
     def get_smpl_kpts(self, transl, pose, shape, focal_length):
         verts, kpts_3d, Rs = self.smpl_model(shape=shape, pose=pose, get_skin=True)
         batch_size = kpts_3d.shape[0]
