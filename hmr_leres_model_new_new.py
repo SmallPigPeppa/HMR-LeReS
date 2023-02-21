@@ -35,11 +35,10 @@ class HMRLeReS(pl.LightningModule):
         self.edge_ranking_loss = EdgeguidedRankingLoss(min_threshold=0., max_threshold=15)
 
     def train_dataloader(self):
-        gta_dataset_dir = 'C:/Users/90532/Desktop/Datasets/HMR-LeReS/2020-06-11-10-06-48-add-transl'
-        mesh_dataset_dir = 'C:/Users/90532/Desktop/Datasets/HMR-LeRes/mesh-add-transl'
+        gta_dataset_dir = args.gta_dataset_dir
+        mesh_dataset_dir = args.mesh_dataset_dir
 
-        # gta_dataset_dir = '/share/wenzhuoliu/torch_ds/HMR-LeReS/2020-06-11-10-06-48'
-        # mesh_dataset_dir = '/share/wenzhuoliu/torch_ds/HMR-LeReS/mosh'
+
 
         gta_dataset = GTADataset(gta_dataset_dir)
         mesh_dataset = MeshDataset(mesh_dataset_dir)
@@ -60,6 +59,7 @@ class HMRLeReS(pl.LightningModule):
             shuffle=True,
             drop_last=True,
             pin_memory=True,
+            num_workers=args.num_worker
         )
         loaders = {'gta_loader': gta_loader, 'mesh_loader': mesh_loader}
         return loaders
@@ -225,9 +225,9 @@ class HMRLeReS(pl.LightningModule):
             else:
                 leres_nograd_param_names.append(key)
 
-        leres_lr_encoder = leres_net_cfg.TRAIN.BASE_LR
-        leres_lr_decoder = leres_net_cfg.TRAIN.BASE_LR * leres_net_cfg.TRAIN.SCALE_DECODER_LR
-        leres_weight_decay = 0.0005
+        leres_lr_encoder = args.base_lr
+        leres_lr_decoder = args.base_lr * args.scale_decoder_lr
+        leres_weight_decay = args.weight_decay
 
         leres_net_params = [
             {'params': leres_encoder_params,
