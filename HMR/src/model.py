@@ -22,7 +22,7 @@ from densenet import load_denseNet
 import sys
 from camera_utils import  perspective_projection, convert_weak_perspective_to_perspective
 import pickle
-from smplx import SMPL as SMPL_native
+
 class ThetaRegressor(LinearModel):
     def __init__(self, fc_layers, use_dropout, drop_prob, use_ac_func, iterations):
         super(ThetaRegressor, self).__init__(fc_layers, use_dropout, drop_prob, use_ac_func)
