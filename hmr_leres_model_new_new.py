@@ -50,7 +50,7 @@ class HMRLeReS(pl.LightningModule):
             shuffle=True,
             drop_last=True,
             pin_memory=True,
-            num_workers=args.num_worker
+            num_workers=args.num_workers
         )
 
         mesh_loader = DataLoader(
@@ -59,7 +59,7 @@ class HMRLeReS(pl.LightningModule):
             shuffle=True,
             drop_last=True,
             pin_memory=True,
-            num_workers=args.num_worker
+            num_workers=args.num_workers
         )
         loaders = {'gta_loader': gta_loader, 'mesh_loader': mesh_loader}
         return loaders
