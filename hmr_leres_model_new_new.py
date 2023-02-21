@@ -155,15 +155,17 @@ class HMRLeReS(pl.LightningModule):
 
         leres_opt.zero_grad()
         self.manual_backward(loss_leres)
-        torch.nn.utils.clip_grad_norm_(self.leres_model.parameters(), max_norm=10.0)
+        torch.nn.utils.clip_grad_norm_(self.leres_model.parameters(), max_norm=5.0)
         leres_opt.step()
 
         hmr_generator_opt.zero_grad()
         self.manual_backward(loss_generator)
+        torch.nn.utils.clip_grad_norm_(self.hmr_generator.parameters(), max_norm=5.0)
         hmr_generator_opt.step()
 
         hmr_discriminator_opt.zero_grad()
         self.manual_backward(loss_discriminator)
+        torch.nn.utils.clip_grad_norm_(self.hmr_discriminator.parameters(), max_norm=5.0)
         hmr_discriminator_opt.step()
 
         hmr_log_dict = {'loss_generator': loss_generator,
