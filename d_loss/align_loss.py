@@ -103,7 +103,7 @@ class AlignLoss(pl.LightningModule):
         # unzqueeze
         human_mask = human_mask.unsqueeze(0)
         verts = verts.unsqueeze(0)
-        depth = depth.unsqueeze(0)
+        # depth = depth.unsqueeze(0)
         K_intrin = K_intrin.unsqueeze(0)
         cut_box = cut_box
         faces = faces

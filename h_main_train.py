@@ -21,8 +21,7 @@ if __name__ == '__main__':
 
     trainer = Trainer(
         max_epochs=200,
-        accelerator="auto",
-        devices=1 if torch.cuda.is_available() else None,  # limiting got iPython runs
+        gpus=None,
         logger=wandb_logger,
         log_every_n_steps=1,
         callbacks=[LearningRateMonitor(logging_interval="step"), TQDMProgressBar(refresh_rate=10),checkpoint_callback]
