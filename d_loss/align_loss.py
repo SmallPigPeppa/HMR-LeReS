@@ -24,7 +24,7 @@ class AlignLoss(pl.LightningModule):
         super(AlignLoss, self).__init__()
 
     def init_pytorch3d_render(self, K_intrin, image_size):
-        R = torch.Tensor([[[-1, 0, 0], [0, -1, 0], [0, 0, 1]]], device=self.device)
+        R = torch.tensor([[[-1, 0, 0], [0, -1, 0], [0, 0, 1]]],dtype=torch.float32,device=self.device)
         T = torch.zeros((1, 3), dtype=torch.float32, device=self.device)
         K_intrin_pt3d = torch.zeros((1, 4, 4), dtype=torch.float32, device=self.device)
         K_intrin_pt3d[0, 0, 0] = K_intrin[0, 0, 0]
@@ -57,7 +57,7 @@ class AlignLoss(pl.LightningModule):
         )
 
     def get_depth_map_pytorch3d(self, verts, faces):
-        texture = torch.Tensor([0.9, 0.7, 0.7], device=self.device).repeat(1, verts.shape[1], 1)
+        texture = torch.tensor([0.9, 0.7, 0.7], device=self.device).repeat(1, verts.shape[1], 1)
         texture_pt3d = TexturesVertex(verts_features=texture)
         meshes_screen = Meshes(verts=verts, faces=faces, textures=texture_pt3d)
 
@@ -80,7 +80,8 @@ class AlignLoss(pl.LightningModule):
         return vismask, nearest_depth_map, farrest_depth_map
 
     def batch_align_loss(self, verts, faces, depth, batch):
-        loss = 0.
+        # loss = 0.
+        loss_batch=[]
         batchsize = batch['leres_image'].shape[0]
         for idx in range(batchsize):
             cut_box_i = batch['leres_cut_box'][idx]
@@ -88,8 +89,11 @@ class AlignLoss(pl.LightningModule):
             human_mask_i = batch['human_mask'][idx]
             verts_i = verts[idx]
             depth_i = depth[idx]
-            loss += self.sample_align_loss(verts_i, faces, depth_i, cut_box_i, K_intrin_i, human_mask_i)
-        return loss
+            loss_sample=self.sample_align_loss(verts_i, faces, depth_i, cut_box_i, K_intrin_i, human_mask_i)
+            loss_batch.append(loss_sample)
+
+        align_loss= torch.mean(torch.stack(loss_batch))
+        return align_loss
 
     def sample_align_loss(self, verts, faces, depth, cut_box, K_intrin, human_mask):
 

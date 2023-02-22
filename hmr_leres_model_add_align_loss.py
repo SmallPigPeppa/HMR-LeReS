@@ -13,11 +13,13 @@ from camera_utils import perspective_projection
 from d_loss.hmr_loss import HMRLoss
 from d_loss.leres_loss import DepthRegressionLoss, EdgeguidedNormalRegressionLoss, MultiScaleGradLoss, \
     recover_scale_shift_depth, EdgeguidedRankingLoss
+from d_loss.align_loss import AlignLoss
 
 from lib_train.configs.config import cfg as leres_net_cfg
 
 from a_models.leres import DepthModel
 from datasets.hmr_data_utils import off_set_scale_kpts
+
 
 class HMRLeReS(pl.LightningModule):
     def __init__(self):
@@ -26,23 +28,23 @@ class HMRLeReS(pl.LightningModule):
         self.hmr_generator = HMRNetBase()
         self.hmr_discriminator = Discriminator()
         self.smpl_model = SMPL(args.smpl_model, obj_saveable=True)
-        self.hmr_loss = HMRLoss()
         self.leres_model = DepthModel()
 
+
+        self.hmr_loss = HMRLoss()
         self.depth_regression_loss = DepthRegressionLoss(min_threshold=0., max_threshold=15)
         self.pwn_edge_loss = EdgeguidedNormalRegressionLoss(min_threshold=0., max_threshold=15)
         self.msg_loss = MultiScaleGradLoss(scale=4, min_threshold=0., max_threshold=15)
         self.edge_ranking_loss = EdgeguidedRankingLoss(min_threshold=0., max_threshold=15)
+        self.align_loss = AlignLoss()
 
     def train_dataloader(self):
         gta_dataset_dir = args.gta_dataset_dir
         mesh_dataset_dir = args.mesh_dataset_dir
 
-
-
         gta_dataset = GTADataset(gta_dataset_dir)
         mesh_dataset = MeshDataset(mesh_dataset_dir)
-        self.gta_dataset=gta_dataset
+        self.gta_dataset = gta_dataset
 
         gta_loader = DataLoader(
             dataset=gta_dataset,
@@ -64,11 +66,11 @@ class HMRLeReS(pl.LightningModule):
         loaders = {'gta_loader': gta_loader, 'mesh_loader': mesh_loader}
         return loaders
 
-
-    def get_smpl_kpts(self, transl, pose, shape, focal_length):
+    def get_smpl_kpts_verts(self, transl, pose, shape, focal_length):
         verts, kpts_3d, Rs = self.smpl_model(shape=shape, pose=pose, get_skin=True)
         batch_size = kpts_3d.shape[0]
         kpts_3d += transl.unsqueeze(dim=1)
+        verts += transl.unsqueeze(dim=1)
         kpts_2d = perspective_projection(
             kpts_3d,
             rotation=torch.eye(3, device=self.device).unsqueeze(0).expand(batch_size, -1, -1),
@@ -77,7 +79,7 @@ class HMRLeReS(pl.LightningModule):
             camera_center=torch.Tensor([960.0, 540.0]).to(self.device).expand(batch_size, -1)
         )
 
-        return kpts_2d, kpts_3d
+        return kpts_2d, kpts_3d, verts
 
     def training_step(self, batch, batch_index):
         gta_data = batch['gta_loader']
@@ -92,23 +94,26 @@ class HMRLeReS(pl.LightningModule):
         gt_kpts_3d = gta_data['joints_3d']
         gt_intrinsic = gta_data['intrinsic']
         gt_focal_length = gta_data['focal_length']
-        top, left, height, width=gta_data['leres_cut_box'][:,0],gta_data['leres_cut_box'][:,1],gta_data['leres_cut_box'][:,2],gta_data['leres_cut_box'][:,3]
+        top, left, height, width = gta_data['leres_cut_box'][:, 0], gta_data['leres_cut_box'][:, 1], gta_data[
+                                                                                                         'leres_cut_box'][
+                                                                                                     :, 2], gta_data[
+                                                                                                                'leres_cut_box'][
+                                                                                                            :, 3]
 
         predict_smpl_thetas = self.hmr_generator(hmr_images)[-1]
         predict_smpl_transl = predict_smpl_thetas[:, :3].contiguous()
         predict_smpl_poses = predict_smpl_thetas[:, 3:75].contiguous()
         predict_smpl_shapes = predict_smpl_thetas[:, 75:].contiguous()
 
-        predict_kpts_2d, predict_kpts_3d = self.get_smpl_kpts(transl=gt_smpl_transl, pose=predict_smpl_poses,
+        predict_kpts_2d, predict_kpts_3d, predict_verts = self.get_smpl_kpts_verts(transl=gt_smpl_transl, pose=predict_smpl_poses,
                                                               shape=predict_smpl_shapes, focal_length=gt_focal_length)
 
         height_ratio = self.gta_dataset.leres_size / height
         width_ratio = self.gta_dataset.leres_size / width
-        predict_kpts_2d[:,:,0]-=left[:,None]
-        predict_kpts_2d[:,:,1]-=top[:,None]
-        predict_kpts_2d[:, :, 0] *= height_ratio[:,None]
-        predict_kpts_2d[:, :, 1] *= width_ratio[:,None]
-
+        predict_kpts_2d[:, :, 0] -= left[:, None]
+        predict_kpts_2d[:, :, 1] -= top[:, None]
+        predict_kpts_2d[:, :, 0] *= height_ratio[:, None]
+        predict_kpts_2d[:, :, 1] *= width_ratio[:, None]
 
         loss_shape = self.hmr_loss.shape_loss(gt_smpl_shapes, predict_smpl_shapes) * args.e_shape_weight
         loss_pose = self.hmr_loss.pose_loss(gt_smpl_poses, predict_smpl_poses) * args.e_pose_weight
@@ -125,9 +130,6 @@ class HMRLeReS(pl.LightningModule):
         fake_thetas = predict_smpl_thetas.detach()
         fake_disc_value, real_disc_value = self.hmr_discriminator(fake_thetas), self.hmr_discriminator(real_thetas)
         d_disc_real, d_disc_fake, d_disc_loss = self.hmr_loss.batch_adv_disc_l2_loss(real_disc_value, fake_disc_value)
-
-        # loss_generator = (loss_shape + loss_pose + loss_kpts_2d + loss_kpts_3d) * args.e_loss_weight + \
-        #                  loss_generator_disc * args.d_loss_weight
 
         loss_generator = (loss_shape + loss_pose + loss_kpts_2d + loss_kpts_3d) * args.e_loss_weight + \
                          loss_generator_disc * args.d_loss_weight
@@ -152,9 +154,15 @@ class HMRLeReS(pl.LightningModule):
             'loss_leres': loss_leres
         }
 
-        hmr_generator_leres_opt, hmr_discriminator_opt  = self.optimizers()
+        # loss_align
+        loss_align = self.align_loss.batch_align_loss( predict_verts,  torch.tensor([self.smpl_model.faces],device=self.device), predict_depth, gta_data)
 
 
+
+
+
+
+        hmr_generator_leres_opt, hmr_discriminator_opt = self.optimizers()
 
         hmr_generator_leres_opt.zero_grad()
         self.manual_backward(loss_generator)
@@ -179,16 +187,13 @@ class HMRLeReS(pl.LightningModule):
                         'd_disc_fake': d_disc_fake
                         }
 
-        all_log_dict = {**leres_log_dict,**hmr_log_dict}
+        all_log_dict = {**leres_log_dict, **hmr_log_dict}
         self.log_dict(all_log_dict)
 
     def training_epoch_end(self, training_step_outputs):
         hmr_generator_sche, hmr_discriminator_sche = self.lr_schedulers()
         hmr_generator_sche.step()
         hmr_discriminator_sche.step()
-
-
-
 
     def configure_optimizers(self):
 
@@ -208,7 +213,6 @@ class HMRLeReS(pl.LightningModule):
             else:
                 leres_nograd_param_names.append(key)
 
-
         hmr_generator_leres_params = [
             {'params': self.hmr_generator.parameters(),
              'lr': args.e_lr,
@@ -221,10 +225,8 @@ class HMRLeReS(pl.LightningModule):
              'weight_decay': args.weight_decay}
         ]
 
-
-
         hmr_generator_leres_opt = torch.optim.SGD(
-            hmr_generator_leres_params,momentum=0.9
+            hmr_generator_leres_params, momentum=0.9
         )
         hmr_discriminator_opt = torch.optim.Adam(
             self.hmr_discriminator.parameters(),
@@ -242,10 +244,7 @@ class HMRLeReS(pl.LightningModule):
             gamma=0.9
         )
 
-
         return [hmr_generator_leres_opt, hmr_discriminator_opt], [hmr_generator_sche, hmr_discriminator_sche]
-
-
 
     # def configure_optimizers(self):
     #     hmr_generator_opt = torch.optim.Adam(
@@ -300,4 +299,3 @@ class HMRLeReS(pl.LightningModule):
     #     leres_opt = torch.optim.SGD(leres_net_params, momentum=0.9)
     #
     #     return [hmr_generator_opt, hmr_discriminator_opt, leres_opt], [hmr_generator_sche, hmr_discriminator_sche]
-
