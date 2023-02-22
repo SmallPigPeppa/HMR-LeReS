@@ -22,7 +22,8 @@ if __name__=='__main__':
     from a_models.smpl import SMPL
     smpl = SMPL(smpl_model_path, obj_saveable=True)
 
-    ckpt_path= 'hmr-leres-ckpt/last-v6.ckpt'
+    # ckpt_path= 'hmr-leres-ckpt/last-v6.ckpt'
+    ckpt_path = 'last-v1.ckpt'
     model=HMRLeReS.load_from_checkpoint(ckpt_path, strict=False)
 
 

@@ -199,6 +199,7 @@ if __name__ == '__main__':
     from hmr_leres_model_new_new import HMRLeReS
 
     ckpt_path = 'hmr-leres-ckpt/last-v5.ckpt'
+
     model = HMRLeReS.load_from_checkpoint(ckpt_path, strict=False)
     top, left, height, width = batch['leres_cut_box'][:, 0], batch['leres_cut_box'][:, 1], batch[
                                                                                                'leres_cut_box'][:,
