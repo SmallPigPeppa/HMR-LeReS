@@ -1,4 +1,4 @@
-from hmr_leres_model_new_new import HMRLeReS
+from hmr_leres_model_add_align_loss import HMRLeReS
 from hmr_leres_config import args
 from pytorch_lightning.loggers import WandbLogger
 import torch

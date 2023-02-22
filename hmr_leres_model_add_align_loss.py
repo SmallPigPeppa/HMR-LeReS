@@ -30,7 +30,6 @@ class HMRLeReS(pl.LightningModule):
         self.smpl_model = SMPL(args.smpl_model, obj_saveable=True)
         self.leres_model = DepthModel()
 
-
         self.hmr_loss = HMRLoss()
         self.depth_regression_loss = DepthRegressionLoss(min_threshold=0., max_threshold=15)
         self.pwn_edge_loss = EdgeguidedNormalRegressionLoss(min_threshold=0., max_threshold=15)
@@ -105,8 +104,10 @@ class HMRLeReS(pl.LightningModule):
         predict_smpl_poses = predict_smpl_thetas[:, 3:75].contiguous()
         predict_smpl_shapes = predict_smpl_thetas[:, 75:].contiguous()
 
-        predict_kpts_2d, predict_kpts_3d, predict_verts = self.get_smpl_kpts_verts(transl=gt_smpl_transl, pose=predict_smpl_poses,
-                                                              shape=predict_smpl_shapes, focal_length=gt_focal_length)
+        predict_kpts_2d, predict_kpts_3d, predict_verts = self.get_smpl_kpts_verts(transl=gt_smpl_transl,
+                                                                                   pose=predict_smpl_poses,
+                                                                                   shape=predict_smpl_shapes,
+                                                                                   focal_length=gt_focal_length)
 
         height_ratio = self.gta_dataset.leres_size / height
         width_ratio = self.gta_dataset.leres_size / width
@@ -155,18 +156,20 @@ class HMRLeReS(pl.LightningModule):
         }
 
         # loss_align
-        loss_align = self.align_loss.batch_align_loss( predict_verts,  torch.tensor([self.smpl_model.faces],device=self.device), predict_depth, gta_data)
-
-
-
-
-
+        loss_align = self.align_loss.batch_align_loss(predict_verts,
+                                                      torch.tensor([self.smpl_model.faces], device=self.device),
+                                                      predict_depth, gta_data)
+        loss_inside = 0.
+        loss_combie = loss_align + loss_inside
+        combine_log_dict = {
+            'loss_align': loss_align,
+            'loss_inside': loss_inside
+        }
 
         hmr_generator_leres_opt, hmr_discriminator_opt = self.optimizers()
 
         hmr_generator_leres_opt.zero_grad()
-        self.manual_backward(loss_generator)
-        self.manual_backward(loss_leres)
+        self.manual_backward(loss_generator + loss_align + loss_combie)
         torch.nn.utils.clip_grad_norm_(self.hmr_generator.parameters(), max_norm=3.0)
         torch.nn.utils.clip_grad_norm_(self.leres_model.parameters(), max_norm=3.0)
         hmr_generator_leres_opt.step()
@@ -187,7 +190,7 @@ class HMRLeReS(pl.LightningModule):
                         'd_disc_fake': d_disc_fake
                         }
 
-        all_log_dict = {**leres_log_dict, **hmr_log_dict}
+        all_log_dict = {**leres_log_dict, **hmr_log_dict, **combine_log_dict}
         self.log_dict(all_log_dict)
 
     def training_epoch_end(self, training_step_outputs):
