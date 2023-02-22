@@ -11,7 +11,7 @@ python h_main_train_cluster.py \
 --entity pigpeppa \
 --num_gpus 2 \
 --max-epochs 100 \
---num-workers 0 \
+--num-workers 4 \
 --batch-size 16 \
 --eval-batch-size 16 \
 --adv-batch-size 48 \
