@@ -419,3 +419,4 @@ class HMRLeReS(pl.LightningModule):
     #     all_log_dict = {**leres_log_dict, **hmr_log_dict, **combine_log_dict}
     #
     #     self.log_dict(all_log_dict)
+
