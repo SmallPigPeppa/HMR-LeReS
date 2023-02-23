@@ -13,7 +13,7 @@ def recover_metric_depth(pred, gt,):
     return pred_metric
 
 
-def validate_depth(pred, gt, min_threshold=0, max_threshold=15):
+def val_depth(pred, gt, min_threshold=0, max_threshold=15):
     if type(pred).__module__ == torch.__name__:
         pred = pred.cpu().numpy()
     if type(gt).__module__ == torch.__name__:

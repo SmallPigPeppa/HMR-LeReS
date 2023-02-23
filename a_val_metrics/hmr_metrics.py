@@ -20,7 +20,7 @@ def compute_pve(pred, gt):
     return torch.mean(dist)
 
 
-def validate_kpts_verts(pred_kpts_3d, gt_kpts_3d, pred_verts, gt_verts, pck_threshould):
+def val_kpts_verts(pred_kpts_3d, gt_kpts_3d, pred_verts, gt_verts, pck_threshold):
     # Remove the probability of kpts
     gt_kpts_3d = gt_kpts_3d[:, :, :3]
 
@@ -32,7 +32,7 @@ def validate_kpts_verts(pred_kpts_3d, gt_kpts_3d, pred_verts, gt_verts, pck_thre
 
     # compute metrics
     mpjpe = compute_mpjpe(pred_kpts_3d, gt_kpts_3d)
-    pck = compute_pck(pred_kpts_3d, gt_kpts_3d, pck_threshould)
+    pck = compute_pck(pred_kpts_3d, gt_kpts_3d, pck_threshold)
     pve = compute_pve(pred_verts_aligned, gt_verts_aligned)
 
     metrics_dict = {'mpjpe': mpjpe, 'pck': pck, 'pve': pve}
