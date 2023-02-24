@@ -217,7 +217,6 @@ class HMRLeReS(pl.LightningModule):
 
         return all_log_dict
 
-
     def training_step(self, batch, batch_index):
         log_dict = self.share_step(batch)
         hmr_generator_leres_opt, hmr_discriminator_opt = self.optimizers()
@@ -238,18 +237,15 @@ class HMRLeReS(pl.LightningModule):
         train_log_dict = {f'train_{k}': v for k, v in log_dict.items()}
         self.log_dict(train_log_dict)
 
-
     def validation_step(self, batch, batch_index):
         log_dict = self.share_step_val(batch)
         val_log_dict = {f'val_{k}': v for k, v in log_dict.items()}
         self.log_dict(val_log_dict)
 
-
     def training_epoch_end(self, training_step_outputs):
         hmr_generator_leres_sche, hmr_discriminator_sche = self.lr_schedulers()
         hmr_generator_leres_sche.step()
         hmr_discriminator_sche.step()
-
 
     def configure_optimizers(self):
         leres_encoder_params = []
@@ -354,12 +350,8 @@ class HMRLeReS(pl.LightningModule):
         loss_generator_disc = self.hmr_loss.batch_encoder_disc_l2_loss(
             self.hmr_discriminator(pred_smpl_thetas))
 
-
-
-
         loss_generator = (loss_shape + loss_pose + loss_kpts_2d + loss_kpts_3d) * args.e_loss_weight + \
                          loss_generator_disc * args.d_loss_weight
-
 
         hmr_loss_dict = {'loss_generator': loss_generator,
                          'loss_kpts_2d': loss_kpts_2d,
@@ -405,8 +397,9 @@ class HMRLeReS(pl.LightningModule):
                                             pck_threshold=self.pck_threshold)
 
         all_log_dict = {**leres_loss_dict, **hmr_loss_dict, **combine_loss_dict, **kpts_verts_metrics, **depths_metrics}
+        loss_val = all_log_dict['loss_generator'] + all_log_dict['loss_leres'] + all_log_dict['loss_combine']
 
-        return all_log_dict
+        return {**all_log_dict, 'loss_val': loss_val}
 # def training_step(self, batch, batch_index):
 #     gta_data = batch['gta_loader']
 #     mesh_data = batch['mesh_loader']
