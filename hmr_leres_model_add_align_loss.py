@@ -205,7 +205,7 @@ class HMRLeReS(pl.LightningModule):
         combine_loss_dict = {
             'loss_align': loss_align,
             'loss_inside': loss_inside,
-            'loss_combie': loss_combie
+            'loss_combine': loss_combie
         }
 
         depths_metrics = val_depth(predict_depth, gt_depth, min_threshold=self.depth_min_threshold,
