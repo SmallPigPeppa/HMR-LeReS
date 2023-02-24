@@ -397,9 +397,9 @@ class HMRLeReS(pl.LightningModule):
                                             pck_threshold=self.pck_threshold)
 
         all_log_dict = {**leres_loss_dict, **hmr_loss_dict, **combine_loss_dict, **kpts_verts_metrics, **depths_metrics}
-        loss_val = all_log_dict['loss_generator'] + all_log_dict['loss_leres'] + all_log_dict['loss_combine']
+        save_ckpt_loss = all_log_dict['loss_generator'] + all_log_dict['loss_leres'] + all_log_dict['loss_combine']
 
-        return {**all_log_dict, 'loss_val': loss_val}
+        return {**all_log_dict, 'save_ckpt_loss': save_ckpt_loss}
 # def training_step(self, batch, batch_index):
 #     gta_data = batch['gta_loader']
 #     mesh_data = batch['mesh_loader']
