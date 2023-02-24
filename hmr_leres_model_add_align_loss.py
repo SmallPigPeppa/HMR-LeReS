@@ -225,7 +225,7 @@ class HMRLeReS(pl.LightningModule):
         hmr_generator_leres_opt.zero_grad()
         self.manual_backward(log_dict['loss_generator'] + log_dict['loss_leres'] + log_dict['loss_combine'])
         torch.nn.utils.clip_grad_norm_(self.hmr_generator.parameters(), max_norm=3.0)
-        torch.nn.utils.clip_grad_norm_(self.leres_model.parameters(), max_norm=3.0)
+        torch.nn.utils.clip_grad_norm_(self.leres_model.parameters(), max_norm=10.0)
         hmr_generator_leres_opt.step()
 
         # hmr_discriminator
