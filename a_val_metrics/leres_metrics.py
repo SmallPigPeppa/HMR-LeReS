@@ -15,9 +15,9 @@ def recover_metric_depth(pred, gt, ):
 
 def val_depth(pred, gt, min_threshold=0, max_threshold=15):
     if type(pred).__module__ == torch.__name__:
-        pred = pred.detach().numpy()
+        pred = pred.cpu().detach().numpy()
     if type(gt).__module__ == torch.__name__:
-        gt = gt.detach().numpy()
+        gt = gt.cpu().detach().numpy()
     gt = np.squeeze(gt)
     pred = np.squeeze(pred)
     valid_mask = (gt > min_threshold) & (gt < max_threshold) & (pred > min_threshold)
