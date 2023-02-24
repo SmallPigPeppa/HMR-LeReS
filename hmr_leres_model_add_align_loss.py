@@ -22,6 +22,7 @@ from datasets.hmr_data_utils import off_set_scale_kpts
 from a_val_metrics.leres_metrics import val_depth
 from a_val_metrics.hmr_metrics import val_kpts_verts
 from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
+from pytorch_lightning.trainer.suppporters import CombinedLoader
 
 
 class HMRLeReS(pl.LightningModule):
@@ -101,7 +102,7 @@ class HMRLeReS(pl.LightningModule):
             num_workers=args.num_workers
         )
         loaders = {'gta_loader': gta_loader, 'mesh_loader': mesh_loader}
-        return loaders
+        return CombinedLoader(loaders)
 
     def get_smpl_kpts_verts(self, transl, pose, shape, focal_length):
         verts, kpts_3d, Rs = self.smpl_model(shape=shape, pose=pose, get_skin=True)
