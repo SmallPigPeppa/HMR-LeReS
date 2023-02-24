@@ -226,94 +226,94 @@ class HMRLeReS(pl.LightningModule):
         return all_log_dict
 
 
-def training_step(self, batch, batch_index):
-    log_dict = self.share_step(batch)
-    hmr_generator_leres_opt, hmr_discriminator_opt = self.optimizers()
+    def training_step(self, batch, batch_index):
+        log_dict = self.share_step(batch)
+        hmr_generator_leres_opt, hmr_discriminator_opt = self.optimizers()
 
-    # hmr_generator and leres_model
-    hmr_generator_leres_opt.zero_grad()
-    self.manual_backward(log_dict['loss_generator'] + log_dict['loss_leres'] + log_dict['loss_combine'])
-    torch.nn.utils.clip_grad_norm_(self.hmr_generator.parameters(), max_norm=3.0)
-    torch.nn.utils.clip_grad_norm_(self.leres_model.parameters(), max_norm=3.0)
-    hmr_generator_leres_opt.step()
+        # hmr_generator and leres_model
+        hmr_generator_leres_opt.zero_grad()
+        self.manual_backward(log_dict['loss_generator'] + log_dict['loss_leres'] + log_dict['loss_combine'])
+        torch.nn.utils.clip_grad_norm_(self.hmr_generator.parameters(), max_norm=3.0)
+        torch.nn.utils.clip_grad_norm_(self.leres_model.parameters(), max_norm=3.0)
+        hmr_generator_leres_opt.step()
 
-    # hmr_discriminator
-    hmr_discriminator_opt.zero_grad()
-    self.manual_backward(log_dict['loss_discriminator'])
-    torch.nn.utils.clip_grad_norm_(self.hmr_discriminator.parameters(), max_norm=3.0)
-    hmr_discriminator_opt.step()
+        # hmr_discriminator
+        hmr_discriminator_opt.zero_grad()
+        self.manual_backward(log_dict['loss_discriminator'])
+        torch.nn.utils.clip_grad_norm_(self.hmr_discriminator.parameters(), max_norm=3.0)
+        hmr_discriminator_opt.step()
 
-    train_log_dict = {f'train_{k}': v for k, v in log_dict.items()}
-    self.log_dict(train_log_dict)
-
-
-def validation_step(self, batch, batch_index):
-    log_dict = self.share_step(batch)
-    val_log_dict = {f'val_{k}': v for k, v in log_dict.items()}
-    self.log_dict(val_log_dict)
+        train_log_dict = {f'train_{k}': v for k, v in log_dict.items()}
+        self.log_dict(train_log_dict)
 
 
-def training_epoch_end(self, training_step_outputs):
-    hmr_generator_leres_sche, hmr_discriminator_sche = self.lr_schedulers()
-    hmr_generator_leres_sche.step()
-    hmr_discriminator_sche.step()
+    def validation_step(self, batch, batch_index):
+        log_dict = self.share_step(batch)
+        val_log_dict = {f'val_{k}': v for k, v in log_dict.items()}
+        self.log_dict(val_log_dict)
 
 
-def configure_optimizers(self):
-    leres_encoder_params = []
-    leres_encoder_params_names = []
-    leres_decoder_params = []
-    leres_decoder_params_names = []
-    leres_nograd_param_names = []
-    for key, value in self.named_parameters():
-        if 'leres_model' in key and value.requires_grad:
-            if 'res' in key:
-                leres_encoder_params.append(value)
-                leres_encoder_params_names.append(key)
+    def training_epoch_end(self, training_step_outputs):
+        hmr_generator_leres_sche, hmr_discriminator_sche = self.lr_schedulers()
+        hmr_generator_leres_sche.step()
+        hmr_discriminator_sche.step()
+
+
+    def configure_optimizers(self):
+        leres_encoder_params = []
+        leres_encoder_params_names = []
+        leres_decoder_params = []
+        leres_decoder_params_names = []
+        leres_nograd_param_names = []
+        for key, value in self.named_parameters():
+            if 'leres_model' in key and value.requires_grad:
+                if 'res' in key:
+                    leres_encoder_params.append(value)
+                    leres_encoder_params_names.append(key)
+                else:
+                    leres_decoder_params.append(value)
+                    leres_decoder_params_names.append(key)
             else:
-                leres_decoder_params.append(value)
-                leres_decoder_params_names.append(key)
-        else:
-            leres_nograd_param_names.append(key)
+                leres_nograd_param_names.append(key)
 
-    hmr_generator_leres_params = [
-        {'params': self.hmr_generator.parameters(),
-         'lr': args.e_lr,
-         'weight_decay': args.e_wd},
-        {'params': leres_decoder_params,
-         'lr': args.base_lr,
-         'weight_decay': args.weight_decay},
-        {'params': leres_decoder_params,
-         'lr': args.base_lr * args.scale_decoder_lr,
-         'weight_decay': args.weight_decay}
-    ]
+        hmr_generator_leres_params = [
+            {'params': self.hmr_generator.parameters(),
+             'lr': args.e_lr,
+             'weight_decay': args.e_wd},
+            {'params': leres_decoder_params,
+             'lr': args.base_lr,
+             'weight_decay': args.weight_decay},
+            {'params': leres_decoder_params,
+             'lr': args.base_lr * args.scale_decoder_lr,
+             'weight_decay': args.weight_decay}
+        ]
 
-    hmr_generator_leres_opt = torch.optim.SGD(
-        hmr_generator_leres_params, momentum=0.9
-    )
-    hmr_discriminator_opt = torch.optim.Adam(
-        self.hmr_discriminator.parameters(),
-        lr=args.d_lr,
-        weight_decay=args.d_wd
-    )
+        hmr_generator_leres_opt = torch.optim.SGD(
+            hmr_generator_leres_params, momentum=0.9
+        )
+        hmr_discriminator_opt = torch.optim.Adam(
+            self.hmr_discriminator.parameters(),
+            lr=args.d_lr,
+            weight_decay=args.d_wd
+        )
 
-    hmr_generator_lere_sche = LinearWarmupCosineAnnealingLR(
-        hmr_generator_leres_opt,
-        warmup_epochs=5,
-        max_epochs=args.max_epochs,
-        warmup_start_lr=0.01 * args.e_lr,
-        eta_min=0.01 * args.e_lr,
-    )
+        hmr_generator_lere_sche = LinearWarmupCosineAnnealingLR(
+            hmr_generator_leres_opt,
+            warmup_epochs=5,
+            max_epochs=args.max_epochs,
+            warmup_start_lr=0.01 * args.e_lr,
+            eta_min=0.01 * args.e_lr,
+        )
 
-    hmr_discriminator_sche = LinearWarmupCosineAnnealingLR(
-        hmr_discriminator_opt,
-        warmup_epochs=5,
-        max_epochs=args.max_epochs,
-        warmup_start_lr=0.01 * args.d_lr,
-        eta_min=0.01 * args.d_lr,
-    )
+        hmr_discriminator_sche = LinearWarmupCosineAnnealingLR(
+            hmr_discriminator_opt,
+            warmup_epochs=5,
+            max_epochs=args.max_epochs,
+            warmup_start_lr=0.01 * args.d_lr,
+            eta_min=0.01 * args.d_lr,
+        )
 
-    return [hmr_generator_leres_opt, hmr_discriminator_opt], [hmr_generator_lere_sche, hmr_discriminator_sche]
+        return [hmr_generator_leres_opt, hmr_discriminator_opt], [hmr_generator_lere_sche, hmr_discriminator_sche]
 
 # def training_step(self, batch, batch_index):
 #     gta_data = batch['gta_loader']
