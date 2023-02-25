@@ -152,20 +152,21 @@ class HMRLeReS(pl.LightningModule):
             'loss_leres': loss_leres
         }
 
-        hmr_generator_leres_opt, hmr_discriminator_opt  = self.optimizers()
+        hmr_generator_opt, hmr_discriminator_opt, leres_opt = self.optimizers()
 
-
-
-        hmr_generator_leres_opt.zero_grad()
-        self.manual_backward(loss_generator)
+        leres_opt.zero_grad()
         self.manual_backward(loss_leres)
-        torch.nn.utils.clip_grad_norm_(self.hmr_generator.parameters(), max_norm=3.0)
-        torch.nn.utils.clip_grad_norm_(self.leres_model.parameters(), max_norm=3.0)
-        hmr_generator_leres_opt.step()
+        torch.nn.utils.clip_grad_norm_(self.leres_model.parameters(), max_norm=5.0)
+        leres_opt.step()
+
+        hmr_generator_opt.zero_grad()
+        self.manual_backward(loss_generator)
+        torch.nn.utils.clip_grad_norm_(self.hmr_generator.parameters(), max_norm=5.0)
+        hmr_generator_opt.step()
 
         hmr_discriminator_opt.zero_grad()
         self.manual_backward(loss_discriminator)
-        torch.nn.utils.clip_grad_norm_(self.hmr_discriminator.parameters(), max_norm=3.0)
+        torch.nn.utils.clip_grad_norm_(self.hmr_discriminator.parameters(), max_norm=5.0)
         hmr_discriminator_opt.step()
 
         hmr_log_dict = {'loss_generator': loss_generator,
@@ -187,10 +188,27 @@ class HMRLeReS(pl.LightningModule):
         hmr_generator_sche.step()
         hmr_discriminator_sche.step()
 
-
-
-
     def configure_optimizers(self):
+        hmr_generator_opt = torch.optim.Adam(
+            self.hmr_generator.parameters(),
+            lr=args.e_lr,
+            weight_decay=args.e_wd
+        )
+        hmr_discriminator_opt = torch.optim.Adam(
+            self.hmr_discriminator.parameters(),
+            lr=args.d_lr,
+            weight_decay=args.d_wd
+        )
+        hmr_generator_sche = torch.optim.lr_scheduler.StepLR(
+            hmr_generator_opt,
+            step_size=500,
+            gamma=0.9
+        )
+        hmr_discriminator_sche = torch.optim.lr_scheduler.StepLR(
+            hmr_discriminator_opt,
+            step_size=500,
+            gamma=0.9
+        )
 
         leres_encoder_params = []
         leres_encoder_params_names = []
@@ -208,96 +226,18 @@ class HMRLeReS(pl.LightningModule):
             else:
                 leres_nograd_param_names.append(key)
 
+        leres_lr_encoder = args.base_lr
+        leres_lr_decoder = args.base_lr * args.scale_decoder_lr
+        leres_weight_decay = args.weight_decay
 
-        hmr_generator_leres_params = [
-            {'params': self.hmr_generator.parameters(),
-             'lr': args.e_lr,
-             'weight_decay': args.e_wd},
+        leres_net_params = [
+            {'params': leres_encoder_params,
+             'lr': leres_lr_encoder,
+             'weight_decay': leres_weight_decay},
             {'params': leres_decoder_params,
-             'lr': args.base_lr,
-             'weight_decay': args.weight_decay},
-            {'params': leres_decoder_params,
-             'lr': args.base_lr * args.scale_decoder_lr,
-             'weight_decay': args.weight_decay}
+             'lr': leres_lr_decoder,
+             'weight_decay': leres_weight_decay},
         ]
+        leres_opt = torch.optim.SGD(leres_net_params, momentum=0.9)
 
-
-
-        hmr_generator_leres_opt = torch.optim.SGD(
-            hmr_generator_leres_params,momentum=0.9
-        )
-        hmr_discriminator_opt = torch.optim.Adam(
-            self.hmr_discriminator.parameters(),
-            lr=args.d_lr,
-            weight_decay=args.d_wd
-        )
-        hmr_generator_sche = torch.optim.lr_scheduler.StepLR(
-            hmr_generator_leres_opt,
-            step_size=500,
-            gamma=0.9
-        )
-        hmr_discriminator_sche = torch.optim.lr_scheduler.StepLR(
-            hmr_discriminator_opt,
-            step_size=500,
-            gamma=0.9
-        )
-
-
-        return [hmr_generator_leres_opt, hmr_discriminator_opt], [hmr_generator_sche, hmr_discriminator_sche]
-
-
-
-    # def configure_optimizers(self):
-    #     hmr_generator_opt = torch.optim.Adam(
-    #         self.hmr_generator.parameters(),
-    #         lr=args.e_lr,
-    #         weight_decay=args.e_wd
-    #     )
-    #     hmr_discriminator_opt = torch.optim.Adam(
-    #         self.hmr_discriminator.parameters(),
-    #         lr=args.d_lr,
-    #         weight_decay=args.d_wd
-    #     )
-    #     hmr_generator_sche = torch.optim.lr_scheduler.StepLR(
-    #         hmr_generator_opt,
-    #         step_size=500,
-    #         gamma=0.9
-    #     )
-    #     hmr_discriminator_sche = torch.optim.lr_scheduler.StepLR(
-    #         hmr_discriminator_opt,
-    #         step_size=500,
-    #         gamma=0.9
-    #     )
-    #
-    #     leres_encoder_params = []
-    #     leres_encoder_params_names = []
-    #     leres_decoder_params = []
-    #     leres_decoder_params_names = []
-    #     leres_nograd_param_names = []
-    #     for key, value in self.named_parameters():
-    #         if 'leres_model' in key and value.requires_grad:
-    #             if 'res' in key:
-    #                 leres_encoder_params.append(value)
-    #                 leres_encoder_params_names.append(key)
-    #             else:
-    #                 leres_decoder_params.append(value)
-    #                 leres_decoder_params_names.append(key)
-    #         else:
-    #             leres_nograd_param_names.append(key)
-    #
-    #     leres_lr_encoder = args.base_lr
-    #     leres_lr_decoder = args.base_lr * args.scale_decoder_lr
-    #     leres_weight_decay = args.weight_decay
-    #
-    #     leres_net_params = [
-    #         {'params': leres_encoder_params,
-    #          'lr': leres_lr_encoder,
-    #          'weight_decay': leres_weight_decay},
-    #         {'params': leres_decoder_params,
-    #          'lr': leres_lr_decoder,
-    #          'weight_decay': leres_weight_decay},
-    #     ]
-    #     leres_opt = torch.optim.SGD(leres_net_params, momentum=0.9)
-    #
-    #     return [hmr_generator_opt, hmr_discriminator_opt, leres_opt], [hmr_generator_sche, hmr_discriminator_sche]
-
+        return [hmr_generator_opt, hmr_discriminator_opt, leres_opt], [hmr_generator_sche, hmr_discriminator_sche]
