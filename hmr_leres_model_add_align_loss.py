@@ -270,7 +270,7 @@ class HMRLeReS(pl.LightningModule):
         hmr_generator_leres_sche.step()
         hmr_discriminator_sche.step()
 
-    def configure_optimizers(self):
+    # def configure_optimizers(self):
         # hmr_generator_opt = torch.optim.Adam(
         #     self.hmr_generator.parameters(),
         #     lr=args.e_lr,
