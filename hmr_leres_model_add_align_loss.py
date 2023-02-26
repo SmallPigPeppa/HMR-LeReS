@@ -218,7 +218,7 @@ class HMRLeReS(pl.LightningModule):
 
         hmr_generator_opt, hmr_discriminator_opt = self.optimizers()
 
-        log_dict=all_log_dict
+        # log_dict=all_log_dict
 
         # # hmr_generator and leres_model
         # hmr_generator_leres_opt.zero_grad()
@@ -246,13 +246,13 @@ class HMRLeReS(pl.LightningModule):
         hmr_generator_opt.step()
 
         hmr_discriminator_opt.zero_grad()
-        self.manual_backward(log_dict['loss_discriminator'])
+        self.manual_backward(all_log_dict['loss_discriminator'])
         torch.nn.utils.clip_grad_norm_(self.hmr_discriminator.parameters(), max_norm=5.0)
         hmr_discriminator_opt.step()
 
         # train_log_dict = {f'train_{k}': v for k, v in log_dict.items()}
         # self.log_dict(train_log_dict)
-        self.log_dict(log_dict)
+        self.log_dict(all_log_dict)
 
 
 
