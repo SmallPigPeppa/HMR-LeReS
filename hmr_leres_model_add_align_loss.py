@@ -248,8 +248,8 @@ class HMRLeReS(pl.LightningModule):
         torch.nn.utils.clip_grad_norm_(self.hmr_discriminator.parameters(), max_norm=5.0)
         hmr_discriminator_opt.step()
 
-        train_log_dict = {f'train_{k}': v for k, v in all_log_dict.items()}
-        self.log_dict(train_log_dict)
+        # train_log_dict = {f'train_{k}': v for k, v in all_log_dict.items()}
+        self.log_dict(all_log_dict)
 
         # return all_log_dict
 
