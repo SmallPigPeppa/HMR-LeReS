@@ -110,7 +110,7 @@ class HMRLeReS(pl.LightningModule):
 
         return kpts_2d, kpts_3d, verts
 
-    def train_step(self, batch,batch_index):
+    def training_step(self, batch,batch_index):
         gta_data = batch['gta_loader']
         mesh_data = batch['mesh_loader']
         hmr_images = gta_data['hmr_image']
