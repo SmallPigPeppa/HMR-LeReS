@@ -259,7 +259,7 @@ class HMRLeReS(pl.LightningModule):
 
         return all_log_dict
 
-    def training_step(self, batch, batch_index):
+    def training_step2(self, batch, batch_index):
         log_dict = self.share_step(batch)
         # hmr_generator_opt, hmr_discriminator_opt, leres_opt = self.optimizers()
         hmr_generator_opt, hmr_discriminator_opt = self.optimizers()
