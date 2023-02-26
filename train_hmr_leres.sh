@@ -12,7 +12,7 @@ python h_main_train_cluster.py \
 --num_gpus 2 \
 --max-epochs 100 \
 --num-workers 4 \
---batch-size 16 \
+--batch-size 8 \
 --eval-batch-size 16 \
 --adv-batch-size 48 \
 --weight_decay 0.0005
