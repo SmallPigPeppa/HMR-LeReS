@@ -238,10 +238,10 @@ class HMRLeReS(pl.LightningModule):
         train_log_dict = {f'train_{k}': v for k, v in log_dict.items()}
         self.log_dict(train_log_dict)
 
-    def validation_step(self, batch, batch_index):
-        log_dict = self.share_step_val(batch)
-        val_log_dict = {f'val_{k}': v for k, v in log_dict.items()}
-        self.log_dict(val_log_dict)
+    # def validation_step(self, batch, batch_index):
+    #     log_dict = self.share_step_val(batch)
+    #     val_log_dict = {f'val_{k}': v for k, v in log_dict.items()}
+    #     self.log_dict(val_log_dict)
 
     def training_epoch_end(self, training_step_outputs):
         hmr_generator_leres_sche, hmr_discriminator_sche = self.lr_schedulers()
