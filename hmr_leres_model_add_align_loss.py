@@ -259,43 +259,43 @@ class HMRLeReS(pl.LightningModule):
 
         return all_log_dict
 
-    def training_step2(self, batch, batch_index):
-        log_dict = self.share_step(batch)
-        # hmr_generator_opt, hmr_discriminator_opt, leres_opt = self.optimizers()
-        hmr_generator_opt, hmr_discriminator_opt = self.optimizers()
-
-        # # hmr_generator and leres_model
-        # hmr_generator_leres_opt.zero_grad()
-        # self.manual_backward(log_dict['loss_generator'] + log_dict['loss_leres'] + log_dict['loss_combine'])
-        # torch.nn.utils.clip_grad_norm_(self.hmr_generator.parameters(), max_norm=5.0)
-        # torch.nn.utils.clip_grad_norm_(self.leres_model.parameters(), max_norm=5.0)
-        # hmr_generator_leres_opt.step()
-
-        # hmr_discriminator
-        # hmr_discriminator_opt.zero_grad()
-        # self.manual_backward(loss_discriminator)
-        # torch.nn.utils.clip_grad_norm_(self.hmr_discriminator.parameters(), max_norm=5.0)
-        # hmr_discriminator_opt.step()
-
-        # leres_opt.zero_grad()
-        # self.manual_backward(log_dict['loss_leres'])
-        # torch.nn.utils.clip_grad_norm_(self.leres_model.parameters(), max_norm=5.0)
-        # leres_opt.step()
-
-        hmr_generator_opt.zero_grad()
-        self.manual_backward(log_dict['loss_leres'])
-        torch.nn.utils.clip_grad_norm_(self.hmr_generator.parameters(), max_norm=5.0)
-        torch.nn.utils.clip_grad_norm_(self.leres_model.parameters(), max_norm=5.0)
-        hmr_generator_opt.step()
-
-        hmr_discriminator_opt.zero_grad()
-        self.manual_backward(log_dict['loss_discriminator'])
-        torch.nn.utils.clip_grad_norm_(self.hmr_discriminator.parameters(), max_norm=5.0)
-        hmr_discriminator_opt.step()
-
-        # train_log_dict = {f'train_{k}': v for k, v in log_dict.items()}
-        # self.log_dict(train_log_dict)
-        self.log_dict(log_dict)
+    # def training_step2(self, batch, batch_index):
+    #     log_dict = self.share_step(batch)
+    #     # hmr_generator_opt, hmr_discriminator_opt, leres_opt = self.optimizers()
+    #     hmr_generator_opt, hmr_discriminator_opt = self.optimizers()
+    #
+    #     # # hmr_generator and leres_model
+    #     # hmr_generator_leres_opt.zero_grad()
+    #     # self.manual_backward(log_dict['loss_generator'] + log_dict['loss_leres'] + log_dict['loss_combine'])
+    #     # torch.nn.utils.clip_grad_norm_(self.hmr_generator.parameters(), max_norm=5.0)
+    #     # torch.nn.utils.clip_grad_norm_(self.leres_model.parameters(), max_norm=5.0)
+    #     # hmr_generator_leres_opt.step()
+    #
+    #     # hmr_discriminator
+    #     # hmr_discriminator_opt.zero_grad()
+    #     # self.manual_backward(loss_discriminator)
+    #     # torch.nn.utils.clip_grad_norm_(self.hmr_discriminator.parameters(), max_norm=5.0)
+    #     # hmr_discriminator_opt.step()
+    #
+    #     # leres_opt.zero_grad()
+    #     # self.manual_backward(log_dict['loss_leres'])
+    #     # torch.nn.utils.clip_grad_norm_(self.leres_model.parameters(), max_norm=5.0)
+    #     # leres_opt.step()
+    #
+    #     hmr_generator_opt.zero_grad()
+    #     self.manual_backward(log_dict['loss_leres'])
+    #     torch.nn.utils.clip_grad_norm_(self.hmr_generator.parameters(), max_norm=5.0)
+    #     torch.nn.utils.clip_grad_norm_(self.leres_model.parameters(), max_norm=5.0)
+    #     hmr_generator_opt.step()
+    #
+    #     hmr_discriminator_opt.zero_grad()
+    #     self.manual_backward(log_dict['loss_discriminator'])
+    #     torch.nn.utils.clip_grad_norm_(self.hmr_discriminator.parameters(), max_norm=5.0)
+    #     hmr_discriminator_opt.step()
+    #
+    #     # train_log_dict = {f'train_{k}': v for k, v in log_dict.items()}
+    #     # self.log_dict(train_log_dict)
+    #     self.log_dict(log_dict)
 
     def validation_step(self, batch, batch_index):
         log_dict = self.share_step_val(batch)
