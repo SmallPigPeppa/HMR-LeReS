@@ -27,7 +27,7 @@ def val_kpts_verts(pred_kpts_3d, gt_kpts_3d, pred_verts, gt_verts, pck_threshold
     # align verts
     pred_pelvis = pred_kpts_3d[:, [0], :]
     gt_pelvis = gt_kpts_3d[:, [0], :]
-    pred_verts_aligned = pred_pelvis - pred_pelvis
+    pred_verts_aligned = pred_verts - pred_pelvis
     gt_verts_aligned = gt_verts - gt_pelvis
 
     # compute metrics
