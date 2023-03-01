@@ -1,4 +1,4 @@
-# conda activate HMR-LeReS3
+# conda activate hmr-leres
 export PYTHONPATH="/mnt/mmtech01/usr/liuwenzhuo/code/HMR-LeReS-new/HMR/src:/mnt/mmtech01/usr/liuwenzhuo/code/HMR-LeReS-new/LeReS/Train"
 python main.py \
 --smpl-mean-theta-path HMR/HMR-data/neutral_smpl_mean_params.h5 \
@@ -16,3 +16,6 @@ python main.py \
 --eval-batch-size 16 \
 --adv-batch-size 48 \
 --weight_decay 0.0005
+#--e_lr 0.00001
+#--d-lr 0.0001
+#--base_lr 0.001
