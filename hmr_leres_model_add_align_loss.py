@@ -269,7 +269,7 @@ class HMRLeReS(pl.LightningModule):
             {'params': self.hmr_generator.parameters(),
              'lr': args.e_lr,
              'weight_decay': args.e_wd},
-            {'params': leres_decoder_params,
+            {'params': leres_encoder_params,
              'lr': args.base_lr,
              'weight_decay': args.weight_decay},
             {'params': leres_decoder_params,
