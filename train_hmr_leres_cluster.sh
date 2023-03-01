@@ -10,7 +10,7 @@ python h_main_train_cluster.py \
 --project HMR-LeReS-v6.0 \
 --entity pigpeppa \
 --num_gpus 2 \
---max-epochs 100 \
+--max-epochs 200 \
 --num-workers 0 \
 --batch-size 16 \
 --eval-batch-size 16 \
