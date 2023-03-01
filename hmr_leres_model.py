@@ -31,7 +31,7 @@ class HMRLeReS(pl.LightningModule):
         self.depth_min_threshold = 0.
         self.depth_max_threshold = 15.0
         self.pck_threshold = 1.0
-        self.grad_clip_max_norm=5.0
+        self.grad_clip_max_norm = 5.0
         self.hmr_generator = HMRNetBase()
         self.hmr_discriminator = Discriminator()
         self.smpl_model = SMPL(args.smpl_model, obj_saveable=True)
@@ -240,7 +240,6 @@ class HMRLeReS(pl.LightningModule):
         train_log_dict = {f'train_{k}': v for k, v in log_dict.items()}
         self.log_dict(train_log_dict)
 
-
     def training_epoch_end(self, training_step_outputs):
         hmr_generator_leres_sche, hmr_discriminator_sche = self.lr_schedulers()
         hmr_generator_leres_sche.step()
@@ -275,13 +274,17 @@ class HMRLeReS(pl.LightningModule):
              'weight_decay': args.weight_decay}
         ]
 
+        hmr_discriminator_params = [
+            {'params': self.hmr_discriminator.parameters(),
+             'lr': args.d_lr,
+             'weight_decay': args.d_wd}]
+
         hmr_generator_leres_opt = torch.optim.SGD(
             hmr_generator_leres_params, momentum=0.9
         )
+
         hmr_discriminator_opt = torch.optim.Adam(
-            self.hmr_discriminator.parameters(),
-            lr=args.d_lr,
-            weight_decay=args.d_wd
+            hmr_discriminator_params
         )
 
         hmr_generator_lere_sche = LinearWarmupCosineAnnealingLR(
