@@ -37,7 +37,8 @@ def val_depth(pred, gt, min_threshold=0, max_threshold=15):
     # WHDR error
     whdr_err_sum, eval_num = weighted_human_disagreement_rate(gt, pred)
 
-    metrics_dict = {'err_absRel': abs_rel_sum / n_pxl, 'err_whdr': whdr_err_sum / eval_num}
+    metrics_dict = {'metric_absRel': abs_rel_sum / n_pxl, 'metric_whdr': whdr_err_sum / eval_num}
+    # metrics_dict = {'metric_err_absRel': abs_rel_sum / n_pxl, 'metric_err_whdr': whdr_err_sum / eval_num}
 
     return metrics_dict
     # criteria = {}

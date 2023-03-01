@@ -35,7 +35,7 @@ def val_kpts_verts(pred_kpts_3d, gt_kpts_3d, pred_verts, gt_verts, pck_threshold
     pck = compute_pck(pred_kpts_3d, gt_kpts_3d, pck_threshold)
     pve = compute_pve(pred_verts_aligned, gt_verts_aligned)
 
-    metrics_dict = {'mpjpe': mpjpe, 'pck': pck, 'pve': pve}
+    metrics_dict = {'metric_mpjpe': mpjpe, 'metric_pck': pck, 'metric_pve': pve}
 
     return metrics_dict
 
