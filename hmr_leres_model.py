@@ -31,6 +31,7 @@ class HMRLeReS(pl.LightningModule):
         self.depth_min_threshold = 0.
         self.depth_max_threshold = 15.0
         self.pck_threshold = 1.0
+        self.grad_clip_max_norm=5.0
         self.hmr_generator = HMRNetBase()
         self.hmr_discriminator = Discriminator()
         self.smpl_model = SMPL(args.smpl_model, obj_saveable=True)
@@ -207,7 +208,7 @@ class HMRLeReS(pl.LightningModule):
                                                       predict_depth, gta_data)
         loss_inside = 0.
         loss_combie = loss_align + loss_inside
-        loss_combie = 0.
+        # loss_combie = 0.
         combine_loss_dict = {
             'loss_align': loss_align,
             'loss_inside': loss_inside,
@@ -226,23 +227,19 @@ class HMRLeReS(pl.LightningModule):
         # hmr_generator and leres_model
         hmr_generator_leres_opt.zero_grad()
         self.manual_backward(log_dict['loss_generator'] + log_dict['loss_leres'] + log_dict['loss_combine'])
-        torch.nn.utils.clip_grad_norm_(self.hmr_generator.parameters(), max_norm=5.0)
-        torch.nn.utils.clip_grad_norm_(self.leres_model.parameters(), max_norm=5.0)
+        torch.nn.utils.clip_grad_norm_(self.hmr_generator.parameters(), max_norm=self.grad_clip_max_norm)
+        torch.nn.utils.clip_grad_norm_(self.leres_model.parameters(), max_norm=self.grad_clip_max_norm)
         hmr_generator_leres_opt.step()
 
         # hmr_discriminator
         hmr_discriminator_opt.zero_grad()
         self.manual_backward(log_dict['loss_discriminator'])
-        torch.nn.utils.clip_grad_norm_(self.hmr_discriminator.parameters(), max_norm=5.0)
+        torch.nn.utils.clip_grad_norm_(self.hmr_discriminator.parameters(), max_norm=self.grad_clip_max_norm)
         hmr_discriminator_opt.step()
 
         train_log_dict = {f'train_{k}': v for k, v in log_dict.items()}
         self.log_dict(train_log_dict)
 
-    # def validation_step(self, batch, batch_index):
-    #     log_dict = self.share_step_val(batch)
-    #     val_log_dict = {f'val_{k}': v for k, v in log_dict.items()}
-    #     self.log_dict(val_log_dict)
 
     def training_epoch_end(self, training_step_outputs):
         hmr_generator_leres_sche, hmr_discriminator_sche = self.lr_schedulers()
@@ -305,104 +302,104 @@ class HMRLeReS(pl.LightningModule):
 
         return [hmr_generator_leres_opt, hmr_discriminator_opt], [hmr_generator_lere_sche, hmr_discriminator_sche]
 
-    def validation_step(self, batch, batch_index):
-        gta_data = batch
-        hmr_images = gta_data['hmr_image']
-
-        gt_smpl_theta = gta_data['theta']
-        gt_smpl_shapes = gt_smpl_theta[:, 75:].contiguous()
-        gt_smpl_poses = gt_smpl_theta[:, 3:75].contiguous()
-        gt_smpl_transl = gt_smpl_theta[:, :3].contiguous()
-        gt_kpts_2d = gta_data['joints_2d_origin']
-        gt_kpts_3d = gta_data['joints_3d']
-        gt_intrinsic = gta_data['intrinsic']
-        gt_focal_length = gta_data['focal_length']
-        top, left, height, width = gta_data['leres_cut_box'][:, 0], gta_data['leres_cut_box'][:, 1], \
-                                   gta_data['leres_cut_box'][:, 2], gta_data['leres_cut_box'][:, 3]
-
-        pred_smpl_thetas = self.hmr_generator(hmr_images)[-1]
-        pred_smpl_transl = pred_smpl_thetas[:, :3].contiguous()
-        pred_smpl_poses = pred_smpl_thetas[:, 3:75].contiguous()
-        pred_smpl_shapes = pred_smpl_thetas[:, 75:].contiguous()
-
-        pred_kpts_2d, pred_kpts_3d, pred_verts = self.get_smpl_kpts_verts(transl=gt_smpl_transl,
-                                                                          pose=pred_smpl_poses,
-                                                                          shape=pred_smpl_shapes,
-                                                                          focal_length=gt_focal_length)
-        _, _, gt_verts = self.get_smpl_kpts_verts(transl=gt_smpl_transl,
-                                                  pose=gt_smpl_poses,
-                                                  shape=gt_smpl_shapes,
-                                                  focal_length=gt_focal_length)
-
-        height_ratio = self.gta_dataset.leres_size / height
-        width_ratio = self.gta_dataset.leres_size / width
-        pred_kpts_2d[:, :, 0] -= left[:, None]
-        pred_kpts_2d[:, :, 1] -= top[:, None]
-        pred_kpts_2d[:, :, 0] *= height_ratio[:, None]
-        pred_kpts_2d[:, :, 1] *= width_ratio[:, None]
-
-        loss_shape = self.hmr_loss.shape_loss(gt_smpl_shapes, pred_smpl_shapes) * args.e_shape_weight
-        loss_pose = self.hmr_loss.pose_loss(gt_smpl_poses, pred_smpl_poses) * args.e_pose_weight
-        loss_kpts_2d = self.hmr_loss.batch_kp_2d_l1_loss(gt_kpts_2d, pred_kpts_2d) * args.e_2d_kpts_weight
-        # loss_kpts_2d = 0.
-
-        loss_kpts_3d = self.hmr_loss.batch_kp_3d_l2_loss(gt_kpts_3d, pred_kpts_3d) * args.e_3d_kpts_weight
-
-        pred_smpl_thetas[:, :3] = gt_smpl_transl
-        loss_generator_disc = self.hmr_loss.batch_encoder_disc_l2_loss(
-            self.hmr_discriminator(pred_smpl_thetas))
-
-        loss_generator = (loss_shape + loss_pose + loss_kpts_2d + loss_kpts_3d) * args.e_loss_weight + \
-                         loss_generator_disc * args.d_loss_weight
-
-        hmr_loss_dict = {'loss_generator': loss_generator,
-                         'loss_kpts_2d': loss_kpts_2d,
-                         'loss_kpts_3d': loss_kpts_3d,
-                         'loss_shape': loss_shape,
-                         'loss_pose': loss_pose,
-                         'loss_generator_disc': loss_generator_disc,
-                         }
-
-        leres_images = gta_data['leres_image']
-        predict_depth, auxi = self.leres_model(leres_images)
-        gt_depth = gta_data['depth']
-        gt_depth = gt_depth[:, None, :, :]
-        loss_depth_regression = self.depth_regression_loss(predict_depth, gt_depth)
-        loss_edge_ranking = self.edge_ranking_loss(predict_depth, gt_depth, leres_images)
-        loss_msg = self.msg_loss(predict_depth, gt_depth) * 0.5
-        pred_ssinv = recover_scale_shift_depth(predict_depth, gt_depth, min_threshold=0., max_threshold=15.0)
-        loss_pwn_edge = self.pwn_edge_loss(pred_ssinv, gt_depth, leres_images, focal_length=gt_focal_length)
-        loss_leres = (loss_depth_regression + loss_edge_ranking + loss_msg + loss_pwn_edge)
-        leres_loss_dict = {
-            'loss_depth_regression': loss_depth_regression,
-            'loss_edge_ranking': loss_edge_ranking,
-            'loss_msg': loss_msg,
-            'loss_pwn_edge': loss_pwn_edge,
-            'loss_leres': loss_leres
-        }
-
-        # loss_align
-        loss_align = self.align_loss.batch_align_loss(pred_verts,
-                                                      torch.tensor([self.smpl_model.faces], device=self.device),
-                                                      predict_depth, gta_data)
-        loss_inside = 0.
-        loss_combie = loss_align + loss_inside
-        combine_loss_dict = {
-            'loss_align': loss_align,
-            'loss_inside': loss_inside,
-            'loss_combine': loss_combie
-        }
-
-        depths_metrics = val_depth(predict_depth, gt_depth, min_threshold=self.depth_min_threshold,
-                                   max_threshold=self.depth_max_threshold)
-        kpts_verts_metrics = val_kpts_verts(pred_kpts_3d, gt_kpts_3d, pred_verts, gt_verts,
-                                            pck_threshold=self.pck_threshold)
-
-        log_dict = {**leres_loss_dict, **hmr_loss_dict, **combine_loss_dict, **kpts_verts_metrics, **depths_metrics}
-
-
-        save_ckpt_loss = log_dict['loss_generator'] + log_dict['loss_leres'] + log_dict['loss_combine']
-        val_log_dict = {f'val_{k}': v for k, v in log_dict.items()}
-        self.log_dict({**val_log_dict, 'save_ckpt_loss': save_ckpt_loss})
-
-
+    # def validation_step(self, batch, batch_index):
+    #     gta_data = batch
+    #     hmr_images = gta_data['hmr_image']
+    #
+    #     gt_smpl_theta = gta_data['theta']
+    #     gt_smpl_shapes = gt_smpl_theta[:, 75:].contiguous()
+    #     gt_smpl_poses = gt_smpl_theta[:, 3:75].contiguous()
+    #     gt_smpl_transl = gt_smpl_theta[:, :3].contiguous()
+    #     gt_kpts_2d = gta_data['joints_2d_origin']
+    #     gt_kpts_3d = gta_data['joints_3d']
+    #     gt_intrinsic = gta_data['intrinsic']
+    #     gt_focal_length = gta_data['focal_length']
+    #     top, left, height, width = gta_data['leres_cut_box'][:, 0], gta_data['leres_cut_box'][:, 1], \
+    #                                gta_data['leres_cut_box'][:, 2], gta_data['leres_cut_box'][:, 3]
+    #
+    #     pred_smpl_thetas = self.hmr_generator(hmr_images)[-1]
+    #     pred_smpl_transl = pred_smpl_thetas[:, :3].contiguous()
+    #     pred_smpl_poses = pred_smpl_thetas[:, 3:75].contiguous()
+    #     pred_smpl_shapes = pred_smpl_thetas[:, 75:].contiguous()
+    #
+    #     pred_kpts_2d, pred_kpts_3d, pred_verts = self.get_smpl_kpts_verts(transl=gt_smpl_transl,
+    #                                                                       pose=pred_smpl_poses,
+    #                                                                       shape=pred_smpl_shapes,
+    #                                                                       focal_length=gt_focal_length)
+    #     _, _, gt_verts = self.get_smpl_kpts_verts(transl=gt_smpl_transl,
+    #                                               pose=gt_smpl_poses,
+    #                                               shape=gt_smpl_shapes,
+    #                                               focal_length=gt_focal_length)
+    #
+    #     height_ratio = self.gta_dataset.leres_size / height
+    #     width_ratio = self.gta_dataset.leres_size / width
+    #     pred_kpts_2d[:, :, 0] -= left[:, None]
+    #     pred_kpts_2d[:, :, 1] -= top[:, None]
+    #     pred_kpts_2d[:, :, 0] *= height_ratio[:, None]
+    #     pred_kpts_2d[:, :, 1] *= width_ratio[:, None]
+    #
+    #     loss_shape = self.hmr_loss.shape_loss(gt_smpl_shapes, pred_smpl_shapes) * args.e_shape_weight
+    #     loss_pose = self.hmr_loss.pose_loss(gt_smpl_poses, pred_smpl_poses) * args.e_pose_weight
+    #     loss_kpts_2d = self.hmr_loss.batch_kp_2d_l1_loss(gt_kpts_2d, pred_kpts_2d) * args.e_2d_kpts_weight
+    #     # loss_kpts_2d = 0.
+    #
+    #     loss_kpts_3d = self.hmr_loss.batch_kp_3d_l2_loss(gt_kpts_3d, pred_kpts_3d) * args.e_3d_kpts_weight
+    #
+    #     pred_smpl_thetas[:, :3] = gt_smpl_transl
+    #     loss_generator_disc = self.hmr_loss.batch_encoder_disc_l2_loss(
+    #         self.hmr_discriminator(pred_smpl_thetas))
+    #
+    #     loss_generator = (loss_shape + loss_pose + loss_kpts_2d + loss_kpts_3d) * args.e_loss_weight + \
+    #                      loss_generator_disc * args.d_loss_weight
+    #
+    #     hmr_loss_dict = {'loss_generator': loss_generator,
+    #                      'loss_kpts_2d': loss_kpts_2d,
+    #                      'loss_kpts_3d': loss_kpts_3d,
+    #                      'loss_shape': loss_shape,
+    #                      'loss_pose': loss_pose,
+    #                      'loss_generator_disc': loss_generator_disc,
+    #                      }
+    #
+    #     leres_images = gta_data['leres_image']
+    #     predict_depth, auxi = self.leres_model(leres_images)
+    #     gt_depth = gta_data['depth']
+    #     gt_depth = gt_depth[:, None, :, :]
+    #     loss_depth_regression = self.depth_regression_loss(predict_depth, gt_depth)
+    #     loss_edge_ranking = self.edge_ranking_loss(predict_depth, gt_depth, leres_images)
+    #     loss_msg = self.msg_loss(predict_depth, gt_depth) * 0.5
+    #     pred_ssinv = recover_scale_shift_depth(predict_depth, gt_depth, min_threshold=0., max_threshold=15.0)
+    #     loss_pwn_edge = self.pwn_edge_loss(pred_ssinv, gt_depth, leres_images, focal_length=gt_focal_length)
+    #     loss_leres = (loss_depth_regression + loss_edge_ranking + loss_msg + loss_pwn_edge)
+    #     leres_loss_dict = {
+    #         'loss_depth_regression': loss_depth_regression,
+    #         'loss_edge_ranking': loss_edge_ranking,
+    #         'loss_msg': loss_msg,
+    #         'loss_pwn_edge': loss_pwn_edge,
+    #         'loss_leres': loss_leres
+    #     }
+    #
+    #     # loss_align
+    #     loss_align = self.align_loss.batch_align_loss(pred_verts,
+    #                                                   torch.tensor([self.smpl_model.faces], device=self.device),
+    #                                                   predict_depth, gta_data)
+    #     loss_inside = 0.
+    #     loss_combie = loss_align + loss_inside
+    #     combine_loss_dict = {
+    #         'loss_align': loss_align,
+    #         'loss_inside': loss_inside,
+    #         'loss_combine': loss_combie
+    #     }
+    #
+    #     depths_metrics = val_depth(predict_depth, gt_depth, min_threshold=self.depth_min_threshold,
+    #                                max_threshold=self.depth_max_threshold)
+    #     kpts_verts_metrics = val_kpts_verts(pred_kpts_3d, gt_kpts_3d, pred_verts, gt_verts,
+    #                                         pck_threshold=self.pck_threshold)
+    #
+    #     log_dict = {**leres_loss_dict, **hmr_loss_dict, **combine_loss_dict, **kpts_verts_metrics, **depths_metrics}
+    #
+    #
+    #     save_ckpt_loss = log_dict['loss_generator'] + log_dict['loss_leres'] + log_dict['loss_combine']
+    #     val_log_dict = {f'val_{k}': v for k, v in log_dict.items()}
+    #     self.log_dict({**val_log_dict, 'save_ckpt_loss': save_ckpt_loss})
+    #
+    #
