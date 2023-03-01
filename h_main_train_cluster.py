@@ -24,10 +24,10 @@ if __name__ == '__main__':
         gpus=args.num_gpus,
         strategy='ddp',
         logger=wandb_logger,
-        log_every_n_steps = 1,
         check_val_every_n_epoch=1,
         callbacks=[LearningRateMonitor(logging_interval="step"), TQDMProgressBar(refresh_rate=10),checkpoint_callback]
     )
+    # log_every_n_steps = 1,
 
     trainer.fit(hmr_model)
 
