@@ -398,8 +398,11 @@ class HMRLeReS(pl.LightningModule):
         kpts_verts_metrics = val_kpts_verts(pred_kpts_3d, gt_kpts_3d, pred_verts, gt_verts,
                                             pck_threshold=self.pck_threshold)
 
-        all_log_dict = {**leres_loss_dict, **hmr_loss_dict, **combine_loss_dict, **kpts_verts_metrics, **depths_metrics}
-        save_ckpt_loss = all_log_dict['loss_generator'] + all_log_dict['loss_leres'] + all_log_dict['loss_combine']
+        log_dict = {**leres_loss_dict, **hmr_loss_dict, **combine_loss_dict, **kpts_verts_metrics, **depths_metrics}
 
-        return {**all_log_dict, 'save_ckpt_loss': save_ckpt_loss}
+
+        save_ckpt_loss = log_dict['loss_generator'] + log_dict['loss_leres'] + log_dict['loss_combine']
+        val_log_dict = {f'val_{k}': v for k, v in log_dict.items()}
+        self.log_dict({**val_log_dict, 'save_ckpt_loss': save_ckpt_loss})
+
 
