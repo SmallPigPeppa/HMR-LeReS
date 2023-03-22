@@ -106,8 +106,8 @@ class GTADataset(Dataset):
     def __getitem__(self, index):
         image_path = self.image_paths[index]
         box = self.boxs[index]
-        kpts_2d = self.kpts_2d[index]
-        kpts_3d = self.kpts_3d[index]
+        kpts_2d = self.kpts_2d[index][:24]
+        kpts_3d = self.kpts_3d[index][:24]
 
 
         gta_head_2d = self.gta_heads_2d[index]
@@ -191,7 +191,7 @@ if __name__ == '__main__':
 
             axarr[0].imshow(leres_image_j)
             axarr[1].imshow(hmr_image_j)
-            for k in range(24):
+            for k in range(23,24):
                 axarr[0].scatter(np.squeeze(kpts_2d[j])[k][0], np.squeeze(kpts_2d[j])[k][1], s=50, c='red',
                                  marker='o')
             plt.show()
