@@ -26,6 +26,7 @@ def val_depth(pred, gt, min_threshold=0, max_threshold=15):
 
 
     # Scale matching
+    import pdb;pdb.set_trace()
     pred = recover_metric_depth(pred, gt)
 
     n_pxl = gt.size
