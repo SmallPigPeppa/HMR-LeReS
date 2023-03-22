@@ -304,8 +304,8 @@ class HMRLeReS(pl.LightningModule):
         gt_smpl_shapes = gt_smpl_theta[:, 75:].contiguous()
         gt_smpl_poses = gt_smpl_theta[:, 3:75].contiguous()
         gt_smpl_transl = gt_smpl_theta[:, :3].contiguous()
-        gt_kpts_2d = gta_data['joints_2d_origin']
-        gt_kpts_3d = gta_data['joints_3d']
+        gt_kpts_2d = gta_data['kpts_2d']
+        gt_kpts_3d = gta_data['kpts_3d']
         gt_intrinsic = gta_data['intrinsic']
         gt_focal_length = gta_data['focal_length']
         top, left, height, width = gta_data['leres_cut_box'][:, 0], gta_data['leres_cut_box'][:, 1], \
