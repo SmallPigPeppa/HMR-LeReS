@@ -106,7 +106,6 @@ class HMRLeReS(pl.LightningModule):
 
         return kpts_2d, kpts_3d, verts
 
-
     def training_step(self, batch, batch_index):
         gta_data = batch['gta_loader']
         mesh_data = batch['mesh_loader']
@@ -297,7 +296,7 @@ class HMRLeReS(pl.LightningModule):
 
         return [hmr_generator_leres_opt, hmr_discriminator_opt], [hmr_generator_lere_sche, hmr_discriminator_sche]
 
-    def validation_step(self, batch):
+    def validation_step(self, batch, batch_idx):
         gta_data = batch
         hmr_images = gta_data['hmr_image']
 
@@ -392,9 +391,6 @@ class HMRLeReS(pl.LightningModule):
 
         log_dict = {**leres_loss_dict, **hmr_loss_dict, **combine_loss_dict, **kpts_verts_metrics, **depths_metrics}
 
-
         save_ckpt_loss = log_dict['loss_generator'] + log_dict['loss_leres'] + log_dict['loss_combine']
         val_log_dict = {f'val_{k}': v for k, v in log_dict.items()}
         self.log_dict({**val_log_dict, 'save_ckpt_loss': save_ckpt_loss})
-
-
