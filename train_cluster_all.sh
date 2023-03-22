@@ -3,11 +3,11 @@ export PYTHONPATH="/mnt/mmtech01/usr/liuwenzhuo/code/HMR-LeReS-new/HMR/src:/mnt/
 python main.py \
 --smpl-mean-theta-path HMR/HMR-data/neutral_smpl_mean_params.h5 \
 --smpl-model HMR/HMR-data/neutral_smpl_with_cocoplus_reg.txt \
---gta_dataset_dir /mnt/mmtech01/dataset/wenzhuoliu/HMR-LeReS/2020-06-11-10-06-48 \
---mesh_dataset_dir /mnt/mmtech01/dataset/wenzhuoliu/HMR-LeReS/mesh \
+--gta_dataset_dir /mnt/mmtech01/dataset/vision_text_pretrain/gta-im/FPS-5 \
+--mesh_dataset_dir /mnt/mmtech01/dataset/vision_text_pretrain/gta-im/FPS-30 \
 --ckpt_dir hmr-leres-ckpt \
 --name hmr-leres-cluster \
---project HMR-LeReS-v6.0 \
+--project HMR-LeReS-v7.0 \
 --entity pigpeppa \
 --num_gpus 2 \
 --max-epochs 200 \
