@@ -1,4 +1,4 @@
-from hmr_leres_model_all import HMRLeReS
+from hmr_leres_model_all_fast import HMRLeReS
 from hmr_leres_config import args
 from pytorch_lightning.loggers import WandbLogger
 import torch
