@@ -238,6 +238,6 @@ def get_torch_image_cut_box_new(left_top, right_bottom, image_size=(1920, 1080),
     new_top = np.random.uniform(top_range, bottom_range)
 
     if new_box_width == 0 or new_box_height == 0:
-        return 0, 0, 1080, 1920
+        return 0, 0, 224, 224
 
     return int(new_top), int(new_left), int(new_box_height), int(new_box_width)
