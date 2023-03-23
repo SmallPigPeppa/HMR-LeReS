@@ -112,6 +112,11 @@ class GTADataset(Dataset):
         # index=192
         image_path = self.image_paths[index]
         depth_path=self.depth_paths[index]
+        mask_path=self.mask_paths[index]
+        assert (os.path.exists(image_path) and os.path.exists(depth_path) and os.path.exists(mask_path))
+
+
+
         box = self.boxs[index]
         kpts_2d = self.kpts_2d[index][:24]
         kpts_3d = self.kpts_3d[index][:24]
@@ -125,7 +130,7 @@ class GTADataset(Dataset):
         focal_length = np.array(intrinsic[0][0]).astype(np.float32)
         depth = read_depthmap(depth_path, self.cam_near_clips[index], self.cam_far_clips[index])
         depth = Image.fromarray(depth)
-        human_mask = read_human_mask(self.mask_paths[index], gta_head_2d)
+        human_mask = read_human_mask(mask_path, gta_head_2d)
         human_mask = Image.fromarray(human_mask)
 
         # crop and rescale leres_image,depth,human_mask,kpts2d,joints2d,human_mask
