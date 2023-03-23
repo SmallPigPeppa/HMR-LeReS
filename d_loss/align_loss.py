@@ -131,7 +131,7 @@ class AlignLoss(pl.LightningModule):
             leres_image_i = batch['leres_image'][idx]
             hmr_image_i = batch['hmr_image'][idx]
             kpts_2d_i = batch['kpts_2d'][idx]
-            kpts_2d_i = batch['joints_2d'][idx]
+            # kpts_2d_i = batch['joints_2d'][idx]
             human_mask_i = batch['human_mask'][idx]
             verts_i = verts[idx]
             depth_i = depth[idx]
@@ -188,3 +188,12 @@ class AlignLoss(pl.LightningModule):
         plt.show()
 
         return align_loss
+
+
+if __name__=="__main__":
+    from datasets.gta_im_all import GTADataset
+    from torch.utils.data import DataLoader
+    data_dir = '/Users/lwz/torch_ds/gta-im/FPS-5'
+    gta_dataset = GTADataset(data_dir)
+    gta_loader = DataLoader(gta_dataset, batch_size=16, shuffle=True)
+    model_a=AlignLoss()
