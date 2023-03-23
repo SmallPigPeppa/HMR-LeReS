@@ -12,9 +12,9 @@ python main_all.py \
 --num_gpus 4 \
 --max-epochs 200 \
 --num-workers 0 \
---batch-size 2 \
---eval-batch-size 2 \
---adv-batch-size 2 \
+--batch-size 16 \
+--eval-batch-size 16 \
+--adv-batch-size 48 \
 --weight_decay 0.0005
 #--e_lr 0.00001
 #--d-lr 0.0001
