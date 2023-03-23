@@ -11,7 +11,7 @@ python main_all.py \
 --entity pigpeppa \
 --num_gpus 4 \
 --max-epochs 200 \
---num-workers 0 \
+--num-workers 8 \
 --batch-size 16 \
 --eval-batch-size 16 \
 --adv-batch-size 48 \

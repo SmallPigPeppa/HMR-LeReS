@@ -179,22 +179,12 @@ class HMRLeReS(pl.LightningModule):
         predict_depth, auxi = self.leres_model(leres_images)
         gt_depth = gta_data['depth']
         gt_depth = gt_depth[:, None, :, :]
-        # loss_depth_regression = self.depth_regression_loss(predict_depth, gt_depth)
-        # loss_edge_ranking = self.edge_ranking_loss(predict_depth, gt_depth, leres_images)
-        # loss_msg = self.msg_loss(predict_depth, gt_depth) * 0.5
-        # pred_ssinv = recover_scale_shift_depth(predict_depth, gt_depth, min_threshold=0., max_threshold=15.0)
-        # loss_pwn_edge = self.pwn_edge_loss(pred_ssinv, gt_depth, leres_images, focal_length=gt_focal_length)
-        # loss_leres = (loss_depth_regression + loss_edge_ranking + loss_msg + loss_pwn_edge)
-
-
-        loss_depth_regression = 0.
-        loss_edge_ranking = 0.
-        loss_msg = 0.
-        pred_ssinv = 0.
-        loss_pwn_edge = 0.
-        loss_leres = 0.
-
-
+        loss_depth_regression = self.depth_regression_loss(predict_depth, gt_depth)
+        loss_edge_ranking = self.edge_ranking_loss(predict_depth, gt_depth, leres_images)
+        loss_msg = self.msg_loss(predict_depth, gt_depth) * 0.5
+        pred_ssinv = recover_scale_shift_depth(predict_depth, gt_depth, min_threshold=0., max_threshold=15.0)
+        loss_pwn_edge = self.pwn_edge_loss(pred_ssinv, gt_depth, leres_images, focal_length=gt_focal_length)
+        loss_leres = (loss_depth_regression + loss_edge_ranking + loss_msg + loss_pwn_edge)
         leres_loss_dict = {
             'loss_depth_regression': loss_depth_regression,
             'loss_edge_ranking': loss_edge_ranking,
@@ -216,10 +206,8 @@ class HMRLeReS(pl.LightningModule):
             'loss_combine': loss_combie
         }
 
-        # depths_metrics = val_depth(predict_depth, gt_depth, min_threshold=self.depth_min_threshold,
-        #                            max_threshold=self.depth_max_threshold)
-        depths_metrics = {}
-
+        depths_metrics = val_depth(predict_depth, gt_depth, min_threshold=self.depth_min_threshold,
+                                   max_threshold=self.depth_max_threshold)
         kpts_verts_metrics = val_kpts_verts(pred_kpts_3d, gt_kpts_3d, pred_verts, gt_verts,
                                             pck_threshold=self.pck_threshold)
 
