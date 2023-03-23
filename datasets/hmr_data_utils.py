@@ -198,14 +198,13 @@ def get_torch_image_cut_box_leres(left_top, right_bottom, expands_ratio, img_siz
 #
 #     return new_top, new_left, new_box_height, new_box_width
 
-def get_torch_image_cut_box_new(left_top, right_bottom, image_size=(1920,1080), aspect_ratio=1.0, area_ratio=2.0):
+def get_torch_image_cut_box_new(left_top, right_bottom, image_size=(1920, 1080), aspect_ratio=1.0, area_ratio=2.0):
     left_top = np.clip(left_top, [0, 0], image_size)
     right_bottom = np.clip(right_bottom, [0, 0], image_size)
 
-
     left, top = left_top
     right, bottom = right_bottom
-    image_width,image_height = image_size
+    image_width, image_height = image_size
 
     # 人物框的宽度、高度和面积
     person_width = right - left
@@ -237,5 +236,8 @@ def get_torch_image_cut_box_new(left_top, right_bottom, image_size=(1920,1080), 
     # 随机生成新框的左上角坐标
     new_left = np.random.uniform(left_range, right_range)
     new_top = np.random.uniform(top_range, bottom_range)
+
+    if new_box_width == 0 or new_box_height == 0:
+        return 0, 0, 1080, 1920
 
     return int(new_top), int(new_left), int(new_box_height), int(new_box_width)
