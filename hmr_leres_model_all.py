@@ -141,8 +141,8 @@ class HMRLeReS(pl.LightningModule):
         width_ratio = self.gta_dataset.leres_size / width
         pred_kpts_2d[:, :, 0] -= left[:, None]
         pred_kpts_2d[:, :, 1] -= top[:, None]
-        pred_kpts_2d[:, :, 0] *= height_ratio[:, None]
-        pred_kpts_2d[:, :, 1] *= width_ratio[:, None]
+        pred_kpts_2d[:, :, 0] *= width_ratio[:, None]
+        pred_kpts_2d[:, :, 1] *= height_ratio[:, None]
 
         loss_shape = self.hmr_loss.shape_loss(gt_smpl_shapes, pred_smpl_shapes) * args.e_shape_weight
         loss_pose = self.hmr_loss.pose_loss(gt_smpl_poses, pred_smpl_poses) * args.e_pose_weight
