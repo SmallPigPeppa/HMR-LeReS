@@ -42,10 +42,7 @@ class MeshDataset(Dataset):
             return len(self.poses)
 
     def __getitem__(self, index):
-        if index == 61:
-            index=60
         trival, pose, shape = self.transls[index], self.poses[index], self.shapes[index]
-
         if self.use_flip and random.uniform(0, 1) <= self.flip_prob:  # left-right reflect the pose
             # todo: pose = reflect_pose(pose)
             pass
