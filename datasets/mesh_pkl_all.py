@@ -7,6 +7,7 @@ import pickle
 
 class MeshDataset(Dataset):
     def __init__(self, data_dir, use_flip=True, flip_prob=0.3):
+        super().__init__()
         self.data_dir = data_dir
         self.scene_dirs = [os.path.join(data_dir, d) for d in os.listdir(data_dir) if
                            os.path.isdir(os.path.join(data_dir, d))]
