@@ -113,7 +113,7 @@ class GTADataset(Dataset):
         image_path = self.image_paths[index]
         depth_path=self.depth_paths[index]
         mask_path=self.mask_paths[index]
-        assert (os.path.exists(image_path) and os.path.exists(depth_path) and os.path.exists(mask_path))
+
 
 
 
