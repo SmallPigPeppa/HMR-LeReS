@@ -1,3 +1,4 @@
+import os
 import cv2
 import numpy as np
 from PIL import Image
@@ -6,8 +7,19 @@ def pil_loader(path):
     with open(path, "rb") as f:
         img = Image.open(f)
         return img.convert("RGB")
+
 def read_depthmap(depth_path, cam_near_clip, cam_far_clip):
+    if not os.path.exists(depth_path):
+        print(f"Warning: File '{depth_path}' does not exist. Skipping.")
+        return np.array([])
+
     depth = cv2.imread(depth_path)
+
+    if depth is None:
+        print(f"Warning: Failed to read file '{depth_path}'. Skipping.")
+        return np.array([])
+
+
     depth = np.concatenate(
         (depth, np.zeros_like(depth[:, :, 0:1], dtype=np.uint8)), axis=2
     )
