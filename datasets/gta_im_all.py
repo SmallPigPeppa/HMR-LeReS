@@ -133,7 +133,7 @@ class GTADataset(Dataset):
         focal_length = np.array(intrinsic[0][0]).astype(np.float32)
         depth = read_depthmap(depth_path, self.cam_near_clips[index], self.cam_far_clips[index])
         if depth.size == 0:
-            depth = np.full((1080, 1920), -1, dtype=np.float32)
+            depth = Image.new('F', (1920, 1080), 0)
         else:
             depth = Image.fromarray(depth)
 
