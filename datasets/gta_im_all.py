@@ -111,34 +111,49 @@ class GTADataset(Dataset):
     def __getitem__(self, index):
         # index=563
         # index=192
-        image_path = self.image_paths[index]
-        depth_path=self.depth_paths[index]
-        mask_path=self.mask_paths[index]
+
+        origin_image = None
+        depth=None
+        human_mask=None
+        while origin_image is None or depth is None or human_mask is None:
+            try:
+                image_path = self.image_paths[index]
+                depth_path = self.depth_paths[index]
+                mask_path = self.mask_paths[index]
+                origin_image = pil_loader(image_path)
+                depth = read_depthmap(depth_path, self.cam_near_clips[index], self.cam_far_clips[index])
+                human_mask = read_human_mask(mask_path, self.gta_heads_2d[index])
+            except OSError:
+                index = (index + 1) % len(self.image_paths)
+                origin_image = None
+                depth = None
+                human_mask = None
+                continue
+
+
+
+        # image_path = self.image_paths[index]
+        # depth_path=self.depth_paths[index]
+        # mask_path=self.mask_paths[index]
+        # kpts_2d = self.kpts_2d[index][:24]
+        # kpts_3d = self.kpts_3d[index][:24]
+        # gta_head_2d = self.gta_heads_2d[index]
+        # origin_image = pil_loader(image_path)
+        # human_mask = read_human_mask(mask_path, gta_head_2d)
+        # depth = read_depthmap(depth_path, self.cam_near_clips[index], self.cam_far_clips[index])
 
 
 
 
         box = self.boxs[index]
-        # kpts_2d = self.kpts_2d[index][:24]
-        # kpts_3d = self.kpts_3d[index][:24]
         kpts_2d = self.kpts_2d[index]
         kpts_3d = self.kpts_3d[index]
 
-
-        gta_head_2d = self.gta_heads_2d[index]
-
         # leres
-        origin_image = pil_loader(image_path)
+
         intrinsic = self.intrinsics[index]
         focal_length = np.array(intrinsic[0][0]).astype(np.float32)
-        depth = read_depthmap(depth_path, self.cam_near_clips[index], self.cam_far_clips[index])
-        if depth.size == 0:
-            depth = Image.new('F', (1920, 1080), 0)
-            print('index:',index)
-        else:
-            depth = Image.fromarray(depth)
-
-        human_mask = read_human_mask(mask_path, gta_head_2d)
+        depth = Image.fromarray(depth)
         human_mask = Image.fromarray(human_mask)
 
         # crop and rescale leres_image,depth,human_mask,kpts2d,joints2d,human_mask

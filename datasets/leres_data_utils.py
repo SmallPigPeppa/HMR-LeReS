@@ -4,20 +4,19 @@ import numpy as np
 from PIL import Image
 def pil_loader(path):
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
-    with open(path, "rb") as f:
-        img = Image.open(f)
-        return img.convert("RGB")
+    try:
+        with open(path, 'rb') as f:
+            img = Image.open(f)
+            return img.convert("RGB")
+    except OSError:
+        return None
 
 def read_depthmap(depth_path, cam_near_clip, cam_far_clip):
-    if not os.path.exists(depth_path):
-        print(f"Warning: File '{depth_path}' does not exist. Skipping.")
-        return np.array([])
-
-    depth = cv2.imread(depth_path)
-
-    if depth is None:
+    try:
+        depth = cv2.imread(depth_path)
+    except:
         print(f"Warning: Failed to read file '{depth_path}'. Skipping.")
-        return np.array([])
+        return None
 
 
     depth = np.concatenate(
@@ -34,7 +33,11 @@ def read_depthmap(depth_path, cam_near_clip, cam_far_clip):
 
 
 def read_human_mask(mask_path,gta_head_2d):
-    sem_mask = cv2.imread(mask_path, cv2.IMREAD_ANYDEPTH)
+    try:
+        sem_mask = cv2.imread(mask_path, cv2.IMREAD_ANYDEPTH)
+    except:
+        print(f"Warning: Failed to read file '{mask_path}'. Skipping.")
+        return None
     human_id = sem_mask[
         np.clip(int(gta_head_2d[1]), 0, 1079), np.clip(int(gta_head_2d[0]), 0, 1919)
     ]
