@@ -38,9 +38,13 @@ def read_depthmap(depth_path, cam_near_clip, cam_far_clip):
 def read_human_mask(mask_path,gta_head_2d):
     try:
         sem_mask = cv2.imread(mask_path, cv2.IMREAD_ANYDEPTH)
-    except:
-        print(f"Warning: Failed to read file '{mask_path}'. Skipping.")
+        if sem_mask is None:
+            print(f"Warning: Failed to read file '{mask_path}'. Skipping.")
+            return None
+    except Exception as e:
+        print(f"Warning: Failed to read file '{mask_path}'. Exception: {e}. Skipping.")
         return None
+
     human_id = sem_mask[
         np.clip(int(gta_head_2d[1]), 0, 1079), np.clip(int(gta_head_2d[0]), 0, 1919)
     ]
