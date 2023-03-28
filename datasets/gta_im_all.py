@@ -116,19 +116,14 @@ class GTADataset(Dataset):
         depth=None
         human_mask=None
         while origin_image is None or depth is None or human_mask is None:
-            try:
-                image_path = self.image_paths[index]
-                depth_path = self.depth_paths[index]
-                mask_path = self.mask_paths[index]
-                origin_image = pil_loader(image_path)
-                depth = read_depthmap(depth_path, self.cam_near_clips[index], self.cam_far_clips[index])
-                human_mask = read_human_mask(mask_path, self.gta_heads_2d[index])
-            except OSError:
-                index = (index + 1) % len(self.image_paths)
-                origin_image = None
-                depth = None
-                human_mask = None
-                continue
+            image_path = self.image_paths[index]
+            depth_path = self.depth_paths[index]
+            mask_path = self.mask_paths[index]
+            origin_image = pil_loader(image_path)
+            depth = read_depthmap(depth_path, self.cam_near_clips[index], self.cam_far_clips[index])
+            human_mask = read_human_mask(mask_path, self.gta_heads_2d[index])
+            index = (index + 1) % len(self.image_paths)
+
 
 
 
