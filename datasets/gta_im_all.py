@@ -134,6 +134,7 @@ class GTADataset(Dataset):
         depth = read_depthmap(depth_path, self.cam_near_clips[index], self.cam_far_clips[index])
         if depth.size == 0:
             depth = Image.new('F', (1920, 1080), 0)
+            print(index)
         else:
             depth = Image.fromarray(depth)
 
