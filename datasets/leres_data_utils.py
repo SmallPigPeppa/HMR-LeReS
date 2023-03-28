@@ -14,8 +14,11 @@ def pil_loader(path):
 def read_depthmap(depth_path, cam_near_clip, cam_far_clip):
     try:
         depth = cv2.imread(depth_path)
-    except:
-        print(f"Warning: Failed to read file '{depth_path}'. Skipping.")
+        if depth is None:
+            print(f"Warning: Failed to read file '{depth_path}'. Skipping.")
+            return None
+    except Exception as e:
+        print(f"Warning: Failed to read file '{depth_path}'. Exception: {e}. Skipping.")
         return None
 
 

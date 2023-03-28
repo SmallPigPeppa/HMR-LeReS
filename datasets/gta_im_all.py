@@ -144,7 +144,7 @@ class GTADataset(Dataset):
 
 
 
-
+        # kpts
         box = self.boxs[index]
         kpts_2d = self.kpts_2d[index]
         kpts_3d = self.kpts_3d[index]
