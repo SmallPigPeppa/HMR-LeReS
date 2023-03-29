@@ -5,7 +5,7 @@ python main_all.py \
 --smpl-model HMR/HMR-data/neutral_smpl_with_cocoplus_reg.txt \
 --gta_dataset_dir /mnt/mmtech01/dataset/vision_text_pretrain/gta-im/FPS-5 \
 --mesh_dataset_dir /mnt/mmtech01/dataset/vision_text_pretrain/gta-im/FPS-30 \
---ckpt_dir hmr-leres-ckpt \
+--ckpt_dir hmr-leres-ckpt-debug \
 --name hmr-leres-cluster \
 --project HMR-LeReS-v7.0 \
 --entity pigpeppa \
