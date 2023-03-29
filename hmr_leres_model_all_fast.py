@@ -213,10 +213,10 @@ class HMRLeReS(pl.LightningModule):
         }
 
         # loss_align
-        # loss_align = self.align_loss.batch_align_loss(pred_verts,
-        #                                               torch.tensor([self.smpl_model.faces], device=self.device),
-        #                                               predict_depth, gta_data)
-        loss_align = 0.
+        loss_align = self.align_loss.batch_align_loss(pred_verts,
+                                                      torch.tensor([self.smpl_model.faces], device=self.device),
+                                                      predict_depth, gta_data)
+        # loss_align = 0.
         loss_inside = 0.
         loss_combie = loss_align + loss_inside
         # loss_combie = 0.
