@@ -1,3 +1,4 @@
+import os
 import torch
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
@@ -49,12 +50,31 @@ class HMRLeReS(pl.LightningModule):
         self.align_loss = AlignLoss()
 
     def train_dataloader(self):
-        gta_dataset_dir = args.gta_dataset_dir
-        mesh_dataset_dir = args.mesh_dataset_dir
+        gta_dataset_dir = os.path.join(args.gta_dataset_dir, 'FPS-5')
+        mesh_dataset_dir = os.path.join(args.mesh_dataset_dir, 'FPS-30')
 
         gta_dataset = GTADataset(gta_dataset_dir)
         mesh_dataset = MeshDataset(mesh_dataset_dir)
         self.gta_dataset = gta_dataset
+
+        # Calculate the size of the subset to be chosen from mesh_dataset
+        subset_size = int(len(mesh_dataset) * (args.batch_size / args.adv_batch_size))
+
+        # Randomly sample the subset indices
+        subset_indices = torch.randperm(len(mesh_dataset))[:subset_size]
+
+        # Create a Subset of MeshDataset
+        mesh_dataset_subset = torch.utils.data.Subset(mesh_dataset, subset_indices)
+
+        # Update the mesh_loader to use mesh_dataset_subset
+        mesh_loader = DataLoader(
+            dataset=mesh_dataset_subset,
+            batch_size=args.adv_batch_size,
+            shuffle=True,
+            drop_last=True,
+            pin_memory=True,
+            num_workers=args.num_workers
+        )
 
         gta_loader = DataLoader(
             dataset=gta_dataset,
@@ -65,19 +85,11 @@ class HMRLeReS(pl.LightningModule):
             num_workers=args.num_workers
         )
 
-        mesh_loader = DataLoader(
-            dataset=mesh_dataset,
-            batch_size=args.adv_batch_size,
-            shuffle=True,
-            drop_last=True,
-            pin_memory=True,
-            num_workers=args.num_workers
-        )
         loaders = {'gta_loader': gta_loader, 'mesh_loader': mesh_loader}
         return loaders
 
     def val_dataloader(self):
-        gta_dataset_dir = args.gta_dataset_dir
+        gta_dataset_dir = os.path.join(args.gta_dataset_dir, 'FPS-5-val')
         gta_dataset = GTADataset(gta_dataset_dir)
         self.gta_dataset = gta_dataset
 
@@ -121,7 +133,7 @@ class HMRLeReS(pl.LightningModule):
         gt_intrinsic = gta_data['intrinsic']
         gt_focal_length = gta_data['focal_length']
         top, left, height, width = gta_data['leres_cut_box'][:, 0], gta_data['leres_cut_box'][:, 1], \
-                                   gta_data['leres_cut_box'][:, 2], gta_data['leres_cut_box'][:, 3]
+            gta_data['leres_cut_box'][:, 2], gta_data['leres_cut_box'][:, 3]
 
         pred_smpl_thetas = self.hmr_generator(hmr_images)[-1]
         pred_smpl_transl = pred_smpl_thetas[:, :3].contiguous()
@@ -186,14 +198,12 @@ class HMRLeReS(pl.LightningModule):
         # loss_pwn_edge = self.pwn_edge_loss(pred_ssinv, gt_depth, leres_images, focal_length=gt_focal_length)
         # loss_leres = (loss_depth_regression + loss_edge_ranking + loss_msg + loss_pwn_edge)
 
-
         loss_depth_regression = 0.
         loss_edge_ranking = 0.
         loss_msg = 0.
         pred_ssinv = 0.
         loss_pwn_edge = 0.
         loss_leres = 0.
-
 
         leres_loss_dict = {
             'loss_depth_regression': loss_depth_regression,

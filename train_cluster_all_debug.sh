@@ -3,8 +3,8 @@ export PYTHONPATH="/mnt/mmtech01/usr/liuwenzhuo/code/HMR-LeReS-new/HMR/src:/mnt/
 python main_all.py \
 --smpl-mean-theta-path HMR/HMR-data/neutral_smpl_mean_params.h5 \
 --smpl-model HMR/HMR-data/neutral_smpl_with_cocoplus_reg.txt \
---gta_dataset_dir /mnt/mmtech01/dataset/vision_text_pretrain/gta-im/FPS-5 \
---mesh_dataset_dir /mnt/mmtech01/dataset/vision_text_pretrain/gta-im/FPS-30 \
+--gta_dataset_dir /mnt/mmtech01/dataset/vision_text_pretrain/gta-im \
+--mesh_dataset_dir /mnt/mmtech01/dataset/vision_text_pretrain/gta-im \
 --ckpt_dir hmr-leres-ckpt-debug \
 --name hmr-leres-cluster \
 --project HMR-LeReS-v7.0 \
