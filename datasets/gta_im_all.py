@@ -122,6 +122,9 @@ class GTADataset(Dataset):
             origin_image = pil_loader(image_path)
             depth = read_depthmap(depth_path, self.cam_near_clips[index], self.cam_far_clips[index])
             human_mask = read_human_mask(mask_path, self.gta_heads_2d[index])
+            if origin_image is None or depth is None or human_mask is None:
+                print(f"index {index} wrong!")
+
             index = (index + 1) % len(self.image_paths)
 
 
