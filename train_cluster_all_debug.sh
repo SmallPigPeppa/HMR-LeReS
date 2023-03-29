@@ -9,8 +9,8 @@ python main_all.py \
 --name hmr-leres-cluster \
 --project HMR-LeReS-v7.0=debug \
 --entity pigpeppa \
---num_gpus 4 \
---max-epochs 200 \
+--num_gpus 8 \
+--max-epochs 100 \
 --num-workers 8 \
 --batch-size 16 \
 --eval-batch-size 16 \
