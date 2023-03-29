@@ -7,7 +7,7 @@ python main_all.py \
 --mesh_dataset_dir /mnt/mmtech01/dataset/vision_text_pretrain/gta-im \
 --ckpt_dir hmr-leres-ckpt-debug \
 --name hmr-leres-cluster \
---project HMR-LeReS-v7.0 \
+--project HMR-LeReS-v7.0=debug \
 --entity pigpeppa \
 --num_gpus 4 \
 --max-epochs 200 \
