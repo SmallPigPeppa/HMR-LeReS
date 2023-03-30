@@ -21,6 +21,7 @@ class GTADataset(Dataset):
         self.hmr_scale_range = [1.3, 1.5]
         self.leres_scale_range = [1.5, 3.0]
         self.leres_aspect_ratio_range=[0.6,1.7]
+        # self.leres_aspect_ratio_range=[1.0,1.0]
         self.leres_area_ratio_range=[4.0,25.0]
         self.flip_prob = flip_prob
         self.hmr_size = 224
@@ -232,6 +233,7 @@ if __name__ == '__main__':
                 axarr[0].scatter(np.squeeze(kpts_2d[j])[k][0], np.squeeze(kpts_2d[j])[k][1], s=50, c='red',
                                  marker='o')
             plt.show()
-        if i == 10:
+        print(batch['leres_cut_box'][0])
+        if i == 20:
             break
 
