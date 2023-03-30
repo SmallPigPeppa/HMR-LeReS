@@ -32,7 +32,7 @@ class HMRLeReS(pl.LightningModule):
         self.depth_min_threshold = 0.
         self.depth_max_threshold = 15.0
         self.pck_threshold = 1.0
-        self.grad_clip_max_norm = 5.0
+        self.grad_clip_max_norm = 2.0
         self.hmr_generator = HMRNetBase()
         self.hmr_discriminator = Discriminator()
         self.smpl_model = SMPL(args.smpl_model, obj_saveable=True)
@@ -213,10 +213,10 @@ class HMRLeReS(pl.LightningModule):
         }
 
         # loss_align
-        loss_align = self.align_loss.batch_align_loss(pred_verts,
-                                                      torch.tensor([self.smpl_model.faces], device=self.device),
-                                                      predict_depth, gta_data)
-        # loss_align = 0.
+        # loss_align = self.align_loss.batch_align_loss(pred_verts,
+        #                                               torch.tensor([self.smpl_model.faces], device=self.device),
+        #                                               predict_depth, gta_data)
+        loss_align = 0.
         loss_inside = 0.
         loss_combie = loss_align + loss_inside
         # loss_combie = 0.
