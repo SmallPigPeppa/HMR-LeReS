@@ -6,7 +6,7 @@ from model import HMRNetBase
 from Discriminator import Discriminator
 from hmr_leres_config import args
 
-from datasets.gta_im_all import GTADataset
+from datasets.gta_im_all_10801920 import GTADataset
 from datasets.mesh_pkl_all import MeshDataset
 
 from a_models.smpl import SMPL
@@ -45,6 +45,7 @@ class HMRLeReS(pl.LightningModule):
         # suface normal
         self.pwn_edge_loss = EdgeguidedNormalRegressionLoss(min_threshold=self.depth_min_threshold,
                                                             max_threshold=self.depth_max_threshold)
+        self.pwn_plane_loss = None
         #  可有可无
         # self.msg_loss = MultiScaleGradLoss(scale=4, min_threshold=self.depth_min_threshold,
         #                                    max_threshold=self.depth_max_threshold)
@@ -65,7 +66,6 @@ class HMRLeReS(pl.LightningModule):
         subset_size = int(len(mesh_dataset) * (args.batch_size / args.adv_batch_size))
         subset_indices = torch.randperm(len(mesh_dataset))[:subset_size]
         mesh_dataset_subset = torch.utils.data.Subset(mesh_dataset, subset_indices)
-
 
         gta_loader = DataLoader(
             dataset=gta_dataset,
@@ -201,12 +201,6 @@ class HMRLeReS(pl.LightningModule):
         # loss_pwn_edge = 0.
         loss_leres = (loss_depth_regression + loss_edge_ranking + loss_msg + loss_pwn_edge)
         # loss_leres = 0.
-
-
-
-
-
-
 
         leres_loss_dict = {
             'loss_depth_regression': loss_depth_regression,
