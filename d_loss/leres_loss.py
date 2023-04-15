@@ -29,11 +29,12 @@ class DepthRegressionLoss(pl.LightningModule):
         valid_gt_depth = gt_depth[valid_mask]
         l1_loss = F.l1_loss(valid_pred_depth, valid_gt_depth)
 
-        tanh_valid_pred_depth = torch.tanh(0.01 * valid_pred_depth)
-        tanh_valid_gt_depth = torch.tanh(0.01 * valid_gt_depth)
-        tanh_l1_loss = F.l1_loss(tanh_valid_pred_depth, tanh_valid_gt_depth)
+        # tanh_valid_pred_depth = torch.tanh(0.01 * valid_pred_depth)
+        # tanh_valid_gt_depth = torch.tanh(0.01 * valid_gt_depth)
+        # tanh_l1_loss = F.l1_loss(tanh_valid_pred_depth, tanh_valid_gt_depth)
 
-        return l1_loss + tanh_l1_loss
+        # return l1_loss + tanh_l1_loss
+        return l1_loss
 
 
 class EdgeguidedNormalRegressionLoss(pl.LightningModule):

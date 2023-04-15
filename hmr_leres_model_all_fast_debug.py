@@ -32,7 +32,7 @@ class HMRLeReS(pl.LightningModule):
         self.depth_min_threshold = 0.
         self.depth_max_threshold = 15.0
         self.pck_threshold = 1.0
-        self.grad_clip_max_norm = 2.0
+        self.grad_clip_max_norm = 1.0
         self.hmr_generator = HMRNetBase()
         self.hmr_discriminator = Discriminator()
         self.smpl_model = SMPL(args.smpl_model, obj_saveable=True)
