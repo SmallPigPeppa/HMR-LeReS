@@ -147,8 +147,8 @@ class HMRLeReS(pl.LightningModule):
                                                   shape=gt_smpl_shapes,
                                                   focal_length=gt_focal_length)
 
-        height_ratio = self.gta_dataset.leres_size / height
-        width_ratio = self.gta_dataset.leres_size / width
+        height_ratio = self.gta_dataset.leres_size[0] / height
+        width_ratio = self.gta_dataset.leres_size[1] / width
         pred_kpts_2d[:, :, 0] -= left[:, None]
         pred_kpts_2d[:, :, 1] -= top[:, None]
         pred_kpts_2d[:, :, 0] *= width_ratio[:, None]
