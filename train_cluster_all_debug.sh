@@ -7,7 +7,7 @@ export PYTHONPATH="/mnt/mmtech01/usr/liuwenzhuo/code/HMR-LeReS-new/HMR/src:/mnt/
 --mesh_dataset_dir /mnt/mmtech01/dataset/vision_text_pretrain/gta-im \
 --ckpt_dir hmr-leres-ckpt-debug \
 --name hmr-leres-cluster \
---project HMR-LeReS-v7.0=debug \
+--project HMR-LeReS-v7.0-debug \
 --entity pigpeppa \
 --num_gpus 8 \
 --max-epochs 100 \
