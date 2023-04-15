@@ -20,6 +20,7 @@ class DepthRegressionLoss(pl.LightningModule):
         # self.thres1 = 0.9
 
     def forward(self, pred_depth, gt_depth):
+        # only l1
         """
         Calculate d_loss.
         """
