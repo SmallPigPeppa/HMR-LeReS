@@ -26,7 +26,8 @@ class GTADataset(Dataset):
         self.leres_area_ratio_range = [4.0, 25.0]
         self.flip_prob = flip_prob
         self.hmr_size = 224
-        self.leres_size = [1080//5,1920//5]
+        scale=10
+        self.leres_size = [1080//scale,1920//scale]
         self.hmr_transforms = T.Compose([T.Resize((self.hmr_size, self.hmr_size)), T.ToTensor()])
         self.leres_transforms = T.Compose([T.Resize((self.leres_size[0], self.leres_size[1])), T.ToTensor()])
         self.depth_transforms = T.Compose(
