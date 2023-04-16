@@ -1,5 +1,5 @@
 # conda activate hmr-leres
-export PYTHONPATH="/mnt/mmtech01/usr/liuwenzhuo/code/HMR-LeReS-new/HMR/src:/mnt/mmtech01/usr/liuwenzhuo/code/HMR-LeReS-new/LeReS/Train"
+export PYTHONPATH="./HMR/src:./LeReS/Train"
 /root/miniconda3/envs/hmr-leres/bin/python main_all.py \
 --smpl-mean-theta-path HMR/HMR-data/neutral_smpl_mean_params.h5 \
 --smpl-model HMR/HMR-data/neutral_smpl_with_cocoplus_reg.txt \
