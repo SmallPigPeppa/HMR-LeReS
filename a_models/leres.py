@@ -34,3 +34,13 @@ class DepthModel(nn.Module):
         out_logit, _ = self.decoder_modules(lateral_out)
         # out_auxi = self.auxi_modules(auxi_input)
         return out_logit, _
+
+
+
+if __name__=='__main__':
+    import torch
+    net = DepthModel()
+    # print(net)
+    inputs = torch.ones(4,3,1080//5,1920//5)
+    depth,_ = net(inputs)
+    print(depth.size())

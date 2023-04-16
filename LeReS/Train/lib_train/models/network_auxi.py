@@ -186,7 +186,7 @@ class Decoder(nn.Module):
     def forward(self, features):
         # features' shape: # 1/32, 1/16, 1/8, 1/4
         # _,_,h,w = features[3].size()
-        import pdb;pdb.set_trace()
+        # import pdb;pdb.set_trace()
         x_32x = self.conv(features[3])  # 1/32
         x_32 = self.conv1(x_32x)
         x_16 = self.upsample(x_32)  # 1/16
@@ -352,8 +352,11 @@ class FFM(nn.Module):
         self.init_params()
 
     def forward(self, low_x, high_x):
-        import pdb;pdb.set_trace()
+        # import pdb;pdb.set_trace()
+        # low_x = F.interpolate(low_x, size=(high_x.shape[-2], high_x.shape[-1]), mode='bilinear', align_corners=False)
+        high_x = F.interpolate(high_x, size=(low_x.shape[-2], low_x.shape[-1]), mode='bilinear', align_corners=False)
         x = self.ftb1(low_x)
+
         x = x + high_x
         x = self.ftb2(x)
         x = self.upsample(x)
@@ -605,9 +608,9 @@ class SenceUnderstand(nn.Module):
 
 
 if __name__ == '__main__':
-    net = DepthNet(depth=50, pretrained=True)
-    print(net)
-    inputs = torch.ones(4,3,128,128)
-    out = net(inputs)
-    print(out.size())
+    net = DepthNet(depth=50)
+    # print(net)
+    inputs = torch.ones(4,3,1080//5,1920//5)
+    depth = net(inputs)
+    print(depth[0].size())
 
