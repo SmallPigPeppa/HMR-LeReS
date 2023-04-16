@@ -191,10 +191,10 @@ class HMRLeReS(pl.LightningModule):
         gt_depth = gt_depth[:, None, :, :]
         loss_depth_regression = self.depth_regression_loss(predict_depth, gt_depth)
         # loss_depth_regression = 0.
-        loss_edge_ranking = self.edge_ranking_loss(predict_depth, gt_depth, leres_images)
-        # loss_edge_ranking = 0.
-        loss_msg = self.msg_loss(predict_depth, gt_depth) * 0.5
-        # loss_msg = 0.
+        # loss_edge_ranking = self.edge_ranking_loss(predict_depth, gt_depth, leres_images)
+        loss_edge_ranking = 0.
+        # loss_msg = self.msg_loss(predict_depth, gt_depth) * 0.5
+        loss_msg = 0.
         pred_ssinv = recover_scale_shift_depth(predict_depth, gt_depth, min_threshold=0., max_threshold=15.0)
         # pred_ssinv = 0.
         loss_pwn_edge = self.pwn_edge_loss(pred_ssinv, gt_depth, leres_images, focal_length=gt_focal_length)
