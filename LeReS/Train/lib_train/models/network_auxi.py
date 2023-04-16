@@ -352,6 +352,7 @@ class FFM(nn.Module):
         self.init_params()
 
     def forward(self, low_x, high_x):
+        import pdb;pdb.set_trace()
         x = self.ftb1(low_x)
         x = x + high_x
         x = self.ftb2(x)
