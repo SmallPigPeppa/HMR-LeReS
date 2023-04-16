@@ -186,6 +186,7 @@ class Decoder(nn.Module):
     def forward(self, features):
         # features' shape: # 1/32, 1/16, 1/8, 1/4
         # _,_,h,w = features[3].size()
+        import pdb;pdb.set_trace()
         x_32x = self.conv(features[3])  # 1/32
         x_32 = self.conv1(x_32x)
         x_16 = self.upsample(x_32)  # 1/16

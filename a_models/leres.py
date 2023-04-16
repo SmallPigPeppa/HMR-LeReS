@@ -27,10 +27,10 @@ class DepthModel(nn.Module):
         backbone = network.__name__.split('.')[-1] + '.' + cfg.MODEL.ENCODER
         self.encoder_modules = get_func(backbone)()
         self.decoder_modules = network.Decoder()
-        self.auxi_modules = network.AuxiNetV2()
+        # self.auxi_modules = network.AuxiNetV2()
 
     def forward(self, x):
         lateral_out = self.encoder_modules(x)
-        out_logit, auxi_input = self.decoder_modules(lateral_out)
-        out_auxi = self.auxi_modules(auxi_input)
-        return out_logit, out_auxi
+        out_logit, _ = self.decoder_modules(lateral_out)
+        # out_auxi = self.auxi_modules(auxi_input)
+        return out_logit, _
