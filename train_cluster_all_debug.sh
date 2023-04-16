@@ -9,7 +9,7 @@ export PYTHONPATH="/mnt/mmtech01/usr/liuwenzhuo/code/HMR-LeReS-new/HMR/src:/mnt/
 --name hmr-leres-cluster \
 --project HMR-LeReS-v7.0-debug \
 --entity pigpeppa \
---num_gpus 8 \
+--num_gpus 1 \
 --max-epochs 100 \
 --num-workers 8 \
 --batch-size 16 \
