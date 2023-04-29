@@ -116,7 +116,7 @@ def compute_plane_masks(depth_img, intrinsic, eps=0.02, min_samples=2000):
 if __name__ == '__main__':
     num_samples = 0
     eps = 0.02
-    min_cluster_size=2000
+    min_cluster_size=1000
     n = 5  # 缩放因子
     data_dir = '/Users/lwz/torch_ds/gta-im/FPS-5'
     data_dir = 'C:\\Users\\90532\\Desktop\\Datasets\\gta-im\\FPS-5'
