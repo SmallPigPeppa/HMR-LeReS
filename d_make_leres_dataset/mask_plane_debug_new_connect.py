@@ -120,9 +120,9 @@ if __name__ == '__main__':
     n = 5  # 缩放因子
     data_dir = '/Users/lwz/torch_ds/gta-im/FPS-5'
     data_dir = 'C:\\Users\\90532\\Desktop\\Datasets\\gta-im\\FPS-5'
-    data_dir=''
-    plane_mask_vis_dir='plane_mask_vis'
-    plane_mask_dir = 'plane_mask'
+    data_dir='/mnt/mmtech01/dataset/vision_text_pretrain/gta-im/FPS-5'
+    plane_mask_vis_dir='/mnt/mmtech01/usr/liuwenzhuo/code/HMR-LeReS-new-rm-crop/plane_mask_vis'
+    plane_mask_dir = '/mnt/mmtech01/usr/liuwenzhuo/code/HMR-LeReS-new-rm-crop/plane_mask'
 
     scene_dirs = [os.path.join(data_dir, d) for d in os.listdir(data_dir)
                   if os.path.isdir(os.path.join(data_dir, d))]
@@ -130,10 +130,15 @@ if __name__ == '__main__':
 
 
     for scene_dir in scene_dirs:
-        if not os.path.exists(os.path.join(scene_dir, plane_mask_vis_dir)):
-            os.makedirs(os.path.join(scene_dir, plane_mask_vis_dir))
-        if not os.path.exists(os.path.join(scene_dir, plane_mask_dir)):
-            os.makedirs(os.path.join(scene_dir, plane_mask_dir))
+        # if not os.path.exists(os.path.join(scene_dir, plane_mask_vis_dir)):
+        #     os.makedirs(os.path.join(scene_dir, plane_mask_vis_dir))
+        # if not os.path.exists(os.path.join(scene_dir, plane_mask_dir)):
+        #     os.makedirs(os.path.join(scene_dir, plane_mask_dir))
+
+        if not os.path.exists(plane_mask_vis_dir):
+            os.makedirs(plane_mask_vis_dir)
+        if not os.path.exists(plane_mask_dir):
+            os.makedirs(plane_mask_dir)
 
 
         info_npz = np.load(os.path.join(scene_dir, 'info_frames.npz'))
