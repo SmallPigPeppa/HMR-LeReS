@@ -127,6 +127,12 @@ if __name__ == '__main__':
     scene_dirs = [os.path.join(data_dir, d) for d in os.listdir(data_dir)
                   if os.path.isdir(os.path.join(data_dir, d))]
 
+    # 在外部创建 plane_mask_vis 和 plane_mask 基础目录
+    if not os.path.exists(plane_mask_vis_dir):
+        os.makedirs(plane_mask_vis_dir)
+    if not os.path.exists(plane_mask_dir):
+        os.makedirs(plane_mask_dir)
+
 
 
     for scene_dir in scene_dirs:
@@ -135,10 +141,22 @@ if __name__ == '__main__':
         # if not os.path.exists(os.path.join(scene_dir, plane_mask_dir)):
         #     os.makedirs(os.path.join(scene_dir, plane_mask_dir))
 
-        if not os.path.exists(plane_mask_vis_dir):
-            os.makedirs(plane_mask_vis_dir)
-        if not os.path.exists(plane_mask_dir):
-            os.makedirs(plane_mask_dir)
+        # if not os.path.exists(plane_mask_vis_dir):
+        #     os.makedirs(plane_mask_vis_dir)
+        # if not os.path.exists(plane_mask_dir):
+        #     os.makedirs(plane_mask_dir)
+
+        last_component = scene_dir.split(os.sep)[-1]
+
+        # 为 plane_mask_vis_dir 和 plane_mask_dir 构建子目录路径
+        plane_mask_vis_scenedir = os.path.join(plane_mask_vis_dir, last_component)
+        plane_mask_scenedir = os.path.join(plane_mask_dir, last_component)
+
+        # 如果子目录不存在，则创建它们
+        if not os.path.exists(plane_mask_vis_scenedir):
+            os.makedirs(plane_mask_vis_scenedir)
+        if not os.path.exists(plane_mask_scenedir):
+            os.makedirs(plane_mask_scenedir)
 
 
         info_npz = np.load(os.path.join(scene_dir, 'info_frames.npz'))
@@ -211,7 +229,7 @@ if __name__ == '__main__':
 
 
             # 修改：正确打开和关闭文件以保存结果
-            with open(os.path.join(scene_dir, plane_mask_vis_dir, '{:05d}'.format(idx) + '.png'), 'wb') as file:
+            with open(os.path.join(plane_mask_vis_scenedir, '{:05d}'.format(idx) + '.png'), 'wb') as file:
                 plt.savefig(file, dpi=300, bbox_inches='tight', format='png')
             # plt.show()
             plt.close(fig)
@@ -219,7 +237,7 @@ if __name__ == '__main__':
             plane_mask_i_uint16 = plane_masks_i.astype(np.uint16)
 
             # 将 plane_mask_i_uint16 保存为 PNG 文件
-            cv2.imwrite(os.path.join(scene_dir, plane_mask_dir, '{:05d}'.format(idx) + '_plane.png'), plane_mask_i_uint16)
+            cv2.imwrite(os.path.join(plane_mask_scenedir, '{:05d}'.format(idx) + '_plane.png'), plane_mask_i_uint16)
 
 
         print(f'finished load from {scene_dir}, total {scence_samples} samples')
