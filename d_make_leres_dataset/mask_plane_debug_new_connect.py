@@ -121,8 +121,8 @@ if __name__ == '__main__':
     data_dir = '/Users/lwz/torch_ds/gta-im/FPS-5'
     data_dir = 'C:\\Users\\90532\\Desktop\\Datasets\\gta-im\\FPS-5'
     data_dir='/mnt/mmtech01/dataset/vision_text_pretrain/gta-im/FPS-5'
-    plane_mask_vis_dir='/mnt/mmtech01/usr/liuwenzhuo/code/HMR-LeReS-new-rm-crop/plane_mask_vis'
-    plane_mask_dir = '/mnt/mmtech01/usr/liuwenzhuo/code/HMR-LeReS-new-rm-crop/plane_mask'
+    plane_mask_vis_dir='/mnt/mmtech01/usr/liuwenzhuo/code/HMR-LeReS-new-rm-crop/d_make_leres_dataset/plane_mask_vis'
+    plane_mask_dir = '/mnt/mmtech01/usr/liuwenzhuo/code/HMR-LeReS-new-rm-crop/d_make_leres_dataset/plane_mask'
 
     scene_dirs = [os.path.join(data_dir, d) for d in os.listdir(data_dir)
                   if os.path.isdir(os.path.join(data_dir, d))]
