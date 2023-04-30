@@ -158,8 +158,6 @@ def main(scene_id, eps=0.02, min_cluster_size=1000, n=5):
     colors = list(mcolors.CSS4_COLORS.values())
     num_colors = len(colors)
     colormap = mcolors.ListedColormap(colors[:num_colors])
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
-
 
     for idx in tqdm(range(scence_samples)):
         info_i = info_pkl[idx]
@@ -173,55 +171,55 @@ def main(scene_id, eps=0.02, min_cluster_size=1000, n=5):
             cam_far_clip_i = 800.
 
         depth_i = read_depthmap(depth_path_i, cam_near_clip_i, cam_far_clip_i)
-        if depth_i is not None:
-            # 缩放深度图像
-            depth_i_resized = cv2.resize(depth_i, (1920 // n, 1080 // n), interpolation=cv2.INTER_AREA)
 
-            # 修改内参矩阵以适应缩放后的图像
-            intrinsic_i_resized = intrinsic_i.copy()
-            intrinsic_i_resized[0, 0] /= n  # 缩放 fx
-            intrinsic_i_resized[1, 1] /= n  # 缩放 fy
-            intrinsic_i_resized[0, 2] /= n  # 缩放 cx
-            intrinsic_i_resized[1, 2] /= n  # 缩放 cy
+        # 缩放深度图像
+        depth_i_resized = cv2.resize(depth_i, (1920 // n, 1080 // n), interpolation=cv2.INTER_AREA)
 
-            depth_i_resized = depth_i_resized * (depth_i_resized >= 0) * (depth_i_resized <= 15)
+        # 修改内参矩阵以适应缩放后的图像
+        intrinsic_i_resized = intrinsic_i.copy()
+        intrinsic_i_resized[0, 0] /= n  # 缩放 fx
+        intrinsic_i_resized[1, 1] /= n  # 缩放 fy
+        intrinsic_i_resized[0, 2] /= n  # 缩放 cx
+        intrinsic_i_resized[1, 2] /= n  # 缩放 cy
 
-            # 使用缩放后的深度图像和内参矩阵计算平面掩码
-            plane_masks_i = compute_plane_masks(depth_i_resized, intrinsic_i_resized, eps, min_cluster_size)
-            plane_masks_i = filter_clusters_by_size(plane_masks_i, min_cluster_size)
+        depth_i_resized = depth_i_resized * (depth_i_resized >= 0) * (depth_i_resized <= 15)
 
-            depth_i = read_depthmap(depth_path_i, cam_near_clip_i, cam_far_clip_i)
-            img_path_i = os.path.join(scene_dir, '{:05d}'.format(idx) + '.jpg')
-            img_i = cv2.imread(img_path_i)
-            img_i = cv2.cvtColor(img_i, cv2.COLOR_BGR2RGB)  # 将图像从BGR转换为RGB格式
+        # 使用缩放后的深度图像和内参矩阵计算平面掩码
+        plane_masks_i = compute_plane_masks(depth_i_resized, intrinsic_i_resized, eps, min_cluster_size)
+        plane_masks_i = filter_clusters_by_size(plane_masks_i, min_cluster_size)
 
-            # 标准化深度图和平面掩码以便显示
-            normalized_depth_i = cv2.normalize(depth_i, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+        depth_i = read_depthmap(depth_path_i, cam_near_clip_i, cam_far_clip_i)
+        img_path_i = os.path.join(scene_dir, '{:05d}'.format(idx) + '.jpg')
+        img_i = cv2.imread(img_path_i)
+        img_i = cv2.cvtColor(img_i, cv2.COLOR_BGR2RGB)  # 将图像从BGR转换为RGB格式
 
-            # 使用 matplotlib 展示原图、深度图和平面掩码图像
-            # fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
-            ax1.imshow(img_i)
-            ax1.set_title("Original Image")
-            ax1.axis("off")
+        # 标准化深度图和平面掩码以便显示
+        normalized_depth_i = cv2.normalize(depth_i, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
 
-            ax2.imshow(normalized_depth_i, cmap='gray')
-            ax2.set_title("Depth Image")
-            ax2.axis("off")
+        # 使用 matplotlib 展示原图、深度图和平面掩码图像
+        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
+        ax1.imshow(img_i)
+        ax1.set_title("Original Image")
+        ax1.axis("off")
 
-            ax3.imshow(plane_masks_i, cmap=colormap)
-            ax3.set_title("Plane Masks")
-            ax3.axis("off")
+        ax2.imshow(normalized_depth_i, cmap='gray')
+        ax2.set_title("Depth Image")
+        ax2.axis("off")
 
-            # 修改：正确打开和关闭文件以保存结果
-            with open(os.path.join(plane_mask_vis_scenedir, '{:05d}'.format(idx) + '.png'), 'wb') as file:
-                plt.savefig(file, dpi=300, bbox_inches='tight', format='png')
-            # plt.show()
-            plt.close(fig)
+        ax3.imshow(plane_masks_i, cmap=colormap)
+        ax3.set_title("Plane Masks")
+        ax3.axis("off")
 
-            plane_mask_i_uint16 = plane_masks_i.astype(np.uint16)
+        # 修改：正确打开和关闭文件以保存结果
+        with open(os.path.join(plane_mask_vis_scenedir, '{:05d}'.format(idx) + '.png'), 'wb') as file:
+            plt.savefig(file, dpi=300, bbox_inches='tight', format='png')
+        # plt.show()
+        plt.close(fig)
 
-            # 将 plane_mask_i_uint16 保存为 PNG 文件
-            cv2.imwrite(os.path.join(plane_mask_scenedir, '{:05d}'.format(idx) + '_plane.png'), plane_mask_i_uint16)
+        plane_mask_i_uint16 = plane_masks_i.astype(np.uint16)
+
+        # 将 plane_mask_i_uint16 保存为 PNG 文件
+        cv2.imwrite(os.path.join(plane_mask_scenedir, '{:05d}'.format(idx) + '_plane.png'), plane_mask_i_uint16)
 
 
 if __name__ == '__main__':
