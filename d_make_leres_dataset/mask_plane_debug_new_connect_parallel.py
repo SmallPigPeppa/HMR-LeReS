@@ -119,10 +119,10 @@ def main(scene_id, eps=0.02, min_cluster_size=1000, n=5):
     min_cluster_size=1000
     n = 5  # 缩放因子
     data_dir = '/Users/lwz/torch_ds/gta-im/FPS-5'
-    data_dir = 'C:\\Users\\90532\\Desktop\\Datasets\\gta-im\\FPS-5'
+    # data_dir = 'C:\\Users\\90532\\Desktop\\Datasets\\gta-im\\FPS-5'
     data_dir='/mnt/mmtech01/dataset/vision_text_pretrain/gta-im/FPS-5'
-    plane_mask_vis_dir='/mnt/mmtech01/usr/liuwenzhuo/code/HMR-LeReS-new-rm-crop/d_make_leres_dataset/plane_mask_vis'
-    plane_mask_dir = '/mnt/mmtech01/usr/liuwenzhuo/code/HMR-LeReS-new-rm-crop/d_make_leres_dataset/plane_mask'
+    plane_mask_vis_dir='plane_mask_vis'
+    plane_mask_dir = 'plane_mask'
 
     scene_dirs = sorted([os.path.join(data_dir, d) for d in os.listdir(data_dir)
                          if os.path.isdir(os.path.join(data_dir, d))])
@@ -216,17 +216,22 @@ def main(scene_id, eps=0.02, min_cluster_size=1000, n=5):
             with open(os.path.join(plane_mask_vis_scenedir, '{:05d}'.format(idx) + '.png'), 'wb') as file:
                 plt.savefig(file, dpi=300, bbox_inches='tight', format='png')
             # plt.show()
-            plt.close(fig)
+            # plt.close(fig)
 
-            plane_mask_i_uint16 = plane_masks_i.astype(np.uint16)
+            # plane_mask_i_uint16 = plane_masks_i.astype(np.uint16)
+            #
+            # # 将 plane_mask_i_uint16 保存为 PNG 文件
+            # cv2.imwrite(os.path.join(plane_mask_scenedir, '{:05d}'.format(idx) + '_plane.png'), plane_mask_i_uint16)
+
+            plane_mask_i_uint8 = plane_masks_i.astype(np.uint8)
 
             # 将 plane_mask_i_uint16 保存为 PNG 文件
-            cv2.imwrite(os.path.join(plane_mask_scenedir, '{:05d}'.format(idx) + '_plane.png'), plane_mask_i_uint16)
+            cv2.imwrite(os.path.join(plane_mask_scenedir, '{:05d}'.format(idx) + '_plane.png'), plane_mask_i_uint8)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Process a single scene.")
-    parser.add_argument('--scene_id', type=int, required=True, help='Scene ID to process (0-based index)')
+    parser.add_argument('--scene_id', type=int, default=0, help='Scene ID to process (0-based index)')
     args = parser.parse_args()
 
     main(args.scene_id)
