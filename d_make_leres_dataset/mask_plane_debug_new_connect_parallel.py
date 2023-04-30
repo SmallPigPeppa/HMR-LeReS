@@ -227,7 +227,8 @@ def main(scene_id, eps=0.02, min_cluster_size=1000, n=5):
 
             # 将 plane_mask_i_uint16 保存为 PNG 文件
             cv2.imwrite(os.path.join(plane_mask_scenedir, '{:05d}'.format(idx) + '_plane.png'), plane_mask_i_uint8)
-
+            import gc
+            gc.collect()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Process a single scene.")
