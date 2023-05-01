@@ -283,4 +283,8 @@ if __name__ == '__main__':
     parser.add_argument('--scene_id', type=int, default=0, help='Scene ID to process (0-based index)')
     args = parser.parse_args()
 
+    from cuml.common.device_selection import using_device_type, set_global_device_type
+
+    set_global_device_type("GPU")
+
     main(args.scene_id)
