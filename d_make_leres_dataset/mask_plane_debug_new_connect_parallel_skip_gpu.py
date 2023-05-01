@@ -107,7 +107,8 @@ def compute_plane_masks(depth_img, intrinsic, eps=0.02, min_samples=2000):
 
     plane_masks = np.zeros((h * w), dtype=np.uint8)
     # plane_masks[mask] = cluster_labels.cpu().numpy() + 1
-    plane_masks[mask] = cluster_labels + 1
+    # plane_masks[mask] = cluster_labels + 1
+    plane_masks[mask] = (cluster_labels + 1).get()
 
     plane_masks = plane_masks.reshape((h, w))
 
