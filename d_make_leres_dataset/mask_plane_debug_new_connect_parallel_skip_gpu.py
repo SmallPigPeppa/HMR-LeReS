@@ -8,6 +8,10 @@ from tqdm import tqdm
 import open3d as o3d
 from skimage.measure import label
 import argparse
+import torch
+import cuml
+
+
 
 
 def read_depthmap(depth_path, cam_near_clip, cam_far_clip):
@@ -88,9 +92,6 @@ def filter_clusters_by_size(plane_masks, min_cluster_size):
 
 
 
-import torch
-import cuml
-
 def compute_plane_masks(depth_img, intrinsic, eps=0.02, min_samples=2000):
     normals = compute_normals(depth_img, intrinsic)
     h, w, _ = normals.shape
@@ -149,7 +150,7 @@ def main(scene_id, eps=0.02, min_cluster_size=1000, n=5):
     min_cluster_size=1000
     n = 5  # 缩放因子
     data_dir = '/Users/lwz/torch_ds/gta-im/FPS-5'
-    data_dir = 'C:\\Users\\90532\\Desktop\\Datasets\\gta-im\\FPS-5'
+    # data_dir = 'C:\\Users\\90532\\Desktop\\Datasets\\gta-im\\FPS-5'
     data_dir='/mnt/mmtech01/dataset/vision_text_pretrain/gta-im/FPS-5'
     plane_mask_vis_dir='plane_mask_vis'
     plane_mask_dir = 'plane_mask'
