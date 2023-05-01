@@ -102,7 +102,8 @@ def compute_plane_masks(depth_img, intrinsic, eps=0.02, min_samples=2000):
     mask = depth_img.reshape(-1) != 0
 
     # Move data to GPU
-    normals_flat_gpu = torch.tensor(normals_flat[mask], device="cuda:0", dtype=torch.float32)
+    # normals_flat_gpu = torch.tensor(normals_flat[mask], device="cuda:0", dtype=torch.float32)
+    normals_flat_gpu = cupy.array(normals_flat[mask], dtype=cupy.float32)
 
     # Perform DBSCAN clustering using cuml
     # dbscan = cuml.DBSCAN(eps=eps, min_samples=min_samples)
