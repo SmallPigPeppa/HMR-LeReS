@@ -9,7 +9,7 @@ from tqdm import tqdm
 import open3d as o3d
 from skimage.measure import label
 import argparse
-import torch
+# import torch
 import cuml
 import cupy
 
