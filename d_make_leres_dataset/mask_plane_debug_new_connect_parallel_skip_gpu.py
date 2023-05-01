@@ -1,8 +1,8 @@
 import os
 import cv2
 import numpy as np
-# from sklearn.cluster import DBSCAN
-from cuml.cluster import DBSCAN
+# # from sklearn.cluster import DBSCAN
+# from cuml.cluster import DBSCAN
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from tqdm import tqdm
@@ -103,8 +103,8 @@ def compute_plane_masks(depth_img, intrinsic, eps=0.02, min_samples=2000):
     normals_flat_gpu = torch.tensor(normals_flat[mask], device="cuda:0", dtype=torch.float32)
 
     # Perform DBSCAN clustering using cuml
-    # dbscan = cuml.DBSCAN(eps=eps, min_samples=min_samples)
-    dbscan = DBSCAN(eps=eps, min_samples=min_samples, output_type='int64')
+    dbscan = cuml.DBSCAN(eps=eps, min_samples=min_samples)
+    # dbscan = DBSCAN(eps=eps, min_samples=min_samples, output_type='int64')
     cluster_labels = dbscan.fit_predict(normals_flat_gpu)
 
     plane_masks = np.zeros((h * w), dtype=np.uint8)
