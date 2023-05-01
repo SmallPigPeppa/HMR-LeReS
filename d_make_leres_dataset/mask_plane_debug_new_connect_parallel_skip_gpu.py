@@ -11,6 +11,8 @@ from skimage.measure import label
 import argparse
 import torch
 import cuml
+import cupy
+
 
 
 
@@ -103,13 +105,17 @@ def compute_plane_masks(depth_img, intrinsic, eps=0.02, min_samples=2000):
     normals_flat_gpu = torch.tensor(normals_flat[mask], device="cuda:0", dtype=torch.float32)
 
     # Perform DBSCAN clustering using cuml
-    dbscan = cuml.DBSCAN(eps=eps, min_samples=min_samples)
+    # dbscan = cuml.DBSCAN(eps=eps, min_samples=min_samples)
+    dbscan = cuml.DBSCAN(eps=eps, min_samples=min_samples, output_type='cupy')
     # dbscan = DBSCAN(eps=eps, min_samples=min_samples, output_type='int64')
     cluster_labels = dbscan.fit_predict(normals_flat_gpu)
 
+
     plane_masks = np.zeros((h * w), dtype=np.uint8)
     # plane_masks[mask] = cluster_labels.cpu().numpy() + 1
-    # plane_masks[mask] = cluster_labels + 1
+    cluster_labels_numpy = cupy.asnumpy(cluster_labels)
+    plane_masks[mask] = cluster_labels_numpy + 1
+    # plane_masks[mask] = cluster_label + 1
     plane_masks[mask] = (cluster_labels + 1).get()
 
     plane_masks = plane_masks.reshape((h, w))
