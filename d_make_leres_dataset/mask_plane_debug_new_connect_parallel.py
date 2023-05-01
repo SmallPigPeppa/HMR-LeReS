@@ -162,6 +162,12 @@ def main(scene_id, eps=0.02, min_cluster_size=1000, n=5):
 
 
     for idx in tqdm(range(scence_samples)):
+
+        plane_mask_file = os.path.join(plane_mask_scenedir, '{:05d}'.format(idx) + '_plane.png')
+        if os.path.exists(plane_mask_file):
+            continue
+
+
         info_i = info_pkl[idx]
         intrinsic_i = info_npz['intrinsics'][idx].astype(np.float32)  # 确保内参矩阵为float32类型
         depth_path_i = os.path.join(scene_dir, '{:05d}'.format(idx) + '.png')
