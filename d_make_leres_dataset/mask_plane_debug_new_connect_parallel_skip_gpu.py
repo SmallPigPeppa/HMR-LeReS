@@ -106,7 +106,9 @@ def compute_plane_masks(depth_img, intrinsic, eps=0.02, min_samples=2000):
     cluster_labels = dbscan.fit_predict(normals_flat_gpu)
 
     plane_masks = np.zeros((h * w), dtype=np.uint8)
-    plane_masks[mask] = cluster_labels.cpu().numpy() + 1
+    # plane_masks[mask] = cluster_labels.cpu().numpy() + 1
+    plane_masks[mask] = cluster_labels + 1
+
     plane_masks = plane_masks.reshape((h, w))
 
     # 对每个平面分别进行连通组件分析，并更新平面掩码
