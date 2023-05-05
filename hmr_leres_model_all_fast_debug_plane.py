@@ -48,7 +48,7 @@ class HMRLeReS(pl.LightningModule):
                                                             max_threshold=self.depth_max_threshold)
         self.pwn_plane_loss = PWNPlanesLoss(min_threshold=self.depth_min_threshold,
                                             max_threshold=self.depth_max_threshold,
-                                            input_size=(self.gta_dataset.leres_size[0], self.gta_dataset.leres_size[1]))
+                                            input_size=(1080//5, 1920//5))
         #  可有可无
         # self.msg_loss = MultiScaleGradLoss(scale=4, min_threshold=self.depth_min_threshold,
         #                                    max_threshold=self.depth_max_threshold)
