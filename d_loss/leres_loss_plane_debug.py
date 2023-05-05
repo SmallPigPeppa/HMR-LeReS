@@ -213,7 +213,7 @@ class PWNPlanesLoss(pl.LightningModule):
         valid_num = cos_diff.numel()
         return loss, valid_num
 
-    def forward(self, gt_depth, pred_depth, plane_mask, focal_length=None):
+    def forward(self, pred_depth,gt_depth,  plane_mask, focal_length=None):
         """
         Virtual normal d_loss.
         :param pred_depth: predicted depth map, [B,C,H,W]

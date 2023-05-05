@@ -6,7 +6,7 @@ from model import HMRNetBase
 from Discriminator import Discriminator
 from hmr_leres_config import args
 
-from datasets.gta_im_all_10801920 import GTADataset
+from datasets.gta_im_all_10801920_plane import GTADataset
 from datasets.mesh_pkl_all import MeshDataset
 
 from a_models.smpl import SMPL
@@ -189,19 +189,23 @@ class HMRLeReS(pl.LightningModule):
                          }
 
         leres_images = gta_data['leres_image']
-        predict_depth, auxi = self.leres_model(leres_images)
+        pred_depth, auxi = self.leres_model(leres_images)
         gt_depth = gta_data['depth']
         gt_depth = gt_depth[:, None, :, :]
-        loss_depth_regression = self.depth_regression_loss(predict_depth, gt_depth)
+        plane_mask = gta_data['plane_mask']
+
+        loss_depth_regression = self.depth_regression_loss(pred_depth, gt_depth)
         # loss_depth_regression = 0.
-        # loss_edge_ranking = self.edge_ranking_loss(predict_depth, gt_depth, leres_images)
+        # loss_edge_ranking = self.edge_ranking_loss(pred_depth, gt_depth, leres_images)
         loss_edge_ranking = 0.
-        # loss_msg = self.msg_loss(predict_depth, gt_depth) * 0.5
+        # loss_msg = self.msg_loss(pred_depth, gt_depth) * 0.5
         loss_msg = 0.
-        pred_ssinv = recover_scale_shift_depth(predict_depth, gt_depth, min_threshold=0., max_threshold=15.0)
+        pred_ssinv = recover_scale_shift_depth(pred_depth, gt_depth, min_threshold=0., max_threshold=15.0)
         # pred_ssinv = 0.
         # loss_pwn_edge = self.pwn_edge_loss(pred_ssinv, gt_depth, leres_images, focal_length=gt_focal_length)
-        loss_pwn_edge = self.pwn_edge_loss(predict_depth, gt_depth, leres_images, focal_length=gt_focal_length)
+        loss_pwn_edge = self.pwn_edge_loss(pred_depth, gt_depth, leres_images, focal_length=gt_focal_length)
+
+        loss_pwn_plane = self.pwn_plane_loss(pred_depth, gt_depth, plane_mask, focal_length=gt_focal_length)
         # loss_pwn_edge = 0.
         loss_leres = (loss_depth_regression + loss_edge_ranking + loss_msg + loss_pwn_edge)
         # loss_leres = 0.
@@ -217,7 +221,7 @@ class HMRLeReS(pl.LightningModule):
         # loss_align
         # loss_align = self.align_loss.batch_align_loss(pred_verts,
         #                                               torch.tensor([self.smpl_model.faces], device=self.device),
-        #                                               predict_depth, gta_data)
+        #                                               pred_depth, gta_data)
         loss_align = 0.
         loss_inside = 0.
         loss_combie = loss_align + loss_inside
@@ -228,7 +232,7 @@ class HMRLeReS(pl.LightningModule):
             'loss_combine': loss_combie
         }
 
-        # depths_metrics = val_depth(predict_depth, gt_depth, min_threshold=self.depth_min_threshold,
+        # depths_metrics = val_depth(pred_depth, gt_depth, min_threshold=self.depth_min_threshold,
         #                            max_threshold=self.depth_max_threshold)
         depths_metrics = {}
 
