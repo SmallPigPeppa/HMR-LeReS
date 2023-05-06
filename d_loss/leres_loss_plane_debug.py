@@ -225,6 +225,7 @@ class PWNPlanesLoss(pl.LightningModule):
         B, _, _, _ = pred_depth.shape
         loss = torch.tensor(0.0).to(self.device)
         valid_depth_masks = (gt_depth > self.min_threshold) & (gt_depth < self.max_threshold)
+        valid_depth_masks = valid_depth_masks.squeeze(dim=1)
         print('plane_mask.shape origin:',plane_mask.shape)
         print('valid_depth_masks.shape:',valid_depth_masks.shape)
         plane_mask = plane_mask * (valid_depth_masks.float().to(self.device))
