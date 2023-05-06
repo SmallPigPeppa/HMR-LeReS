@@ -157,6 +157,7 @@ class GTADataset(Dataset):
         focal_length = np.array(intrinsic[0][0]).astype(np.float32)
         depth = Image.fromarray(depth)
         human_mask = Image.fromarray(human_mask)
+        plane_mask= Image.fromarray(plane_mask)
 
         # crop and rescale leres_image,depth,human_mask,kpts2d,joints2d,human_mask
         aspect_ratio = np.random.uniform(self.leres_aspect_ratio_range[0], self.leres_aspect_ratio_range[1])
@@ -169,7 +170,7 @@ class GTADataset(Dataset):
         leres_image = T.functional.crop(origin_image, top=top, left=left, height=height, width=width)
         depth = T.functional.crop(depth, top=top, left=left, height=height, width=width)
         human_mask = T.functional.crop(human_mask, top=top, left=left, height=height, width=width)
-        # plane_mask = T.functional.crop(plane_mask, top=top, left=left, height=height, width=width)
+        plane_mask = T.functional.crop(plane_mask, top=top, left=left, height=height, width=width)
         kpts_2d_origin = kpts_2d.copy()
         kpts_2d = off_set_scale_kpts(kpts_2d, left=left, top=top, height_ratio=self.leres_size[0] / height,
                                      width_ratio=self.leres_size[1] / width)
