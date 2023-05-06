@@ -68,6 +68,7 @@ class PWNPlanesLoss(pl.LightningModule):
         return pw
     # update by lwz
     def select_index(self, mask_kp):
+        import pdb;pdb.set_trace()
         x, h, w = mask_kp.shape
 
         select_size = int(3 * self.sample_groups)

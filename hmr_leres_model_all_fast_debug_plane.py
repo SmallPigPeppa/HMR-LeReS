@@ -48,7 +48,7 @@ class HMRLeReS(pl.LightningModule):
                                                             max_threshold=self.depth_max_threshold)
         self.pwn_plane_loss = PWNPlanesLoss(min_threshold=self.depth_min_threshold,
                                             max_threshold=self.depth_max_threshold,
-                                            input_size=(1080//5, 1920//5))
+                                            input_size=(1080 // 5, 1920 // 5))
         #  可有可无
         # self.msg_loss = MultiScaleGradLoss(scale=4, min_threshold=self.depth_min_threshold,
         #                                    max_threshold=self.depth_max_threshold)
@@ -204,10 +204,11 @@ class HMRLeReS(pl.LightningModule):
         # pred_ssinv = 0.
         # loss_pwn_edge = self.pwn_edge_loss(pred_ssinv, gt_depth, leres_images, focal_length=gt_focal_length)
         loss_pwn_edge = self.pwn_edge_loss(pred_depth, gt_depth, leres_images, focal_length=gt_focal_length)
-
-        loss_pwn_plane = self.pwn_plane_loss(pred_depth, gt_depth, plane_mask, focal_length=gt_focal_length)
         # loss_pwn_edge = 0.
-        loss_leres = (loss_depth_regression + loss_edge_ranking + loss_msg + loss_pwn_edge)
+        loss_pwn_plane = self.pwn_plane_loss(pred_depth, gt_depth, plane_mask, focal_length=gt_focal_length)
+        # loss_pwn_plane=0.
+
+        loss_leres = (loss_depth_regression + loss_edge_ranking + loss_msg + loss_pwn_edge + loss_pwn_plane)
         # loss_leres = 0.
 
         leres_loss_dict = {
@@ -215,6 +216,7 @@ class HMRLeReS(pl.LightningModule):
             'loss_edge_ranking': loss_edge_ranking,
             'loss_msg': loss_msg,
             'loss_pwn_edge': loss_pwn_edge,
+            'loss_pwn_plane': loss_pwn_plane,
             'loss_leres': loss_leres
         }
 
