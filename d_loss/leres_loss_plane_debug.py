@@ -28,8 +28,8 @@ class PWNPlanesLoss(pl.LightningModule):
         self.min_threshold = min_threshold
         self.max_threshold = max_threshold
         self.input_size = input_size
-        self.u0 = torch.tensor(input_size[1] // 2, dtype=torch.float32).to(self.device)
-        self.v0 = torch.tensor(input_size[0] // 2, dtype=torch.float32).to(self.device)
+        # self.u0 = torch.tensor(input_size[1] // 2, dtype=torch.float32).to(self.device)
+        # self.v0 = torch.tensor(input_size[0] // 2, dtype=torch.float32).to(self.device)
         self.init_image_coor()
         self.delta_cos = delta_cos
         self.delta_diff_x = delta_diff_x
@@ -227,6 +227,8 @@ class PWNPlanesLoss(pl.LightningModule):
         :param plane_mask: mask for planes, each plane is noted with a value, [B, C, H, W]
         :param focal_length: focal length
         """
+        self.u0 = torch.tensor(self.input_size[1] // 2, dtype=torch.float32).to(self.device)
+        self.v0 = torch.tensor(self.input_size[0] // 2, dtype=torch.float32).to(self.device)
         B, _, _, _ = pred_depth.shape
         loss = torch.tensor(0.0).to(self.device)
         valid_depth_masks = (gt_depth > self.min_threshold) & (gt_depth < self.max_threshold)
