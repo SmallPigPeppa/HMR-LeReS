@@ -244,6 +244,7 @@ class PWNPlanesLoss(pl.LightningModule):
 
             unique_planes = torch.unique(plane_mask_i)
             planes = [plane_mask_i == m for m in unique_planes if m != 0]  # [x, 1, h, w] x is the planes number
+            import pdb; pdb.set_trace()
             if len(planes) == 0:
                 continue
             mask_planes = torch.stack(planes, dim=0)  # torch.cat(planes, dim=0) #
