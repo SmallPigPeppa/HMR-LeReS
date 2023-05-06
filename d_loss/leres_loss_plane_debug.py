@@ -58,7 +58,11 @@ class PWNPlanesLoss(pl.LightningModule):
         v = self.v_v0.repeat((depth.shape[0], 1, 1, 1)) / max_uv
         z = depth
 
-        u, v, z= u.to(self.device), v.to(self.device), z.to(self.device)
+        # u, v, z= u.to(self.device), v.to(self.device), z.to(self.device)
+
+        print("u device:", u.device)
+        print("v device:", v.device)
+        print("z device:", z.device)
 
         pw = torch.cat([u, v, z], 1).permute(0, 2, 3, 1)  # [b, h, w, c]
         return pw
