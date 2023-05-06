@@ -66,11 +66,9 @@ class PWNPlanesLoss(pl.LightningModule):
         z = depth
         pw = torch.cat([x, y, z], 1).permute(0, 2, 3, 1)  # [b, h, w, c]
         return pw
-    # update by lwz
+
     def select_index(self, mask_kp):
-        # import pdb;pdb.set_trace()
-        print(mask_kp.shape)
-        x, h, w = mask_kp.shape
+        x, _, h, w = mask_kp.shape
 
         select_size = int(3 * self.sample_groups)
         p1_x = []
@@ -81,7 +79,7 @@ class PWNPlanesLoss(pl.LightningModule):
         p3_y = []
         valid_batch = torch.ones((x, 1), dtype=torch.bool)
         for i in range(x):
-            mask_kp_i = mask_kp[i, :, :]
+            mask_kp_i = mask_kp[i, 0, :, :]
             valid_points = torch.nonzero(mask_kp_i)
 
             if valid_points.shape[0] < select_size * 0.6:
