@@ -57,7 +57,7 @@ class PWNPlanesLoss(pl.LightningModule):
         max_uv = self.u_u0.max()
         u = self.u_u0.repeat((depth.shape[0], 1, 1, 1)) / max_uv
         v = self.v_v0.repeat((depth.shape[0], 1, 1, 1)) / max_uv
-        # z = depth
+        z = depth
         u, v = u.to(self.device), v.to(self.device)
 
         # print("u device:", u.device)
