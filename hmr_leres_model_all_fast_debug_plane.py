@@ -66,7 +66,7 @@ class HMRLeReS(pl.LightningModule):
         self.gta_dataset = gta_dataset
 
         # Calculate the size of the subset to be chosen from mesh_dataset
-        subset_size = int(len(mesh_dataset) * (args.batch_size / args.adv_batch_size))
+        subset_size = int(len(gta_dataset) * (args.adv_batch_size/args.batch_size))
         subset_indices = torch.randperm(len(mesh_dataset))[:subset_size]
         mesh_dataset_subset = torch.utils.data.Subset(mesh_dataset, subset_indices)
 
