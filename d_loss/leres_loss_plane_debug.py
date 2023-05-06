@@ -30,6 +30,7 @@ class PWNPlanesLoss(pl.LightningModule):
         self.input_size = input_size
         # self.u0 = torch.tensor(input_size[1] // 2, dtype=torch.float32).to(self.device)
         # self.v0 = torch.tensor(input_size[0] // 2, dtype=torch.float32).to(self.device)
+        print('self.device',self.device)
         self.init_image_coor()
         self.delta_cos = delta_cos
         self.delta_diff_x = delta_diff_x
