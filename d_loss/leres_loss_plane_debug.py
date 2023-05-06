@@ -9,8 +9,9 @@ class PWNPlanesLoss(pl.LightningModule):
     """
     Virtual Normal Loss Function.
     """
-    def __init__(self, input_size,delta_cos=0.867, delta_diff_x=0.007,
-                 delta_diff_y=0.007, sample_groups=5000, xyz_mode='uvd',min_threshold=-1e-8, max_threshold=10.1):
+
+    def __init__(self, input_size, delta_cos=0.867, delta_diff_x=0.007,
+                 delta_diff_y=0.007, sample_groups=5000, xyz_mode='uvd', min_threshold=-1e-8, max_threshold=10.1):
         """
         Virtual normal planes d_loss, which constrain points to be on the same 3D plane.
         :para focal_x: folcal length fx
@@ -28,9 +29,8 @@ class PWNPlanesLoss(pl.LightningModule):
         self.min_threshold = min_threshold
         self.max_threshold = max_threshold
         self.input_size = input_size
-        # self.u0 = torch.tensor(input_size[1] // 2, dtype=torch.float32).to(self.device)
-        # self.v0 = torch.tensor(input_size[0] // 2, dtype=torch.float32).to(self.device)
-        print('self.device',self.device)
+        self.u0 = torch.tensor(input_size[1] // 2, dtype=torch.float32)
+        self.v0 = torch.tensor(input_size[0] // 2, dtype=torch.float32)
         self.init_image_coor()
         self.delta_cos = delta_cos
         self.delta_diff_x = delta_diff_x
@@ -57,13 +57,12 @@ class PWNPlanesLoss(pl.LightningModule):
         max_uv = self.u_u0.max()
         u = self.u_u0.repeat((depth.shape[0], 1, 1, 1)) / max_uv
         v = self.v_v0.repeat((depth.shape[0], 1, 1, 1)) / max_uv
-        z = depth
+        # z = depth
+        u, v = u.to(self.device), v.to(self.device)
 
-        # u, v, z= u.to(self.device), v.to(self.device), z.to(self.device)
-
-        print("u device:", u.device)
-        print("v device:", v.device)
-        print("z device:", z.device)
+        # print("u device:", u.device)
+        # print("v device:", v.device)
+        # print("z device:", z.device)
 
         pw = torch.cat([u, v, z], 1).permute(0, 2, 3, 1)  # [b, h, w, c]
         return pw
@@ -221,23 +220,23 @@ class PWNPlanesLoss(pl.LightningModule):
         valid_num = cos_diff.numel()
         return loss, valid_num
 
-    def forward(self, pred_depth,gt_depth,  plane_mask, focal_length=None):
+    def forward(self, pred_depth, gt_depth, plane_mask, focal_length=None):
         """
         Virtual normal d_loss.
         :param pred_depth: predicted depth map, [B,C,H,W]
         :param plane_mask: mask for planes, each plane is noted with a value, [B, C, H, W]
         :param focal_length: focal length
         """
-        self.u0 = torch.tensor(self.input_size[1] // 2, dtype=torch.float32).to(self.device)
-        self.v0 = torch.tensor(self.input_size[0] // 2, dtype=torch.float32).to(self.device)
+        # self.u0 = torch.tensor(self.input_size[1] // 2, dtype=torch.float32).to(self.device)
+        # self.v0 = torch.tensor(self.input_size[0] // 2, dtype=torch.float32).to(self.device)
         B, _, _, _ = pred_depth.shape
         loss = torch.tensor(0.0).to(self.device)
         valid_depth_masks = (gt_depth > self.min_threshold) & (gt_depth < self.max_threshold)
         valid_depth_masks = valid_depth_masks.squeeze(dim=1)
-        print('plane_mask.shape origin:',plane_mask.shape)
-        print('valid_depth_masks.shape:',valid_depth_masks.shape)
+        print('plane_mask.shape origin:', plane_mask.shape)
+        print('valid_depth_masks.shape:', valid_depth_masks.shape)
         plane_mask = plane_mask * (valid_depth_masks.float().to(self.device))
-        print('plane_mask.shape:',plane_mask.shape)
+        print('plane_mask.shape:', plane_mask.shape)
         valid_planes_num = 0
         for i in range(B):
             self.fx = focal_length[i] if focal_length is not None else 256.0
