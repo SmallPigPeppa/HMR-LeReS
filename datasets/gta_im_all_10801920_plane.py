@@ -191,7 +191,7 @@ class GTADataset(Dataset):
         kpts_2d = np.concatenate((kpts_2d, vis), axis=1)
         kpts_3d = np.concatenate((kpts_3d, vis), axis=1)
         kpts_2d_origin = np.concatenate((kpts_2d_origin, vis), axis=1)
-        import pdb;pdb.set_trace()
+        # import pdb;pdb.set_trace()
 
         return {
             'image_path': image_path,
