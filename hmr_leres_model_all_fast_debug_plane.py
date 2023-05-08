@@ -61,6 +61,7 @@ class HMRLeReS(pl.LightningModule):
         gta_dataset_dir = os.path.join(args.gta_dataset_dir, 'FPS-5-test')
         mesh_dataset_dir = os.path.join(args.mesh_dataset_dir, 'FPS-5-test')
 
+
         gta_dataset = GTADataset(gta_dataset_dir)
         mesh_dataset = MeshDataset(mesh_dataset_dir)
         self.gta_dataset = gta_dataset
@@ -104,7 +105,7 @@ class HMRLeReS(pl.LightningModule):
         )
         return gta_loader
 
-    def get_smpl_kpts_verts(self, transl, pose, shape, focal_length):
+    def get_smpl_kpts_verts(self, transl, pose, shape, focal_lengtFh):
         verts, kpts_3d, Rs = self.smpl_model(shape=shape, pose=pose, get_skin=True)
         batch_size = kpts_3d.shape[0]
         kpts_3d += transl.unsqueeze(dim=1)
