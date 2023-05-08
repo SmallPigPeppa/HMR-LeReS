@@ -17,7 +17,7 @@ class GTADataset(Dataset):
     def __init__(self, data_dir, flip_prob=0.):
         super().__init__()
         self.data_dir = data_dir
-        import pdb;pdb.set_trace()
+        # import pdb;pdb.set_trace()
         self.scene_dirs = [os.path.join(data_dir, d) for d in os.listdir(data_dir) if
                            os.path.isdir(os.path.join(data_dir, d))]
         self.hmr_scale_range = [1.3, 1.5]
