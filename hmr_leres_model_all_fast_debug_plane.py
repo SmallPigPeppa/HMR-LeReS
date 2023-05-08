@@ -105,7 +105,7 @@ class HMRLeReS(pl.LightningModule):
         )
         return gta_loader
 
-    def get_smpl_kpts_verts(self, transl, pose, shape, focal_lengtFh):
+    def get_smpl_kpts_verts(self, transl, pose, shape, focal_length):
         verts, kpts_3d, Rs = self.smpl_model(shape=shape, pose=pose, get_skin=True)
         batch_size = kpts_3d.shape[0]
         kpts_3d += transl.unsqueeze(dim=1)
