@@ -59,7 +59,7 @@ class HMRLeReS(pl.LightningModule):
 
     def train_dataloader(self):
         gta_dataset_dir = os.path.join(args.gta_dataset_dir, 'FPS-5-test')
-        mesh_dataset_dir = os.path.join(args.mesh_dataset_dir, 'FPS-30')
+        mesh_dataset_dir = os.path.join(args.mesh_dataset_dir, 'FPS-5-test')
 
         gta_dataset = GTADataset(gta_dataset_dir)
         mesh_dataset = MeshDataset(mesh_dataset_dir)
