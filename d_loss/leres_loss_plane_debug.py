@@ -258,3 +258,7 @@ class PWNPlanesLoss(pl.LightningModule):
                 loss += loss_tmp
         loss /= (valid_planes_num + 1e-8)
         return loss
+
+
+if __name__=='__main__':
+    pass
