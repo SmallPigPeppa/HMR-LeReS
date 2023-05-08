@@ -1,6 +1,6 @@
 # conda activate hmr-leres
 export PYTHONPATH="./HMR/src:./LeReS/Train"
-/share/wenzhuoliu/conda-envs/hmr-leres-new main_all.py \
+/share/wenzhuoliu/conda-envs/hmr-leres-new/bin/python main_all.py \
 --smpl-mean-theta-path HMR/HMR-data/neutral_smpl_mean_params.h5 \
 --smpl-model HMR/HMR-data/neutral_smpl_with_cocoplus_reg.txt \
 --gta_dataset_dir /share/wenzhuoliu/torch_ds/gta-im \
