@@ -217,7 +217,7 @@ if __name__ == '__main__':
     from torch.utils.data import DataLoader
 
     data_dir = '/Users/lwz/torch_ds/gta-im-test/FPS-5'
-    data_dir = '/share/wenzhuoliu/torch_ds/gta-im'
+    data_dir = '/share/wenzhuoliu/torch_ds/gta-im/FPS-5-test'
     gta_dataset = GTADataset(data_dir)
     gta_loader = DataLoader(gta_dataset, batch_size=16, shuffle=True)
 
