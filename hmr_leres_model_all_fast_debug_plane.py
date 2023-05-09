@@ -210,7 +210,7 @@ class HMRLeReS(pl.LightningModule):
         loss_pwn_plane = self.pwn_plane_loss(pred_depth, gt_depth, plane_mask, focal_length=gt_focal_length)
         # loss_pwn_plane=0.
 
-        loss_leres = (loss_depth_regression + loss_edge_ranking + loss_msg + loss_pwn_edge + loss_pwn_plane)
+        loss_leres = (loss_depth_regression + loss_edge_ranking + loss_msg + loss_pwn_edge + loss_pwn_plane*100)
         # loss_leres = 0.
 
         leres_loss_dict = {
