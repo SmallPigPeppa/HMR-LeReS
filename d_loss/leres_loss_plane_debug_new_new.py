@@ -43,7 +43,7 @@ class NormalLoss(pl.LightningModule):
 
         if self.cameras is None:
             # If self.cameras is empty, create a new PerspectiveCameras object
-            self.cameras = PerspectiveCameras(focal_length=focal_length, principal_point=principal_point)
+            self.cameras = PerspectiveCameras(focal_length=focal_length, principal_point=principal_point,device=self.device)
         else:
             # Otherwise, just update its intrinsics
             self.cameras.focal_length = focal_length
