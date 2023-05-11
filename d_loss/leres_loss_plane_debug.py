@@ -89,10 +89,19 @@ class PWNPlanesLoss(pl.LightningModule):
             mask_kp_i = mask_kp[i, 0, :, :]
             valid_points = torch.nonzero(mask_kp_i)
 
-            if valid_points.shape[0] < select_size * 0.6:
-                valid_points = torch.nonzero(~mask_kp_i.to(torch.uint8))
-                valid_batch[i, :] = False
-            elif valid_points.shape[0] < select_size:
+            # if valid_points.shape[0] < select_size * 0.6:
+            #     valid_points = torch.nonzero(~mask_kp_i.to(torch.uint8))
+            #     valid_batch[i, :] = False
+            # elif valid_points.shape[0] < select_size:
+            #     repeat_idx = torch.randperm(valid_points.shape[0])[:select_size - valid_points.shape[0]]
+            #     valid_repeat = valid_points[repeat_idx]
+            #     valid_points = torch.cat((valid_points, valid_repeat), 0)
+            # else:
+            #     valid_points = valid_points
+
+
+
+            if valid_points.shape[0] < select_size:
                 repeat_idx = torch.randperm(valid_points.shape[0])[:select_size - valid_points.shape[0]]
                 valid_repeat = valid_points[repeat_idx]
                 valid_points = torch.cat((valid_points, valid_repeat), 0)
