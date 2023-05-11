@@ -13,7 +13,9 @@ class DepthRegressionLoss(pl.LightningModule):
         self.max_threshold = max_threshold
 
     def forward(self, pred_depth, gt_depth):
-        valid_mask = (gt_depth > self.min_threshold) & (gt_depth < self.max_threshold)  # [b, c, h, w]
+        valid_mask = (gt_depth > self.min_threshold) & (gt_depth < self.max_threshold)        # [b, c, h, w]
+        if not torch.any(valid_mask):
+            return 0.0
         valid_pred_depth = pred_depth[valid_mask]
         valid_gt_depth = gt_depth[valid_mask]
         l1_loss = F.l1_loss(valid_pred_depth, valid_gt_depth)
@@ -76,8 +78,8 @@ class NormalLoss(pl.LightningModule):
         batchsize = pcd.shape[0]
         point_cloud_flat = pcd.view(batchsize, -1, 3)
         # Calculate normals
-        # normals_flat = estimate_pointcloud_normals(point_cloud_flat, neighborhood_size=30)
-        normals_flat = estimate_pointcloud_normals(point_cloud_flat, neighborhood_size=5)
+        normals_flat = estimate_pointcloud_normals(point_cloud_flat, neighborhood_size=30)
+        # normals_flat = estimate_pointcloud_normals(point_cloud_flat, neighborhood_size=5)
 
         # Convert normals back to original depth image shape
         normals = normals_flat.view(pcd.shape)
@@ -86,6 +88,8 @@ class NormalLoss(pl.LightningModule):
 
     def forward(self, depth_pred, depth_gt, intrinsics):
         valid_mask = (depth_gt > self.min_threshold) & (depth_gt < self.max_threshold)
+        if not torch.any(valid_mask):
+            return 0.0
         self.set_cameras_intrinsics(intrinsics)
         pcd_pred = self.depth2pcd(depth_pred)
         pcd_gt = self.depth2pcd(depth_gt)

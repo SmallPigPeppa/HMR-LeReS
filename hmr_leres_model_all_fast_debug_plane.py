@@ -198,8 +198,8 @@ class HMRLeReS(pl.LightningModule):
         gt_depth = gt_depth[:, None, :, :]
         plane_mask = gta_data['plane_mask']
 
-        loss_depth_regression = self.depth_regression_loss(pred_depth, gt_depth)
-        loss_normal = self.normal_loss(pred_depth, gt_depth, gt_intrinsic)
+        loss_depth_regression = self.depth_regression_loss(torch.squeeze(pred_depth), torch.squeeze(gt_depth))
+        loss_normal = self.normal_loss(torch.squeeze(pred_depth), torch.squeeze(gt_depth), gt_intrinsic)
         # loss_depth_regression = 0.
         # loss_edge_ranking = self.edge_ranking_loss(pred_depth, gt_depth, leres_images)
         loss_edge_ranking = 0.
