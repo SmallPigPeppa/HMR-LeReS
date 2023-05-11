@@ -94,13 +94,8 @@ class PWNPlanesLoss(pl.LightningModule):
                 valid_batch[i, :] = False
                 unique_samples = torch.zeros(size=[select_size, 3, 2], dtype=int)
             else:
-                unique_samples = []
-                for _ in range(select_size):
-                    indices = torch.randperm(valid_points.size(0))[:3]
-                    triangle = valid_points[indices]
-                    unique_samples.append(triangle)
-
-                unique_samples = torch.stack(unique_samples, dim=0)
+                unique_indices = torch.randint(0, valid_points.size(0), (select_size, 3))
+                unique_samples = valid_points[unique_indices]
 
             p1 = unique_samples[:, 0]
             p2 = unique_samples[:, 1]
