@@ -92,7 +92,7 @@ class PWNPlanesLoss(pl.LightningModule):
 
             if valid_points.size(0) < 3:
                 valid_batch[i, :] = False
-                unique_samples = torch.zeros(size=[select_size, 3, 2], dtype=int)
+                unique_samples = torch.zeros(size=[select_size, 3, 2], dtype=int).to(self.device)
             else:
                 unique_indices = torch.randint(0, valid_points.size(0), (select_size, 3))
                 unique_samples = valid_points[unique_indices]
