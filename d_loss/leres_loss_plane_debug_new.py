@@ -119,7 +119,7 @@ class PWNPlanesLoss(pl.LightningModule):
                 'p2_x': torch.stack(p2_x), 'p2_y': torch.stack(p2_y),
                 'p3_x': torch.stack(p3_x), 'p3_y': torch.stack(p3_y),
                 'valid_batch': valid_batch}
-        print(valid_batch)
+        # print(valid_batch)
         return p123
 
     def form_pw_groups(self, p123, pw):
