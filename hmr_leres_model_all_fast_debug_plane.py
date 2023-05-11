@@ -12,8 +12,9 @@ from datasets.mesh_pkl_all import MeshDataset
 from a_models.smpl import SMPL
 from camera_utils import perspective_projection
 from d_loss.hmr_loss import HMRLoss
-from d_loss.leres_loss import DepthRegressionLoss, EdgeguidedNormalRegressionLoss, MultiScaleGradLoss, \
-    recover_scale_shift_depth, EdgeguidedRankingLoss
+# from d_loss.leres_loss import DepthRegressionLoss, EdgeguidedNormalRegressionLoss, MultiScaleGradLoss, \
+#     recover_scale_shift_depth, EdgeguidedRankingLoss
+from d_loss.leres_loss_plane_debug_new_new import DepthRegressionLoss, NormalLoss
 from d_loss.leres_loss_plane_debug import PWNPlanesLoss
 from d_loss.align_loss import AlignLoss
 
@@ -42,14 +43,16 @@ class HMRLeReS(pl.LightningModule):
         self.hmr_loss = HMRLoss()
         self.depth_regression_loss = DepthRegressionLoss(min_threshold=self.depth_min_threshold,
                                                          max_threshold=self.depth_max_threshold)
+        self.normal_loss = NormalLoss(min_threshold=self.depth_min_threshold,
+                                      max_threshold=self.depth_max_threshold, scale_factor=5.0)
         # plane
         # suface normal
-        self.pwn_edge_loss = EdgeguidedNormalRegressionLoss(min_threshold=self.depth_min_threshold,
-                                                            max_threshold=self.depth_max_threshold)
-        self.pwn_plane_loss = PWNPlanesLoss(min_threshold=self.depth_min_threshold,
-                                            max_threshold=self.depth_max_threshold,
-                                            sample_groups=50,
-                                            input_size=(1080 // 5, 1920 // 5))
+        # self.pwn_edge_loss = EdgeguidedNormalRegressionLoss(min_threshold=self.depth_min_threshold,
+        #                                                     max_threshold=self.depth_max_threshold)
+        # self.pwn_plane_loss = PWNPlanesLoss(min_threshold=self.depth_min_threshold,
+        #                                     max_threshold=self.depth_max_threshold,
+        #                                     sample_groups=50,
+        #                                     input_size=(1080 // 5, 1920 // 5))
         #  可有可无
         # self.msg_loss = MultiScaleGradLoss(scale=4, min_threshold=self.depth_min_threshold,
         #                                    max_threshold=self.depth_max_threshold)
@@ -62,13 +65,12 @@ class HMRLeReS(pl.LightningModule):
         gta_dataset_dir = os.path.join(args.gta_dataset_dir, 'FPS-5-test')
         mesh_dataset_dir = os.path.join(args.mesh_dataset_dir, 'FPS-5-test')
 
-
         gta_dataset = GTADataset(gta_dataset_dir)
         mesh_dataset = MeshDataset(mesh_dataset_dir)
         self.gta_dataset = gta_dataset
 
         # Calculate the size of the subset to be chosen from mesh_dataset
-        subset_size = int(len(gta_dataset) * (args.adv_batch_size/args.batch_size))
+        subset_size = int(len(gta_dataset) * (args.adv_batch_size / args.batch_size))
         subset_indices = torch.randperm(len(mesh_dataset))[:subset_size]
         mesh_dataset_subset = torch.utils.data.Subset(mesh_dataset, subset_indices)
 
@@ -197,29 +199,31 @@ class HMRLeReS(pl.LightningModule):
         plane_mask = gta_data['plane_mask']
 
         loss_depth_regression = self.depth_regression_loss(pred_depth, gt_depth)
+        loss_normal = self.normal_loss(pred_depth, gt_depth, gt_intrinsic)
         # loss_depth_regression = 0.
         # loss_edge_ranking = self.edge_ranking_loss(pred_depth, gt_depth, leres_images)
         loss_edge_ranking = 0.
         # loss_msg = self.msg_loss(pred_depth, gt_depth) * 0.5
         loss_msg = 0.
-        pred_ssinv = recover_scale_shift_depth(pred_depth, gt_depth, min_threshold=0., max_threshold=15.0)
+        # pred_ssinv = recover_scale_shift_depth(pred_depth, gt_depth, min_threshold=0., max_threshold=15.0)
         # pred_ssinv = 0.
         # loss_pwn_edge = self.pwn_edge_loss(pred_ssinv, gt_depth, leres_images, focal_length=gt_focal_length)
-        loss_pwn_edge = self.pwn_edge_loss(pred_depth, gt_depth, leres_images, focal_length=gt_focal_length)
-        # loss_pwn_edge = 0.
-        loss_pwn_plane = self.pwn_plane_loss(pred_depth, gt_depth, plane_mask, focal_length=gt_focal_length)
-        # loss_pwn_plane=0.
+        # loss_pwn_edge = self.pwn_edge_loss(pred_depth, gt_depth, leres_images, focal_length=gt_focal_length)
+        loss_pwn_edge = 0.
+        # loss_pwn_plane = self.pwn_plane_loss(pred_depth, gt_depth, plane_mask, focal_length=gt_focal_length)
+        loss_pwn_plane = 0.
 
-        loss_leres = (loss_depth_regression + loss_edge_ranking + loss_msg + loss_pwn_edge + loss_pwn_plane*100)
+        loss_leres = (loss_depth_regression + loss_edge_ranking + loss_msg + loss_pwn_edge + loss_pwn_plane + loss_normal * 100)
         # loss_leres = 0.
 
         leres_loss_dict = {
             'loss_depth_regression': loss_depth_regression,
+            'loss_normal': loss_normal,
             'loss_edge_ranking': loss_edge_ranking,
             'loss_msg': loss_msg,
             'loss_pwn_edge': loss_pwn_edge,
             'loss_pwn_plane': loss_pwn_plane,
-            'loss_leres': loss_leres
+            'loss_leres': loss_leres,
         }
 
         # loss_align

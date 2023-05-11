@@ -1,7 +1,27 @@
 import torch
+import torch.nn.functional as F
 import pytorch_lightning as pl
 from pytorch3d.renderer import PerspectiveCameras
 from pytorch3d.ops import estimate_pointcloud_normals
+
+
+class DepthRegressionLoss(pl.LightningModule):
+
+    def __init__(self, min_threshold=0., max_threshold=10.0):
+        super(DepthRegressionLoss, self).__init__()
+        self.min_threshold = min_threshold
+        self.max_threshold = max_threshold
+
+    def forward(self, pred_depth, gt_depth):
+        valid_mask = (gt_depth > self.min_threshold) & (gt_depth < self.max_threshold)  # [b, c, h, w]
+        valid_pred_depth = pred_depth[valid_mask]
+        valid_gt_depth = gt_depth[valid_mask]
+        l1_loss = F.l1_loss(valid_pred_depth, valid_gt_depth)
+        tanh_valid_pred_depth = torch.tanh(0.01 * valid_pred_depth)
+        tanh_valid_gt_depth = torch.tanh(0.01 * valid_gt_depth)
+        tanh_l1_loss = F.l1_loss(tanh_valid_pred_depth, tanh_valid_gt_depth)
+        # return l1_loss + tanh_l1_loss
+        return l1_loss
 
 
 class NormalLoss(pl.LightningModule):
@@ -65,12 +85,15 @@ class NormalLoss(pl.LightningModule):
         return normals
 
     def forward(self, depth_pred, depth_gt, intrinsics):
+        valid_mask = (depth_gt > self.min_threshold) & (depth_gt < self.max_threshold)
         self.set_cameras_intrinsics(intrinsics)
         pcd_pred = self.depth2pcd(depth_pred)
         pcd_gt = self.depth2pcd(depth_gt)
         normals_pred = self.compute_normals(pcd_pred)
         normals_gt = self.compute_normals(pcd_gt)
-        cos_diff = 1.0 - torch.abs(torch.sum(normals_pred * normals_gt, dim=1))
+        cos_diff = 1.0 - torch.abs(torch.sum(normals_pred * normals_gt, dim=3))
+        normal_loss = torch.mean(cos_diff[valid_mask])
+        return normal_loss
 
 
 if __name__ == '__main__':
