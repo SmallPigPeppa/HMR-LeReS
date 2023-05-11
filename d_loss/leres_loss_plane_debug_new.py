@@ -95,7 +95,7 @@ class PWNPlanesLoss(pl.LightningModule):
 
             if all_combinations_1d.size(0) < select_size:
                 valid_batch[i, :] = False
-                unique_samples_1d = torch.zeros(size=[select_size, 3], dtype=int)
+                unique_samples_1d = torch.zeros(size=[select_size, 3], dtype=int).to(self.device)
             else:
                 unique_indices = torch.randperm(all_combinations_1d.size(0))[:select_size]
                 unique_samples_1d = all_combinations_1d[unique_indices]
@@ -119,6 +119,7 @@ class PWNPlanesLoss(pl.LightningModule):
                 'p2_x': torch.stack(p2_x), 'p2_y': torch.stack(p2_y),
                 'p3_x': torch.stack(p3_x), 'p3_y': torch.stack(p3_y),
                 'valid_batch': valid_batch}
+        print(valid_batch)
         return p123
 
     def form_pw_groups(self, p123, pw):
