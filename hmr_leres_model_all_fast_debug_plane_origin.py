@@ -15,7 +15,7 @@ from d_loss.hmr_loss import HMRLoss
 from d_loss.leres_loss import DepthRegressionLoss, EdgeguidedNormalRegressionLoss, MultiScaleGradLoss, \
     recover_scale_shift_depth, EdgeguidedRankingLoss
 # from d_loss.leres_loss_plane_debug_new_new import DepthRegressionLoss, NormalLoss
-from d_loss.leres_loss_plane_debug import PWNPlanesLoss
+from d_loss.leres_loss_plane_debug_new import PWNPlanesLoss
 from d_loss.align_loss import AlignLoss
 
 from lib_train.configs.config import cfg as leres_net_cfg
@@ -51,7 +51,7 @@ class HMRLeReS(pl.LightningModule):
                                                             max_threshold=self.depth_max_threshold)
         self.pwn_plane_loss = PWNPlanesLoss(min_threshold=self.depth_min_threshold,
                                             max_threshold=self.depth_max_threshold,
-                                            sample_groups=3000,
+                                            sample_groups=5000,
                                             input_size=(1080 // 5, 1920 // 5))
         #  可有可无
         # self.msg_loss = MultiScaleGradLoss(scale=4, min_threshold=self.depth_min_threshold,

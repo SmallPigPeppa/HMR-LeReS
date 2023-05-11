@@ -3,35 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import pytorch_lightning as pl
 import numpy as np
-import torch
-
-def compute_plane_normal_from_point_cloud(point_cloud):
-    """
-    Compute the plane normal from a given point cloud using PCA.
-
-    Args:
-        point_cloud (torch.Tensor): A tensor with shape (n, 3), where n is the number of points in the
-                                    point cloud and each row represents a point (x, y, z).
-
-    Returns:
-        torch.Tensor: A tensor with shape (3,) representing the computed plane normal.
-    """
-
-    # Center the point cloud (subtract the mean)
-    centered_point_cloud = point_cloud - torch.mean(point_cloud, dim=0)
-
-    # Calculate the covariance matrix
-    cov_matrix = torch.matmul(centered_point_cloud.t(), centered_point_cloud) / centered_point_cloud.shape[0]
-
-    # Perform eigenvalue decomposition
-    eigenvalues, eigenvectors = torch.eig(cov_matrix, eigenvectors=True)
-
-    # Find the eigenvector corresponding to the smallest eigenvalue
-    min_eigenvalue_index = torch.argmin(eigenvalues[:, 0])
-    plane_normal = eigenvectors[:, min_eigenvalue_index]
-
-    return plane_normal
-
 
 
 class PWNPlanesLoss(pl.LightningModule):
@@ -106,7 +77,7 @@ class PWNPlanesLoss(pl.LightningModule):
     def select_index(self, mask_kp):
         x, _, h, w = mask_kp.shape
 
-        select_size = int(3 * self.sample_groups)
+        select_size = int(self.sample_groups)
         p1_x = []
         p1_y = []
         p2_x = []
@@ -114,30 +85,21 @@ class PWNPlanesLoss(pl.LightningModule):
         p3_x = []
         p3_y = []
         valid_batch = torch.ones((x, 1), dtype=torch.bool)
+
         for i in range(x):
             mask_kp_i = mask_kp[i, 0, :, :]
             valid_points = torch.nonzero(mask_kp_i)
-
-            if valid_points.shape[0] < select_size * 0.6:
-                valid_points = torch.nonzero(~mask_kp_i.to(torch.uint8))
+            all_combinations = torch.combinations(valid_points, 3)
+            if all_combinations.size(0) < select_size:
                 valid_batch[i, :] = False
-            elif valid_points.shape[0] < select_size:
-                repeat_idx = torch.randperm(valid_points.shape[0])[:select_size - valid_points.shape[0]]
-                valid_repeat = valid_points[repeat_idx]
-                valid_points = torch.cat((valid_points, valid_repeat), 0)
+                unique_samples = torch.zeros(size=[select_size,3],dtype=int)
             else:
-                valid_points = valid_points
-            """
+                unique_indices = torch.randperm(all_combinations.size(0))[:select_size]
+                unique_samples = all_combinations[unique_indices]
 
-            if valid_points.shape[0] <= select_size:
-                valid_points = torch.nonzero(~mask_kp_i.to(torch.uint8))
-                valid_batch[i, :] = False
-            """
-            select_indx = torch.randperm(valid_points.size(0))
-
-            p1 = valid_points[select_indx[0:select_size:3]]
-            p2 = valid_points[select_indx[1:select_size:3]]
-            p3 = valid_points[select_indx[2:select_size:3]]
+            p1 = unique_samples[:, 0]
+            p2 = unique_samples[:, 1]
+            p3 = unique_samples[:, 2]
 
             p1_x.append(p1[:, 1])
             p1_y.append(p1[:, 0])
@@ -147,6 +109,7 @@ class PWNPlanesLoss(pl.LightningModule):
 
             p3_x.append(p3[:, 1])
             p3_y.append(p3[:, 0])
+
         p123 = {'p1_x': torch.stack(p1_x), 'p1_y': torch.stack(p1_y),
                 'p2_x': torch.stack(p2_x), 'p2_y': torch.stack(p2_y),
                 'p3_x': torch.stack(p3_x), 'p3_y': torch.stack(p3_y),
@@ -265,8 +228,8 @@ class PWNPlanesLoss(pl.LightningModule):
         plane_mask = plane_mask * (valid_depth_masks.float().to(self.device))
         valid_planes_num = 0
         for i in range(B):
-            self.fx = focal_length[i]
-            self.fy = focal_length[i]
+            self.fx = focal_length[i] if focal_length is not None else 256.0
+            self.fy = focal_length[i] if focal_length is not None else 256.0
 
             pred_depth_i = pred_depth[i, :]
             plane_mask_i = plane_mask[i, :][None, :, :]
@@ -276,7 +239,8 @@ class PWNPlanesLoss(pl.LightningModule):
             if len(planes) == 0:
                 continue
             mask_planes = torch.stack(planes, dim=0)  # torch.cat(planes, dim=0) #
-            pw_groups_pred, mask_valid = self.select_points_groups(pred_depth_i[None, :, :, :],mask_planes)  # [x, N, 3(x,y,z), 3(p1,p2,p3)]
+            pw_groups_pred, mask_valid = self.select_points_groups(pred_depth_i[None, :, :, :],
+                                                                   mask_planes)  # [x, N, 3(x,y,z), 3(p1,p2,p3)]
             for j in range(unique_planes.numel() - 1):
                 mask_valid_j = mask_valid[j, :]
                 pw_groups_pred_j = pw_groups_pred[j, :]
