@@ -199,7 +199,7 @@ class HMRLeReS(pl.LightningModule):
         plane_mask = gta_data['plane_mask']
 
         loss_depth_regression = self.depth_regression_loss(torch.squeeze(pred_depth), torch.squeeze(gt_depth))
-        loss_normal = self.normal_loss(torch.squeeze(pred_depth), torch.squeeze(gt_depth), gt_intrinsic,plane_mask)
+        loss_normal = self.normal_loss(torch.squeeze(pred_depth), torch.squeeze(gt_depth), gt_intrinsic, plane_mask)
         # loss_depth_regression = 0.
         # loss_edge_ranking = self.edge_ranking_loss(pred_depth, gt_depth, leres_images)
         loss_edge_ranking = 0.
@@ -213,7 +213,8 @@ class HMRLeReS(pl.LightningModule):
         # loss_pwn_plane = self.pwn_plane_loss(pred_depth, gt_depth, plane_mask, focal_length=gt_focal_length)
         loss_pwn_plane = 0.
 
-        loss_leres = (loss_depth_regression + loss_edge_ranking + loss_msg + loss_pwn_edge + loss_pwn_plane + loss_normal * 20)
+        loss_leres = (
+                    loss_depth_regression + loss_edge_ranking + loss_msg + loss_pwn_edge + loss_pwn_plane + loss_normal * 20)
         # loss_leres = 0.
 
         leres_loss_dict = {
@@ -265,7 +266,7 @@ class HMRLeReS(pl.LightningModule):
         hmr_discriminator_opt.step()
 
         train_log_dict = {f'train_{k}': v for k, v in log_dict.items()}
-        self.log_dict(train_log_dict)
+        self.log_dict(train_log_dict, on_step=False, on_epoch=True)
 
     def training_epoch_end(self, training_step_outputs):
         hmr_generator_leres_sche, hmr_discriminator_sche = self.lr_schedulers()
