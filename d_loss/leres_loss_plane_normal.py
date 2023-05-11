@@ -79,7 +79,7 @@ class NormalLoss(pl.LightningModule):
         batchsize = pcd.shape[0]
         point_cloud_flat = pcd.view(batchsize, -1, 3)
         # Calculate normals
-        normals_flat = estimate_pointcloud_normals(point_cloud_flat, neighborhood_size=30)
+        normals_flat = estimate_pointcloud_normals(point_cloud_flat, neighborhood_size=50)
         # normals_flat = estimate_pointcloud_normals(point_cloud_flat, neighborhood_size=5)
 
         # Convert normals back to original depth image shape
