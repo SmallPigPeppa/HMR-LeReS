@@ -13,9 +13,10 @@ export PYTHONPATH="./HMR/src:./LeReS/Train"
 --max-epochs 100 \
 --num-workers 8 \
 --batch-size 16 \
---eval-batch-size 16 \
+--eval-batch-size 32 \
 --adv-batch-size 32 \
---weight_decay 0.0005
+--weight_decay 2e-5 \
+--base_lr 0.1
 #--e_lr 0.00001
 #--d-lr 0.0001
 #--base_lr 0.001
