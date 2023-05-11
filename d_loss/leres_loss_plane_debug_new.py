@@ -89,13 +89,18 @@ class PWNPlanesLoss(pl.LightningModule):
         for i in range(x):
             mask_kp_i = mask_kp[i, 0, :, :]
             valid_points = torch.nonzero(mask_kp_i)
-            all_combinations = torch.combinations(valid_points, 3)
-            if all_combinations.size(0) < select_size:
+
+            valid_points_1d = valid_points[:, 0] * w + valid_points[:, 1]
+            all_combinations_1d = torch.combinations(valid_points_1d, 3)
+
+            if all_combinations_1d.size(0) < select_size:
                 valid_batch[i, :] = False
-                unique_samples = torch.zeros(size=[select_size,3],dtype=int)
+                unique_samples_1d = torch.zeros(size=[select_size, 3], dtype=int)
             else:
-                unique_indices = torch.randperm(all_combinations.size(0))[:select_size]
-                unique_samples = all_combinations[unique_indices]
+                unique_indices = torch.randperm(all_combinations_1d.size(0))[:select_size]
+                unique_samples_1d = all_combinations_1d[unique_indices]
+
+            unique_samples = torch.stack((unique_samples_1d // w, unique_samples_1d % w), dim=2)
 
             p1 = unique_samples[:, 0]
             p2 = unique_samples[:, 1]
