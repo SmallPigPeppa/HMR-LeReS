@@ -90,17 +90,17 @@ class PWNPlanesLoss(pl.LightningModule):
             mask_kp_i = mask_kp[i, 0, :, :]
             valid_points = torch.nonzero(mask_kp_i)
 
-            valid_points_1d = valid_points[:, 0] * w + valid_points[:, 1]
-            all_combinations_1d = torch.combinations(valid_points_1d, 3)
-
-            if all_combinations_1d.size(0) < select_size:
+            if valid_points.size(0) < 3:
                 valid_batch[i, :] = False
-                unique_samples_1d = torch.zeros(size=[select_size, 3], dtype=int).to(self.device)
+                unique_samples = torch.zeros(size=[select_size, 3, 2], dtype=int)
             else:
-                unique_indices = torch.randperm(all_combinations_1d.size(0))[:select_size]
-                unique_samples_1d = all_combinations_1d[unique_indices]
+                unique_samples = []
+                for _ in range(select_size):
+                    indices = torch.randperm(valid_points.size(0))[:3]
+                    triangle = valid_points[indices]
+                    unique_samples.append(triangle)
 
-            unique_samples = torch.stack((unique_samples_1d // w, unique_samples_1d % w), dim=2)
+                unique_samples = torch.stack(unique_samples, dim=0)
 
             p1 = unique_samples[:, 0]
             p2 = unique_samples[:, 1]
@@ -119,7 +119,6 @@ class PWNPlanesLoss(pl.LightningModule):
                 'p2_x': torch.stack(p2_x), 'p2_y': torch.stack(p2_y),
                 'p3_x': torch.stack(p3_x), 'p3_y': torch.stack(p3_y),
                 'valid_batch': valid_batch}
-        # print(valid_batch)
         return p123
 
     def form_pw_groups(self, p123, pw):
