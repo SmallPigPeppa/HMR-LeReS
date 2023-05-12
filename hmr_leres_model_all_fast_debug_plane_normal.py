@@ -12,9 +12,9 @@ from datasets.mesh_pkl_all import MeshDataset
 from a_models.smpl import SMPL
 from camera_utils import perspective_projection
 from d_loss.hmr_loss import HMRLoss
-# from d_loss.leres_loss import DepthRegressionLoss, EdgeguidedNormalRegressionLoss, MultiScaleGradLoss, \
-#     recover_scale_shift_depth, EdgeguidedRankingLoss
-from d_loss.leres_loss_plane_normal import DepthRegressionLoss, NormalLoss
+from d_loss.leres_loss import DepthRegressionLoss, EdgeguidedNormalRegressionLoss, MultiScaleGradLoss, \
+    recover_scale_shift_depth, EdgeguidedRankingLoss
+from d_loss.leres_loss_plane_normal_new_new import NormalLoss
 from d_loss.leres_loss_plane_debug import PWNPlanesLoss
 from d_loss.align_loss import AlignLoss
 
