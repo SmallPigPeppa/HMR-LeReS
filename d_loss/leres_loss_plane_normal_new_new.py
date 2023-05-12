@@ -78,9 +78,10 @@ class NormalLoss(pl.LightningModule):
                 valid_plane = plane & valid_mask_i
                 pcd_gt_plane = pcd_gt_i[valid_plane].view(1, -1, 3)
                 pcd_pred_plane = pcd_pred_i[valid_plane].view(1, -1, 3)
-                if pcd_pred_plane.shape[1] < 50:
+                if pcd_pred_plane.shape[1] <= 50:
                     continue
                 # Calculate normals
+                # a=pcd_gt_plane.shape
                 normals_pred_plane = estimate_pointcloud_normals(pcd_gt_plane, neighborhood_size=50)
                 normals_gt_plane = estimate_pointcloud_normals(pcd_pred_plane, neighborhood_size=50)
                 cos_diff = 1.0 - torch.abs(torch.sum(normals_pred_plane * normals_gt_plane, dim=2))
@@ -109,5 +110,5 @@ if __name__ == '__main__':
         intrinsics = batch['intrinsic']
         plane_mask = batch['plane_mask']
         a = normal_loss.forward(depth_gt, depth_gt, intrinsics, plane_mask)
-        if i == 1:
-            break
+        # if i == 1:
+        #     break
