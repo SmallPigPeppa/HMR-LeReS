@@ -47,18 +47,18 @@ class HMRLeReS(pl.LightningModule):
                                       max_threshold=self.depth_max_threshold, scale_factor=5.0)
         # plane
         # suface normal
-        # self.pwn_edge_loss = EdgeguidedNormalRegressionLoss(min_threshold=self.depth_min_threshold,
-        #                                                     max_threshold=self.depth_max_threshold)
-        # self.pwn_plane_loss = PWNPlanesLoss(min_threshold=self.depth_min_threshold,
-        #                                     max_threshold=self.depth_max_threshold,
-        #                                     sample_groups=50,
-        #                                     input_size=(1080 // 5, 1920 // 5))
+        self.pwn_edge_loss = EdgeguidedNormalRegressionLoss(min_threshold=self.depth_min_threshold,
+                                                            max_threshold=self.depth_max_threshold)
+        self.pwn_plane_loss = PWNPlanesLoss(min_threshold=self.depth_min_threshold,
+                                            max_threshold=self.depth_max_threshold,
+                                            sample_groups=50,
+                                            input_size=(1080 // 5, 1920 // 5))
         #  可有可无
-        # self.msg_loss = MultiScaleGradLoss(scale=4, min_threshold=self.depth_min_threshold,
-        #                                    max_threshold=self.depth_max_threshold)
-        #
-        # self.edge_ranking_loss = EdgeguidedRankingLoss(min_threshold=self.depth_min_threshold,
-        #                                                max_threshold=self.depth_max_threshold)
+        self.msg_loss = MultiScaleGradLoss(scale=4, min_threshold=self.depth_min_threshold,
+                                           max_threshold=self.depth_max_threshold)
+
+        self.edge_ranking_loss = EdgeguidedRankingLoss(min_threshold=self.depth_min_threshold,
+                                                       max_threshold=self.depth_max_threshold)
         self.align_loss = AlignLoss()
 
     def train_dataloader(self):
@@ -210,11 +210,11 @@ class HMRLeReS(pl.LightningModule):
         # loss_pwn_edge = self.pwn_edge_loss(pred_ssinv, gt_depth, leres_images, focal_length=gt_focal_length)
         loss_pwn_edge = self.pwn_edge_loss(pred_depth, gt_depth, leres_images, focal_length=gt_focal_length)
         # loss_pwn_edge = 0.
-        # loss_pwn_plane = self.pwn_plane_loss(pred_depth, gt_depth, plane_mask, focal_length=gt_focal_length)
-        loss_pwn_plane = 0.
+        loss_pwn_plane = self.pwn_plane_loss(pred_depth, gt_depth, plane_mask, focal_length=gt_focal_length)
+        # loss_pwn_plane = 0.
 
         loss_leres = (
-                    loss_depth_regression + loss_edge_ranking + loss_msg + loss_pwn_edge + loss_pwn_plane + loss_normal * 20)
+                    loss_depth_regression + loss_edge_ranking + loss_msg + loss_pwn_edge + loss_pwn_plane + loss_normal * 10)
         # loss_leres = 0.
 
         leres_loss_dict = {
