@@ -53,16 +53,6 @@ class NormalLoss(pl.LightningModule):
 
         return point_clouds
 
-    def compute_normals(self, pcd):
-        point_cloud_flat = pcd.view(1, -1, 3)
-        # Calculate normals
-        normals_flat = estimate_pointcloud_normals(point_cloud_flat, neighborhood_size=50)
-        # normals_flat = estimate_pointcloud_normals(point_cloud_flat, neighborhood_size=5)
-
-        # Convert normals back to original depth image shape
-        normals = normals_flat.view(pcd.shape)
-
-        return normals
 
     def forward(self, depth_pred, depth_gt, intrinsics, plane_mask):
         valid_mask = (depth_gt > self.min_threshold) & (depth_gt < self.max_threshold)
