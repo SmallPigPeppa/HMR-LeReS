@@ -10,7 +10,7 @@ export PYTHONPATH="./HMR/src:./LeReS/Train"
 --project HMR-LeReS-v7.0-debug \
 --entity pigpeppa \
 --num_gpus 8 \
---max-epochs 200 \
+--max-epochs 300 \
 --num-workers 8 \
 --batch-size 16 \
 --eval-batch-size 16 \
