@@ -17,14 +17,12 @@ from hmr_leres_config import args
 from d_loss.utils import crop_and_resize
 
 
-
-
 class AlignLoss(pl.LightningModule):
     def __init__(self):
         super(AlignLoss, self).__init__()
 
     def init_pytorch3d_render(self, K_intrin, image_size):
-        R = torch.tensor([[[-1, 0, 0], [0, -1, 0], [0, 0, 1]]],dtype=torch.float32,device=self.device)
+        R = torch.tensor([[[-1, 0, 0], [0, -1, 0], [0, 0, 1]]], dtype=torch.float32, device=self.device)
         T = torch.zeros((1, 3), dtype=torch.float32, device=self.device)
         K_intrin_pt3d = torch.zeros((1, 4, 4), dtype=torch.float32, device=self.device)
         K_intrin_pt3d[0, 0, 0] = K_intrin[0, 0, 0]
@@ -36,10 +34,10 @@ class AlignLoss(pl.LightningModule):
         K_intrin_pt3d[0, 3, 2] = 1.0
 
         lights = PointLights(device=self.device, location=[[0.0, 0.0, 0.0]])
-        cameras = PerspectiveCameras(device=self.device, R=R, T=T, K=K_intrin_pt3d, image_size=image_size, in_ndc=False)
+        cameras = PerspectiveCameras(device=self.device, R=R, T=T, K=K_intrin_pt3d, image_size=[(1080//5,1920//5)], in_ndc=False)
 
         raster_settings = RasterizationSettings(
-            image_size=image_size[0],
+            image_size=(1080//5,1920//5),
             blur_radius=0.0,
             faces_per_pixel=10,
         )
@@ -81,7 +79,7 @@ class AlignLoss(pl.LightningModule):
 
     def batch_align_loss(self, verts, faces, depth, batch):
         # loss = 0.
-        loss_batch=[]
+        loss_batch = []
         batchsize = batch['leres_image'].shape[0]
         for idx in range(batchsize):
             cut_box_i = batch['leres_cut_box'][idx]
@@ -89,10 +87,10 @@ class AlignLoss(pl.LightningModule):
             human_mask_i = batch['human_mask'][idx]
             verts_i = verts[idx]
             depth_i = depth[idx]
-            loss_sample=self.sample_align_loss(verts_i, faces, depth_i, cut_box_i, K_intrin_i, human_mask_i)
+            loss_sample = self.sample_align_loss(verts_i, faces, depth_i, cut_box_i, K_intrin_i, human_mask_i)
             loss_batch.append(loss_sample)
 
-        align_loss= torch.mean(torch.stack(loss_batch))
+        align_loss = torch.mean(torch.stack(loss_batch))
         return align_loss
 
     def sample_align_loss(self, verts, faces, depth, cut_box, K_intrin, human_mask):
@@ -154,14 +152,14 @@ class AlignLoss(pl.LightningModule):
         cut_box = cut_box
         faces = faces
 
-        self.init_pytorch3d_render(K_intrin=K_intrin, image_size=[origin_size])
+        self.init_pytorch3d_render(K_intrin=K_intrin, image_size=[1080//5,1920//5])
         mesh_mask, nearest_depth_map, farrest_depth_map = self.get_depth_map_pytorch3d(verts, faces)
 
-        mesh_mask = crop_and_resize(mesh_mask, cut_box=cut_box, img_size=leres_size)
+        # mesh_mask = crop_and_resize(mesh_mask, cut_box=cut_box, img_size=leres_size)
         vismask = torch.logical_and(mesh_mask, human_mask)
         # vismask = mesh_mask
 
-        nearest_depth_map = crop_and_resize(nearest_depth_map, cut_box=cut_box, img_size=leres_size)
+        # nearest_depth_map = crop_and_resize(nearest_depth_map, cut_box=cut_box, img_size=leres_size)
         leres_human_depth = depth[vismask]
         hmr_huamn_depth = nearest_depth_map[vismask]
 
@@ -190,10 +188,17 @@ class AlignLoss(pl.LightningModule):
         return align_loss
 
 
-if __name__=="__main__":
-    from datasets.gta_im_all import GTADataset
+if __name__ == "__main__":
+    from datasets.gta_im_all_10801920_plane import GTADataset
     from torch.utils.data import DataLoader
-    data_dir = '/Users/lwz/torch_ds/gta-im/FPS-5'
+    from hmr_leres_model_all_fast_debug_plane_origin import HMRLeReS
+
+    data_dir = '/Users/lwz/torch_ds/gta-im-test/FPS-5'
     gta_dataset = GTADataset(data_dir)
-    gta_loader = DataLoader(gta_dataset, batch_size=16, shuffle=True)
-    model_a=AlignLoss()
+    gta_loader = DataLoader(gta_dataset, batch_size=4, shuffle=True)
+    model_a = AlignLoss()
+    model_b = HMRLeReS()
+    for batch in gta_loader:
+        transl = batch['transl']
+        # model_a.vis_batch_align_loss()
+        break

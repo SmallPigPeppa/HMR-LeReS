@@ -116,9 +116,10 @@ class HMRLeReS(pl.LightningModule):
         kpts_2d = perspective_projection(
             kpts_3d,
             rotation=torch.eye(3, device=self.device).unsqueeze(0).expand(batch_size, -1, -1),
+            # rotation=torch.tensor([[-1, 0, 0], [0, -1, 0], [0, 0, 1]], dtype=kpts_3d.dtype, device=self.device).unsqueeze(0).expand(batch_size, -1, -1),
             translation=torch.zeros(size=[batch_size, 3], device=self.device),
             focal_length=focal_length,
-            camera_center=torch.Tensor([960.0, 540.0]).to(self.device).expand(batch_size, -1)
+            camera_center=torch.Tensor([384/2,216/2]).to(self.device).expand(batch_size, -1)
         )
 
         return kpts_2d, kpts_3d, verts
