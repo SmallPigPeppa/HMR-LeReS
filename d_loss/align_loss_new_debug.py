@@ -108,9 +108,9 @@ class AlignLoss(pl.LightningModule):
         # mesh_edge_dist_gt2= self.distance_transform_euclidean(mesh_edge_gt)
         # mesh_edge_dist_gt2 = mesh_edge_dist_gt2 ** self.edt_power
         mesh_project_edge_loss = torch.mean(mesh_edge_dist_gt * mesh_edge_pred)
-        mash_project_loss = F.mse_loss(mesh_mask_gt_float, mesh_mask_pred_float)
+        mesh_project_loss = F.mse_loss(mesh_mask_gt_float, mesh_mask_pred_float)
 
-        return {'human_depth_loss': human_depth_loss, 'mash_project_loss': mash_project_loss,
+        return {'human_depth_loss': human_depth_loss, 'mesh_project_loss': mesh_project_loss,
                 'mesh_project_edge_loss': mesh_project_edge_loss}
         # return mesh_mask_gt,  mesh_edge_dist_gt,mesh_edge_dist_gt2
 
@@ -144,8 +144,8 @@ class AlignLoss(pl.LightningModule):
         mesh_project_edge_loss = torch.mean(mesh_edge_dist_gt * mesh_edge_pred)
         mash_project_loss = F.mse_loss(mesh_mask_gt_float, mesh_mask_pred_float)
 
-        # return {'human_depth_loss': human_depth_loss, 'mash_project_loss': mash_project_loss,
-        #         'mesh_project_edge_loss': mesh_project_edge_loss}
+        # return {'human_depth_loss': human_depth_loss, 'mesh_project_loss': mesh_project_loss,
+                # 'mesh_project_edge_loss': mesh_project_edge_loss}
         return mesh_mask_gt, mesh_edge_dist_gt, mesh_edge_dist_gt2
 
     # def vis_human_depth_align_loss(self, verts, faces, depth, batch, pred_kpts_2d, pred_kpts_3d):
