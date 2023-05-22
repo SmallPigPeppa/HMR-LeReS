@@ -5,12 +5,12 @@ export PYTHONPATH="./HMR/src:./LeReS/Train"
 --smpl-model HMR/HMR-data/neutral_smpl_with_cocoplus_reg.txt \
 --gta_dataset_dir /mnt/mmtech01/dataset/vision_text_pretrain/gta-im \
 --mesh_dataset_dir /mnt/mmtech01/dataset/vision_text_pretrain/gta-im \
---ckpt_dir hmr-leres-ckpt-debug/plane-origin \
---name plane-origin-500 \
+--ckpt_dir hmr-leres-ckpt-debug/plane-origin-align \
+--name plane-origin-align-300 \
 --project HMR-LeReS-v7.0-debug \
 --entity pigpeppa \
 --num_gpus 8 \
---max-epochs 500 \
+--max-epochs 300 \
 --num-workers 8 \
 --batch-size 16 \
 --eval-batch-size 16 \
