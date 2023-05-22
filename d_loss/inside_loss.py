@@ -1,7 +1,7 @@
 from scipy.ndimage.morphology import distance_transform_edt
 import torch
 import torch.nn.functional as F
-from FastGeodis import FastGeodis
+import FastGeodis
 
 
 def silhouette_loss(alpha, gt_mask, loss_mask=None, kernel_size=7, edt_power=0.25, l2_weight=0.01, edge_weight=0.01):
@@ -42,14 +42,15 @@ class AlignLoss(pl.LightningModule):
         super(AlignLoss, self).__init__()
         self.kernal_size = 7
         self.edt_power = 0.25
+        self.iteration = 2
+        self.v = 1e10
+        self.lamb = 0.0  # lamb = 0.0 (Euclidean) or 1.0 (Geodesic) or (0.0, 1.0) (mixture)
 
-    def compute_edge(self, mask):
-        return F.max_pool2d(x, self.kernel_size, 1, self.kernel_size // 2) - x
-
-    def forward(self, gt_mask, pred_mask, valid_mask=None):
-        l2loss = (gt_mask - pred_mask) ** 2
-        l2loss = l2loss * valid_mask
+    def mesh_2d_align_loss(self, gt_mask, pred_mask, valid_mask=None):
         gt_mask_edge = F.max_pool2d(gt_mask, self.kernel_size, 1, self.kernel_size // 2) - gt_mask
         pred_mask_edge = F.max_pool2d(pred_mask, self.kernel_size, 1, self.kernel_size // 2) - pred_mask
-        edt = torch.tensor(distance_transform_edt(1 - (gt_mask_edge > 0)) ** (self.edt_power * 2), dtype=torch.float32,
-                           device=self.device)
+        gt_euclidean_dist = FastGeodis.generalised_geodesic2d(1 - (gt_mask_edge > 0), gt_mask_edge, self.v, self.lamb,
+                                                              self.iterations)
+        gt_euclidean_dist = gt_euclidean_dist ** 2
+        edge_align_loss = torch.mean(pred_mask_edge * gt_euclidean_dist)
+        mask_align_loss = F.mse_loss(gt_mask, pred_mask)

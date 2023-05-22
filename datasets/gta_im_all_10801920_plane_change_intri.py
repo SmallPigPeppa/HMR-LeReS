@@ -65,6 +65,7 @@ class GTADataset(Dataset):
             info_npz = np.load(os.path.join(scene_dir, 'info_frames.npz'))
             info_pkl = np.load(os.path.join(scene_dir, 'info_frames.pickle'), allow_pickle=True)
             info_smpl = np.load(os.path.join(scene_dir, 'info_smpl.pkl'), allow_pickle=True)
+            # info_smpl = np.load(os.path.join(scene_dir, '001_all.pkl'), allow_pickle=True)
             total_kpts3d = np.array(info_smpl['keypoints_3d'])
             total_shape = np.array(info_smpl['betas'])
             total_global_pose = np.array(info_smpl['global_orient'])
@@ -78,6 +79,8 @@ class GTADataset(Dataset):
             dist_coeffs = np.zeros([4, 1], dtype=float)
             for idx in range(scence_samples):
                 intrinsic_i = info_npz['intrinsics'][idx]
+                # intrinsic_i_new = intrinsic_i / self.scale
+                # intrinsic_i_new[2, 2] = 1  # Restore the [2, 2] element back to 1
                 kpts2d_i, _ = cv2.projectPoints(total_kpts3d[idx], rvec, tvec, intrinsic_i, dist_coeffs)
                 kpts2d_i = np.squeeze(kpts2d_i)
                 lt, rb = calc_aabb(kpts2d_i)
@@ -119,6 +122,7 @@ class GTADataset(Dataset):
     def __getitem__(self, index):
         # index=563
         # index=192
+        # index=3
 
         origin_image = None
         depth = None
@@ -134,8 +138,7 @@ class GTADataset(Dataset):
             plane_mask = read_plane_mask(plane_mask_path)
             if origin_image is None or depth is None or human_mask is None or plane_mask is None:
                 print(f"index {index} wrong!")
-
-            index = (index + 1) % len(self.image_paths)
+                index = (index + 1) % len(self.image_paths)
 
         # image_path = self.image_paths[index]
         # depth_path=self.depth_paths[index]
@@ -149,6 +152,13 @@ class GTADataset(Dataset):
 
         # kpts
         box = self.boxs[index]
+        kpts_2d = self.kpts_2d[index]
+        kpts_3d = self.kpts_3d[index]
+
+        # leres
+
+        intrinsic = self.intrinsics[index]
+        focal_length = np.array(intrinsic[0][0]).astype(np.float32)
         depth = Image.fromarray(depth)
         human_mask = Image.fromarray(human_mask)
         plane_mask= Image.fromarray(plane_mask)
@@ -165,6 +175,9 @@ class GTADataset(Dataset):
         depth = T.functional.crop(depth, top=top, left=left, height=height, width=width)
         human_mask = T.functional.crop(human_mask, top=top, left=left, height=height, width=width)
         plane_mask = T.functional.crop(plane_mask, top=top, left=left, height=height, width=width)
+        kpts_2d_origin = kpts_2d.copy()
+        kpts_2d = off_set_scale_kpts(kpts_2d, left=left, top=top, height_ratio=self.leres_size[0] / height,
+                                     width_ratio=self.leres_size[1] / width)
 
         # hmr
         hmr_top, hmr_left, hmr_height, hmr_width = get_torch_image_cut_box_new(left_top=box[0], right_bottom=box[1])
@@ -176,6 +189,12 @@ class GTADataset(Dataset):
 
         boody_pose = pose[3:]
         global_pose = pose[:3]
+
+        vis = np.ones((kpts_2d.shape[0], 1))
+        kpts_2d = np.concatenate((kpts_2d, vis), axis=1)
+        kpts_3d = np.concatenate((kpts_3d, vis), axis=1)
+        kpts_2d_origin = np.concatenate((kpts_2d_origin, vis), axis=1)
+        # import pdb;pdb.set_trace()
 
         intrinsic = self.intrinsics[index]
         intrinsic_scaled = intrinsic / self.scale
@@ -191,33 +210,45 @@ class GTADataset(Dataset):
             'depth': self.depth_transforms(depth),
             'human_mask': self.mask_transforms(human_mask),
             'plane_mask': self.plane_mask_transforms(plane_mask),
+            'kpts_2d': torch.from_numpy(kpts_2d).float(),
+            'kpts_2d_origin': torch.from_numpy(kpts_2d_origin).float(),
+            'kpts_3d': torch.from_numpy(kpts_3d).float(),
             'theta': torch.from_numpy(theta).float(),
             'body_pose': torch.from_numpy(boody_pose).float(),
             'global_pose': torch.from_numpy(global_pose).float(),
             'focal_length': torch.from_numpy(focal_length).float(),
-            'intrinsic': torch.from_numpy(intrinsic).float(),
+            # 'intrinsic': torch.from_numpy(intrinsic).float(),
+            'intrinsic': torch.from_numpy(intrinsic_scaled).float(),
             'leres_cut_box': torch.from_numpy(leres_cut_box)
         }
 
 
 if __name__ == '__main__':
+    import os
+    from tqdm import  tqdm
+
+    # 创建debug-out文件夹
+    debug_out_dir = 'debug-out'
+    os.makedirs(debug_out_dir, exist_ok=True)
+
     from torch.utils.data import DataLoader
 
-    data_dir = '/Users/lwz/torch_ds/gta-im-test/FPS-5'
+    data_dir = '/Users/lwz/torch_ds/gta-im-fixbug/FPS-5'
     # data_dir = '/share/wenzhuoliu/torch_ds/gta-im/FPS-5-test'
     gta_dataset = GTADataset(data_dir)
-    gta_loader = DataLoader(gta_dataset, batch_size=2, shuffle=False)
+    gta_loader = DataLoader(gta_dataset, batch_size=16, shuffle=False)
 
     import matplotlib.pyplot as plt
     import numpy as np
 
-    for i, batch in enumerate(gta_loader):
+    for i, batch in tqdm(enumerate(gta_loader)):
         leres_image = batch['leres_image']
         hmr_image = batch['hmr_image']
         kpts_2d = batch['kpts_2d']
         depth = batch['depth'].cpu().detach().numpy()
-        f, axarr = plt.subplots(1, 2)
+
         for j in range(leres_image.shape[0]):
+            f, axarr = plt.subplots(1, 2)
             leres_image_j = leres_image[j].permute(1, 2, 0)
 
             hmr_image_j = hmr_image[j].permute(1, 2, 0)
@@ -227,7 +258,9 @@ if __name__ == '__main__':
             for k in range(0, 24):
                 axarr[0].scatter(np.squeeze(kpts_2d[j])[k][0], np.squeeze(kpts_2d[j])[k][1], s=50, c='red',
                                  marker='o')
-            plt.show()
+            # plt.show()
+            plt.savefig(f'{debug_out_dir}/image_{i*16+j}.png')
+            plt.close()
         # print(batch['leres_cut_box'][0])
-        if i == 20:
+        if i == 25:
             break
