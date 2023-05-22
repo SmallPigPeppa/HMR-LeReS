@@ -93,7 +93,7 @@ class AlignLoss(pl.LightningModule):
 
         # human depth align loss
         human_mesh_mask_gt = torch.logical_and(mesh_mask_gt, human_mask)
-        leres_human_depth = depth_pred[human_mesh_mask_gt]
+        leres_human_depth = depth_pred[human_mesh_mask_gt.unsqueeze(1)]
         hmr_huamn_depth = nearest_depth_map_pred[human_mesh_mask_gt]
         human_depth_loss = F.l1_loss(leres_human_depth, hmr_huamn_depth)
 
