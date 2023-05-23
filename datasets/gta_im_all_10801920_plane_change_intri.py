@@ -161,7 +161,7 @@ class GTADataset(Dataset):
         focal_length = np.array(intrinsic[0][0]).astype(np.float32)
         depth = Image.fromarray(depth)
         human_mask = Image.fromarray(human_mask)
-        plane_mask= Image.fromarray(plane_mask)
+        plane_mask = Image.fromarray(plane_mask)
 
         # crop and rescale leres_image,depth,human_mask,kpts2d,joints2d,human_mask
         aspect_ratio = np.random.uniform(self.leres_aspect_ratio_range[0], self.leres_aspect_ratio_range[1])
@@ -200,7 +200,7 @@ class GTADataset(Dataset):
         intrinsic_scaled = intrinsic / self.scale
         intrinsic_scaled[2, 2] = 1  # Restore the [2, 2] element back to 1
         focal_length = np.array(intrinsic_scaled[0][0]).astype(np.float32)
-
+        leres_cut_box = leres_cut_box / self.scale
 
         return {
             'image_path': image_path,
@@ -225,7 +225,7 @@ class GTADataset(Dataset):
 
 if __name__ == '__main__':
     import os
-    from tqdm import  tqdm
+    from tqdm import tqdm
 
     # 创建debug-out文件夹
     debug_out_dir = 'debug-out'
@@ -245,7 +245,7 @@ if __name__ == '__main__':
         leres_image = batch['leres_image']
         hmr_image = batch['hmr_image']
         kpts_2d = batch['kpts_2d']
-        depth = batch['depth'].cpu().detach().numpy()
+        depth = batch['depth']
 
         for j in range(leres_image.shape[0]):
             f, axarr = plt.subplots(1, 2)
@@ -258,9 +258,9 @@ if __name__ == '__main__':
             for k in range(0, 24):
                 axarr[0].scatter(np.squeeze(kpts_2d[j])[k][0], np.squeeze(kpts_2d[j])[k][1], s=50, c='red',
                                  marker='o')
-            # plt.show()
-            plt.savefig(f'{debug_out_dir}/image_{i*16+j}.png')
-            plt.close()
+            plt.show()
+            # plt.savefig(f'{debug_out_dir}/image_{i*16+j}.png')
+            # plt.close()
         # print(batch['leres_cut_box'][0])
-        if i == 25:
+        if i == 2:
             break
