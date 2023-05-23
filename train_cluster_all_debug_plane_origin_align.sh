@@ -16,7 +16,9 @@ export PYTHONPATH="./HMR/src:./LeReS/Train"
 --eval-batch-size 16 \
 --adv-batch-size 16 \
 --weight_decay 2e-5 \
---base_lr 0.1
+--base_lr 0.1 \
+--e_lr 0.01 \
+--d-lr 0.01
 #--e_lr 0.00001
 #--d-lr 0.0001
 #--base_lr 0.001
