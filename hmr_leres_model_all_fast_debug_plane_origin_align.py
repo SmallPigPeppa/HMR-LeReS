@@ -210,8 +210,8 @@ class HMRLeReS(pl.LightningModule):
         # pred_ssinv = recover_scale_shift_depth(pred_depth, gt_depth, min_threshold=0., max_threshold=15.0)
         # pred_ssinv = 0.
         # loss_pwn_edge = self.pwn_edge_loss(pred_ssinv, gt_depth, leres_images, focal_length=gt_focal_length)
-        loss_pwn_edge = self.pwn_edge_loss(pred_depth, gt_depth, leres_images, focal_length=gt_focal_length)
-        # loss_pwn_edge = 0.
+        # loss_pwn_edge = self.pwn_edge_loss(pred_depth, gt_depth, leres_images, focal_length=gt_focal_length)
+        loss_pwn_edge = 0.
         loss_pwn_plane = self.pwn_plane_loss(pred_depth, gt_depth, plane_mask, focal_length=gt_focal_length)
         # loss_pwn_plane = 0.
 
