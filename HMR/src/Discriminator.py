@@ -118,9 +118,11 @@ class Discriminator(nn.Module):
     '''
     def forward(self, thetas):
         batch_size = thetas.shape[0]
-        cams, poses, shapes = thetas[:, :3], thetas[:, 3:75], thetas[:, 75:]
+        # cams, poses, shapes = thetas[:, :3], thetas[:, 3:75], thetas[:, 75:]
+        cams, poses, shapes = thetas[:, :3].contiguous(), thetas[:, 3:75].contiguous(), thetas[:, 75:].contiguous()
         shape_disc_value = self.shape_discriminator(shapes)
-        rotate_matrixs = util.batch_rodrigues(poses.contiguous().view(-1, 3)).view(-1, 24, 9)[:, 1:, :]
+        # rotate_matrixs = util.batch_rodrigues(poses.contiguous().view(-1, 3)).view(-1, 24, 9)[:, 1:, :]
+        rotate_matrixs = util.batch_rodrigues(poses.contiguous().view(-1, 3)).view(-1, 24, 9)[:, 1:, :].contiguous()
         pose_disc_value, pose_inter_disc_value = self.pose_discriminator(rotate_matrixs)
         full_pose_disc_value = self.full_pose_discriminator(pose_inter_disc_value.contiguous().view(batch_size, -1))
         return torch.cat((pose_disc_value, full_pose_disc_value, shape_disc_value), 1)
