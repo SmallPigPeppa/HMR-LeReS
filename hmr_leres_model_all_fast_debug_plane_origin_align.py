@@ -63,7 +63,7 @@ class HMRLeReS(pl.LightningModule):
 
     def train_dataloader(self):
         gta_dataset_dir = os.path.join(args.gta_dataset_dir, 'FPS-5-test')
-        mesh_dataset_dir = os.path.join(args.mesh_dataset_dir, 'FPS-5-test')
+        mesh_dataset_dir = os.path.join(args.mesh_dataset_dir, 'FPS-30')
 
         gta_dataset = GTADataset(gta_dataset_dir)
         mesh_dataset = MeshDataset(mesh_dataset_dir)
@@ -150,7 +150,7 @@ class HMRLeReS(pl.LightningModule):
                                                                           pose=pred_smpl_poses,
                                                                           shape=pred_smpl_shapes,
                                                                           focal_length=gt_focal_length)
-        _, _, gt_verts = self.get_smpl_kpts_verts(transl=gt_smpl_transl,
+        gt_kpts_2d, gt_kpts_3d, gt_verts = self.get_smpl_kpts_verts(transl=gt_smpl_transl,
                                                   pose=gt_smpl_poses,
                                                   shape=gt_smpl_shapes,
                                                   focal_length=gt_focal_length)

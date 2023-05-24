@@ -40,7 +40,7 @@ class MeshDataset(Dataset):
 
 
     def __len__(self):
-            return len(self.poses)
+        return len(self.poses)
 
     def __getitem__(self, index):
         trival, pose, shape = self.transls[index], self.poses[index], self.shapes[index]
