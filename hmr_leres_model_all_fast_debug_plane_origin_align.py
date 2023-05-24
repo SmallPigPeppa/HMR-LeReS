@@ -171,7 +171,7 @@ class HMRLeReS(pl.LightningModule):
         # loss_pose = self.hmr_loss.pose_loss(gt_smpl_poses, pred_smpl_poses) * args.e_pose_weight
         loss_pose = self.hmr_loss.pose_loss(gt_smpl_poses, pred_smpl_poses) * 100.0
         # loss_kpts_2d = self.hmr_loss.batch_kp_2d_l1_loss(gt_kpts_2d, pred_kpts_2d) * args.e_2d_kpts_weight
-        loss_kpts_2d = self.hmr_loss.batch_kp_2d_l1_loss(gt_kpts_2d, pred_kpts_2d) * 10.0
+        loss_kpts_2d = self.hmr_loss.batch_kp_2d_l1_loss(gt_kpts_2d, pred_kpts_2d) * 1.0
         # loss_kpts_2d = 0.
 
         # loss_kpts_3d = self.hmr_loss.batch_kp_3d_l2_loss(gt_kpts_3d, pred_kpts_3d) * args.e_3d_kpts_weight
