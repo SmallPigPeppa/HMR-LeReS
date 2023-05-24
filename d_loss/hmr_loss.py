@@ -50,6 +50,8 @@ class HMRLoss(pl.LightningModule):
 
 
 
+
+
     def pose_loss(self, real_pose, fake_pose):
         '''
             Input:
@@ -61,6 +63,14 @@ class HMRLoss(pl.LightningModule):
         dif_rs = F.mse_loss(fake_rs, real_rs)
         return dif_rs
 
+    def pose_loss_only_rotate(self, gt_smpl_poses, pred_smpl_poses):
+        '''
+            Input:
+                real_pose   : N x 72
+                fake_pose   : N x 72
+        '''
+        dif_rs = F.mse_loss(gt_smpl_poses, pred_smpl_poses)
+        return dif_rs
 
 
     def batch_encoder_disc_l2_loss(self, disc_value):

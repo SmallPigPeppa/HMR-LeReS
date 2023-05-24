@@ -6,7 +6,7 @@ from model import HMRNetBase
 from Discriminator import Discriminator
 from hmr_leres_config import args
 
-from datasets.gta_im_all_10801920_plane_change_intri import GTADataset
+from datasets.gta_im_all_10801920_plane_change_intri_only_rotate import GTADataset
 from datasets.mesh_pkl_all import MeshDataset
 
 from a_models.smpl_fixwarning import SMPL
@@ -26,6 +26,28 @@ from datasets.hmr_data_utils import off_set_scale_kpts
 from a_val_metrics.leres_metrics import val_depth
 from a_val_metrics.hmr_metrics import val_kpts_verts
 from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
+
+
+def normalize_rotation_vectors(rotation_vectors):
+    # Reshape the rotation_vectors from (N, 72) to (N, 24, 3)
+    rotation_vectors = rotation_vectors.view(-1, 24, 3)
+
+    # Compute the norms (magnitudes) of the vectors
+    norms = torch.norm(rotation_vectors, dim=2, keepdim=True)
+
+    # Normalize angles to the range [-pi, pi]
+    norms = ((norms + torch.pi) % (2 * torch.pi)) - torch.pi
+
+    # Compute the unit vectors
+    unit_vectors = rotation_vectors / torch.clamp(norms, min=1e-8)
+
+    # Recompute the rotation vectors with the normalized angles
+    normalized_rotation_vectors = unit_vectors * norms
+
+    # Reshape the normalized_rotation_vectors back to (N, 72)
+    normalized_rotation_vectors = normalized_rotation_vectors.view(-1, 72)
+
+    return normalized_rotation_vectors
 
 
 class HMRLeReS(pl.LightningModule):
@@ -133,6 +155,7 @@ class HMRLeReS(pl.LightningModule):
         gt_smpl_theta = gta_data['theta']
         gt_smpl_shapes = gt_smpl_theta[:, 75:].contiguous()
         gt_smpl_poses = gt_smpl_theta[:, 3:75].contiguous()
+        gt_smpl_poses = normalize_rotation_vectors(gt_smpl_poses)
         gt_smpl_transl = gt_smpl_theta[:, :3].contiguous()
         gt_kpts_2d = gta_data['kpts_2d_origin']
         gt_kpts_2d = gta_data['kpts_2d']
@@ -145,6 +168,7 @@ class HMRLeReS(pl.LightningModule):
         pred_smpl_thetas = self.hmr_generator(hmr_images)[-1]
         pred_smpl_transl = pred_smpl_thetas[:, :3].contiguous()
         pred_smpl_poses = pred_smpl_thetas[:, 3:75].contiguous()
+        pred_smpl_poses = normalize_rotation_vectors(pred_smpl_poses)
         pred_smpl_shapes = pred_smpl_thetas[:, 75:].contiguous()
 
         pred_kpts_2d, pred_kpts_3d, pred_verts = self.get_smpl_kpts_verts(transl=gt_smpl_transl,
@@ -155,7 +179,7 @@ class HMRLeReS(pl.LightningModule):
         #                                           pose=gt_smpl_poses,
         #                                           shape=gt_smpl_shapes,
         #                                           focal_length=gt_focal_length)
-        _,_, gt_verts = self.get_smpl_kpts_verts(transl=gt_smpl_transl,
+        _, _, gt_verts = self.get_smpl_kpts_verts(transl=gt_smpl_transl,
                                                   pose=gt_smpl_poses,
                                                   shape=gt_smpl_shapes,
                                                   focal_length=gt_focal_length)
@@ -180,7 +204,7 @@ class HMRLeReS(pl.LightningModule):
 
         pred_smpl_thetas[:, :3] = gt_smpl_transl
         loss_generator_disc = self.hmr_loss.batch_encoder_disc_l2_loss(
-            self.hmr_discriminator(pred_smpl_thetas))*0.1
+            self.hmr_discriminator(pred_smpl_thetas)) * 0.1
 
         real_thetas = mesh_data['theta']
         fake_thetas = pred_smpl_thetas.detach()
@@ -190,7 +214,7 @@ class HMRLeReS(pl.LightningModule):
         # loss_generator = (loss_shape + loss_pose + loss_kpts_2d + loss_kpts_3d) * args.e_loss_weight + \
         #                  loss_generator_disc
         loss_generator = (loss_shape + loss_pose + loss_kpts_2d + loss_kpts_3d) * 1.0 + \
-                         loss_generator_disc*1.0
+                         loss_generator_disc * 1.0
 
         loss_discriminator = d_disc_loss * args.d_loss_weight
         hmr_loss_dict = {'loss_generator': loss_generator,
