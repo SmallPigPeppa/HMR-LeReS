@@ -1,4 +1,4 @@
-from hmr_leres_model_all_fast_debug_plane_origin_align import HMRLeReS
+from hmr_leres_model_all_fast_debug_plane_origin_align_only_rotate import HMRLeReS
 from hmr_leres_config import args
 from pytorch_lightning.loggers import WandbLogger
 import torch
