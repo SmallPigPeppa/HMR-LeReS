@@ -9,7 +9,7 @@ from hmr_leres_config import args
 from datasets.gta_im_all_10801920_plane_change_intri import GTADataset
 from datasets.mesh_pkl_all import MeshDataset
 
-from a_models.smpl import SMPL
+from a_models.smpl_fixwarning import SMPL
 from camera_utils import perspective_projection
 from d_loss.hmr_loss import HMRLoss
 from d_loss.leres_loss import DepthRegressionLoss, EdgeguidedNormalRegressionLoss, MultiScaleGradLoss, \

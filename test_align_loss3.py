@@ -1,7 +1,7 @@
 from d_loss.align_loss_new_debug import AlignLoss
 from datasets.gta_im_all_10801920_plane_change_intri import GTADataset
 from torch.utils.data import DataLoader
-from hmr_leres_model_all_fast_debug_plane_origin import HMRLeReS
+from hmr_leres_model_all_fast_debug_plane_origin_align import HMRLeReS
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
@@ -35,7 +35,7 @@ if __name__ == "__main__":
         faces = torch.tensor([model_b.smpl_model.faces], device=model_b.device)
         mesh_mask_gt, mesh_edge_dist_gt, mesh_edge_dist_gt2 = model_a.vis_forward(faces, verts, verts, depth,
                                                                                   batch)
-        _ = model_a.forward(faces, verts, verts, depth, batch)
+        # _ = model_a.forward(faces, verts, verts, depth, batch)
 
         for i in range(batchsize):
             leres_image = batch['leres_image'][i]
