@@ -52,7 +52,7 @@ class PoseDiscriminator(nn.Module):
     # N x 23 x 9
     def forward(self, inputs):
         batch_size = inputs.shape[0]
-        inputs = inputs.transpose(1, 2).unsqueeze(2) # to N x 9 x 1 x 23
+        inputs = inputs.transpose(1, 2).contiguous().unsqueeze(2) # to N x 9 x 1 x 23
         internal_outputs = self.conv_blocks(inputs) # to N x c x 1 x 23
         o = []
         for idx in range(23):
