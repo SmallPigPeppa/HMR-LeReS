@@ -65,23 +65,23 @@ class SMPL(pl.LightningModule):
 
         batch_size = shape.shape[0]
         # v_shaped = torch.matmul(shape, self.shapedirs)
-        v_shaped = torch.matmul(shape, self.shapedirs).view(-1, self.size[0], self.size[1]) + self.v_template
+        v_shaped = torch.matmul(shape, self.shapedirs).view(-1, self.size[0], self.size[1]).contiguous() + self.v_template
         Jx = torch.matmul(v_shaped[:, :, 0], self.J_regressor)
         Jy = torch.matmul(v_shaped[:, :, 1], self.J_regressor)
         Jz = torch.matmul(v_shaped[:, :, 2], self.J_regressor)
         J = torch.stack([Jx, Jy, Jz], dim=2)
-        Rs = batch_rodrigues(pose.view(-1, 3)).view(-1, 24, 3, 3).contiguous()
+        Rs = batch_rodrigues(pose.view(-1, 3).contiguous()).view(-1, 24, 3, 3).contiguous()
 
         # pose_feature = (Rs[:, 1:, :, :]).sub(1.0, self.e3).view(-1, 207)
-        pose_feature = (Rs[:, 1:, :, :].contiguous()).sub(self.e3, alpha=1.0).view(-1, 207)
-        v_posed = torch.matmul(pose_feature, self.posedirs).view(-1, self.size[0], self.size[1]) + v_shaped
+        pose_feature = (Rs[:, 1:, :, :].contiguous()).sub(self.e3, alpha=1.0).view(-1, 207).contiguous()
+        v_posed = torch.matmul(pose_feature, self.posedirs).view(-1, self.size[0], self.size[1]).contiguous() + v_shaped
 
         # self.J_transformed, A = batch_global_rigid_transformation(Rs, J, self.parents, rotate_base=True)
         self.J_transformed, A = batch_global_rigid_transformation(Rs, J, self.parents, rotate_base=False)
 
         weight = self.weight[:batch_size]
-        W = weight.view(batch_size, -1, 24)
-        T = torch.matmul(W, A.view(batch_size, 24, 16)).view(batch_size, -1, 4, 4)
+        W = weight.view(batch_size, -1, 24).contiguous()
+        T = torch.matmul(W, A.view(batch_size, 24, 16)).view(batch_size, -1, 4, 4).contiguous()
 
         v_posed_homo = torch.cat([v_posed, torch.ones(batch_size, v_posed.shape[1], 1, device=self.device)], dim=2)
         v_homo = torch.matmul(T, torch.unsqueeze(v_posed_homo, -1))
