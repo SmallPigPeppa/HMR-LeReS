@@ -171,7 +171,7 @@ class HMRLeReS(pl.LightningModule):
         # loss_pose = self.hmr_loss.pose_loss(gt_smpl_poses, pred_smpl_poses) * args.e_pose_weight
         loss_pose = self.hmr_loss.pose_loss(gt_smpl_poses, pred_smpl_poses) * 100.0
         # loss_kpts_2d = self.hmr_loss.batch_kp_2d_l1_loss(gt_kpts_2d, pred_kpts_2d) * args.e_2d_kpts_weight
-        loss_kpts_2d = self.hmr_loss.batch_kp_2d_l1_loss(gt_kpts_2d, pred_kpts_2d) * 3.0
+        loss_kpts_2d = self.hmr_loss.batch_kp_2d_l1_loss(gt_kpts_2d, pred_kpts_2d) * 0.3
         # loss_kpts_2d = 0.
 
         # loss_kpts_3d = self.hmr_loss.batch_kp_3d_l2_loss(gt_kpts_3d, pred_kpts_3d) * args.e_3d_kpts_weight
@@ -179,15 +179,14 @@ class HMRLeReS(pl.LightningModule):
 
         pred_smpl_thetas[:, :3] = gt_smpl_transl
         loss_generator_disc = self.hmr_loss.batch_encoder_disc_l2_loss(
-            self.hmr_discriminator(pred_smpl_thetas))
+            self.hmr_discriminator(pred_smpl_thetas))*0.1
 
         real_thetas = mesh_data['theta']
         fake_thetas = pred_smpl_thetas.detach()
         fake_disc_value, real_disc_value = self.hmr_discriminator(fake_thetas), self.hmr_discriminator(real_thetas)
         d_disc_real, d_disc_fake, d_disc_loss = self.hmr_loss.batch_adv_disc_l2_loss(real_disc_value, fake_disc_value)
 
-        loss_generator = (loss_shape + loss_pose + loss_kpts_2d + loss_kpts_3d) * args.e_loss_weight + \
-                         loss_generator_disc * args.d_loss_weight
+        loss_generator = (loss_shape + loss_pose + loss_kpts_2d + loss_kpts_3d) + loss_generator_disc
 
         loss_discriminator = d_disc_loss * args.d_loss_weight
         hmr_loss_dict = {'loss_generator': loss_generator,
