@@ -150,7 +150,11 @@ class HMRLeReS(pl.LightningModule):
                                                                           pose=pred_smpl_poses,
                                                                           shape=pred_smpl_shapes,
                                                                           focal_length=gt_focal_length)
-        gt_kpts_2d, gt_kpts_3d, gt_verts = self.get_smpl_kpts_verts(transl=gt_smpl_transl,
+        # gt_kpts_2d, gt_kpts_3d, gt_verts = self.get_smpl_kpts_verts(transl=gt_smpl_transl,
+        #                                           pose=gt_smpl_poses,
+        #                                           shape=gt_smpl_shapes,
+        #                                           focal_length=gt_focal_length)
+        _,_, gt_verts = self.get_smpl_kpts_verts(transl=gt_smpl_transl,
                                                   pose=gt_smpl_poses,
                                                   shape=gt_smpl_shapes,
                                                   focal_length=gt_focal_length)
