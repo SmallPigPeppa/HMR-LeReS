@@ -205,7 +205,7 @@ class GTADataset(Dataset):
 
         transl, shape, pose = self.transls[index], self.shapes[index], self.poses[index]
 
-        pose = normalize_rotation_vectors(pose)
+        # pose = normalize_rotation_vectors(pose)
         theta = np.concatenate((transl, pose, shape), axis=0)
 
         boody_pose = pose[3:]
