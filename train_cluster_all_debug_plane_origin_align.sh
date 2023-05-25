@@ -10,15 +10,15 @@ export PYTHONPATH="./HMR/src:./LeReS/Train"
 --project HMR-LeReS-v7.0-debug \
 --entity pigpeppa \
 --num_gpus 8 \
---max-epochs 300 \
+--max-epochs 500 \
 --num-workers 8 \
---batch-size 16 \
---eval-batch-size 16 \
---adv-batch-size 16 \
---weight_decay 2e-5 \
+--batch-size 32 \
+--eval-batch-size 32 \
+--adv-batch-size 32 \
+--weight_decay 1e-4 \
 --base_lr 0.1 \
---e_lr 0.01 \
---d-lr 0.01
+--e_lr 0.1 \
+--d-lr 0.1
 #--e_lr 0.05 \
 #--d-lr 0.05
 
