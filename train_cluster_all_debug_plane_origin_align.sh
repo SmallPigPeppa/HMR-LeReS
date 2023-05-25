@@ -19,6 +19,9 @@ export PYTHONPATH="./HMR/src:./LeReS/Train"
 --base_lr 0.1 \
 --e_lr 0.01 \
 --d-lr 0.01
+#--e_lr 0.05 \
+#--d-lr 0.05
+
 #--e_lr 0.00001
 #--d-lr 0.0001
 #--base_lr 0.001

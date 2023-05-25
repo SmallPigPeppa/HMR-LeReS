@@ -123,6 +123,7 @@ class GTADataset(Dataset):
         # index=563
         # index=192
         # index=3
+        index=440
 
         origin_image = None
         depth = None
