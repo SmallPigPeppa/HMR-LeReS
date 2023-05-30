@@ -192,7 +192,7 @@ class HMRLeReS(pl.LightningModule):
         loss_generator = (loss_shape + loss_pose + loss_kpts_2d + loss_kpts_3d) * 1.0 + \
                          loss_generator_disc*1.0
 
-        loss_discriminator = d_disc_loss * 1.0
+        loss_discriminator = d_disc_loss * 0.1
         hmr_loss_dict = {'loss_generator': loss_generator,
                          'loss_kpts_2d': loss_kpts_2d,
                          'loss_kpts_3d': loss_kpts_3d,
