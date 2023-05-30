@@ -6,19 +6,19 @@ export PYTHONPATH="./HMR/src:./LeReS/Train"
 --gta_dataset_dir /mnt/mmtech01/dataset/vision_text_pretrain/gta-im \
 --mesh_dataset_dir /mnt/mmtech01/dataset/vision_text_pretrain/gta-im \
 --ckpt_dir hmr-leres-ckpt-debug/plane-origin-align \
---name plane-origin-align-300 \
+--name plane-origin-align \
 --project HMR-LeReS-v7.0-debug \
 --entity pigpeppa \
 --num_gpus 8 \
---max-epochs 500 \
+--max-epochs 300 \
 --num-workers 8 \
 --batch-size 32 \
 --eval-batch-size 32 \
 --adv-batch-size 32 \
---weight_decay 1e-4 \
+--weight_decay 2e-5 \
 --base_lr 0.1 \
 --e_lr 0.01 \
---d-lr 0.0001
+--d-lr 0.001
 #--e_lr 0.05 \
 #--d-lr 0.05
 
