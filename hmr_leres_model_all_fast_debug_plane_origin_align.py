@@ -327,7 +327,7 @@ class HMRLeReS(pl.LightningModule):
              'weight_decay': args.d_wd}]
 
         hmr_generator_leres_opt = torch.optim.SGD(
-            hmr_generator_leres_params, momentum=0.9
+            hmr_discriminator_params, momentum=0.9
         )
 
         # hmr_discriminator_opt = torch.optim.Adam(
