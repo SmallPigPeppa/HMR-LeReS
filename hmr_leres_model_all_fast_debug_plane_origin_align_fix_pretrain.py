@@ -205,8 +205,8 @@ class HMRLeReS(pl.LightningModule):
                          }
 
         leres_images = gta_data['leres_image']
-        leres_images = gta_data['leres_image_448']
-        pred_depth = self.leres_model(leres_images)
+        leres_images_448 = gta_data['leres_image_448']
+        pred_depth = self.leres_model(leres_images_448)
         gt_depth = gta_data['depth']
         gt_depth = gt_depth[:, None, :, :]
         plane_mask = gta_data['plane_mask']
