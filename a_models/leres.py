@@ -21,6 +21,7 @@ def get_func(func_name):
     except Exception:
         print('Failed to f1ind function: %s', func_name)
         raise
+
 class DepthModel(nn.Module):
     def __init__(self):
         super(DepthModel, self).__init__()
