@@ -2,6 +2,8 @@ from lib_train.models import network_auxi as network
 from lib_train.configs.config import cfg
 import importlib
 import torch.nn as nn
+
+
 def get_func(func_name):
     """Helper to return a function object by name. func_name must identify a
     function in this module or the path to a function relative to the base
@@ -22,6 +24,7 @@ def get_func(func_name):
         print('Failed to f1ind function: %s', func_name)
         raise
 
+
 class DepthModel(nn.Module):
     def __init__(self):
         super(DepthModel, self).__init__()
@@ -36,12 +39,26 @@ class DepthModel(nn.Module):
         # out_auxi = self.auxi_modules(auxi_input)
         return out_logit, _
 
+    def load_ckpt(self, ckpt_path='leres_pretrain/res50.pth'):
+        # Load the entire state dict
+        state_dict = torch.load(ckpt_path)
+
+        # Extract the state dict for the encoder and decoder
+        encoder_state_dict = {k: v for k, v in state_dict.items() if 'encoder_modules' in k}
+        decoder_state_dict = {k: v for k, v in state_dict.items() if 'decoder_modules' in k}
+
+        # Load the state dict for encoder and decoder
+        self.encoder_modules.load_state_dict(encoder_state_dict, strict=True)
+        self.decoder_modules.load_state_dict(decoder_state_dict, strict=True)
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     import torch
+
     net = DepthModel()
+    net.load_ckpt('leres_pretrain/res50.pth')
     # print(net)
-    inputs = torch.ones(4,3,1080//5,1920//5)
-    depth,_ = net(inputs)
+    # inputs = torch.ones(4, 3, 1080 // 5, 1920 // 5)
+    inputs = torch.ones(4, 3, 448, 448)
+    depth, _ = net(inputs)
     print(depth.size())
