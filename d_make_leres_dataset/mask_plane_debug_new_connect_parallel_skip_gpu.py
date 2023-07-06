@@ -2,6 +2,8 @@ import os
 import cv2
 import numpy as np
 # # from sklearn.cluster import DBSCAN
+# process 10k
+# python 多线程 pol
 # from cuml.cluster import DBSCAN
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors

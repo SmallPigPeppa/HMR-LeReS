@@ -11,7 +11,6 @@ import cv2
 from scipy.spatial.transform import Rotation as R
 
 
-
 def normalize_rotation_vectors(rotation_vectors):
     # Ensure the rotation vectors have positive magnitude
     rotation_vectors[np.linalg.norm(rotation_vectors, axis=1) < 0] = -rotation_vectors[
@@ -26,7 +25,7 @@ def normalize_rotation_vectors(rotation_vectors):
 # step0:
 # merge info_frames.pickle info_frames.npz
 
-if __name__=='__main__':
+if __name__ == '__main__':
 
     data_root = './'
     rec_idx = '2020-06-11-10-06-48-add-transl'
@@ -157,7 +156,7 @@ if __name__=='__main__':
     rot_matrix = R.from_matrix(smpl_poses_matrix)
     # smpl_poses_rotvec = rot_matrix.as_rotvec().reshape(-1, 24, 3)
 
-    smpl_poses_rotvec =normalize_rotation_vectors(rot_matrix.as_rotvec()).reshape(-1, 24, 3)
+    smpl_poses_rotvec = normalize_rotation_vectors(rot_matrix.as_rotvec()).reshape(-1, 24, 3)
 
     smpl_shapes = np.array(smpl_shapes)
     smpl_transl = np.array(smpl_transl)
@@ -171,7 +170,7 @@ if __name__=='__main__':
     print('smpl_poses.shape, smpl_shapes.shape', smpl_poses.shape, smpl_shapes.shape)
 
     gta_kpts_2d = np.array(info_npz['joints_2d'])
-    gta_heads_2d = gta_kpts_2d[:,0,:]
+    gta_heads_2d = gta_kpts_2d[:, 0, :]
 
     hmr_anno_dict = {'shape': smpl_shapes, 'pose': smpl_poses, 'transl': smpl_transl, 'kpts_2d': kpts_2d,
                      'kpts_3d': kpts_3d, 'joints_2d': joints_2d, 'joints_3d': joints_3d, 'gta_heads_2d': gta_heads_2d}
