@@ -73,7 +73,7 @@ class DepthModel_Fix(nn.Module):
 
 
 if __name__ == '__main__':
-    import torch
+    # import torch
 
     net = DepthModel_Fix()
     net.load_ckpt('leres_pretrain/res50.pth')
