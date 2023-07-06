@@ -21,7 +21,7 @@ import torch.nn.functional as F
 
 from lib_train.configs.config import cfg as leres_net_cfg
 
-from a_models.leres import DepthModel
+from a_models.leres import DepthModel_Fix
 from datasets.hmr_data_utils import off_set_scale_kpts
 from a_val_metrics.leres_metrics import val_depth
 from a_val_metrics.hmr_metrics import val_kpts_verts
@@ -39,7 +39,7 @@ class HMRLeReS(pl.LightningModule):
         self.hmr_generator = HMRNetBase()
         self.hmr_discriminator = Discriminator()
         self.smpl_model = SMPL(args.smpl_model, obj_saveable=True)
-        self.leres_model = DepthModel()
+        self.leres_model = DepthModel_Fix()
 
         self.hmr_loss = HMRLoss()
         self.depth_regression_loss = DepthRegressionLoss(min_threshold=self.depth_min_threshold,

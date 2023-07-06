@@ -11,7 +11,7 @@ torch.autograd.set_detect_anomaly(True)
 if __name__ == '__main__':
     seed_everything(5)
     model = HMRLeReS()
-    model.leres_model.load_state_dict('/mnt/mmtech01/usr/liuwenzhuo/code/HMR-LeReS-v8/a_models/leres_pretrain/res50.pth')
+    model.leres_model.load_ckpt('/mnt/mmtech01/usr/liuwenzhuo/code/HMR-LeReS-v8/a_models/leres_pretrain/res50.pth')
     callbacks = []
     wandb_logger = WandbLogger(
         name=args.name, project=args.project, entity=args.entity, offline=args.offline
