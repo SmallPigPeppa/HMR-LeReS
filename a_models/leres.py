@@ -2,7 +2,7 @@ from lib_train.models import network_auxi as network
 from lib_train.configs.config import cfg
 import importlib
 import torch.nn as nn
-from resizer import Resizer
+from a_models.resizer import Resizer
 
 
 def get_func(func_name):
