@@ -3,6 +3,7 @@ from lib_train.configs.config import cfg
 import importlib
 import torch.nn as nn
 from a_models.resizer import Resizer
+import torch
 
 
 def get_func(func_name):
