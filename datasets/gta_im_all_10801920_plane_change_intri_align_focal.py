@@ -125,7 +125,7 @@ class GTADataset(Dataset):
         # index=563
         # index=192
         # index=3
-        # index=440
+        # index = 599
 
         origin_image = None
         depth = None
@@ -147,8 +147,8 @@ class GTADataset(Dataset):
         scaled_focal_length = original_focal_length / self.scale
         fix_focal_length = self.fix_focal_length
         # if scaled_focal_length != self.fix_focal_length:
-        depth_ratio = scaled_focal_length / fix_focal_length
-        depth /= depth_ratio
+        depth_ratio = fix_focal_length / scaled_focal_length
+        depth *= depth_ratio
 
         # image_path = self.image_paths[index]
         # depth_path=self.depth_paths[index]
@@ -215,7 +215,7 @@ class GTADataset(Dataset):
         focal_length = np.array(intrinsic_scaled[0][0]).astype(np.float32)
         scaled_focal_length = np.array(scaled_focal_length).astype(np.float32)
         leres_cut_box = leres_cut_box / self.scale
-        kpts_3d[:, 2] /= depth_ratio
+        kpts_3d[:, 2] *= depth_ratio
 
         return {
             'image_path': image_path,
@@ -244,7 +244,7 @@ if __name__ == '__main__':
     from tqdm import tqdm
 
     # 创建debug-out文件夹
-    debug_out_dir = 'debug-out-fixfocal-new'
+    debug_out_dir = 'debug-out-fixfocal4'
     os.makedirs(debug_out_dir, exist_ok=True)
 
     from torch.utils.data import DataLoader
@@ -252,7 +252,7 @@ if __name__ == '__main__':
     data_dir = '/Users/lwz/torch_ds/gta-im-fixbug/FPS-5'
     # data_dir = '/share/wenzhuoliu/torch_ds/gta-im/FPS-5-test'
     gta_dataset = GTADataset(data_dir)
-    gta_loader = DataLoader(gta_dataset, batch_size=16, shuffle=False)
+    gta_loader = DataLoader(gta_dataset, batch_size=1, shuffle=False)
 
     import matplotlib.pyplot as plt
     import numpy as np
@@ -266,34 +266,46 @@ if __name__ == '__main__':
         scaled_fl = batch['scaled_focal_length']
         intrinsic = batch['intrinsic']
         kpts_3d = batch['kpts_3d']
-        if not torch.all(torch.eq(fix_fl, scaled_fl)):
-            for j in range(leres_image.shape[0]):
+        # if not torch.all(torch.eq(fix_fl, scaled_fl)):
+        for j in range(leres_image.shape[0]):
 
-                rvec = np.zeros([3, 1], dtype=float)
-                tvec = np.zeros([3, 1], dtype=float)
-                dist_coeffs = np.zeros([4, 1], dtype=float)
-                intrinsic_j = intrinsic[j].cpu().detach().numpy()
-                kpts_3d_j = kpts_3d[j][:, :3].cpu().detach().numpy().astype(np.float32)
-                # intrinsic_i_new = intrinsic_i / self.scale
-                # intrinsic_i_new[2, 2] = 1  # Restore the [2, 2] element back to 1
-                # kpts_3d_j = np.random.random_sample((10, 3)).astype(np.float32)
-                kpts2d_j, _ = cv2.projectPoints(kpts_3d_j, rvec, tvec, intrinsic_j, dist_coeffs)
-                kpts2d_j = np.squeeze(kpts2d_j)
+            rvec = np.zeros([3, 1], dtype=float)
+            tvec = np.zeros([3, 1], dtype=float)
+            dist_coeffs = np.zeros([4, 1], dtype=float)
+            intrinsic_j = intrinsic[j].cpu().detach().numpy()
+            kpts_3d_j = kpts_3d[j][:, :3].cpu().detach().numpy().astype(np.float32)
+            # intrinsic_i_new = intrinsic_i / self.scale
+            # intrinsic_i_new[2, 2] = 1  # Restore the [2, 2] element back to 1
+            # kpts_3d_j = np.random.random_sample((10, 3)).astype(np.float32)
+            kpts2d_j, _ = cv2.projectPoints(kpts_3d_j, rvec, tvec, intrinsic_j, dist_coeffs)
+            kpts2d_j = np.squeeze(kpts2d_j)
+            kpts2d_j_true = kpts_2d[j]
 
-                f, axarr = plt.subplots(1, 2)
-                leres_image_j = leres_image[j].permute(1, 2, 0)
+            f, axarr = plt.subplots(1, 2)
+            leres_image_j = leres_image[j].permute(1, 2, 0)
 
-                hmr_image_j = hmr_image[j].permute(1, 2, 0)
+            hmr_image_j = hmr_image[j].permute(1, 2, 0)
 
-                axarr[0].imshow(leres_image_j)
-                axarr[1].imshow(hmr_image_j)
-                for k in range(0, 24):
-                    # axarr[0].scatter(np.squeeze(kpts_2d[j])[k][0], np.squeeze(kpts_2d[j])[k][1], s=50, c='red',
-                    #                  marker='o')
-                    axarr[0].scatter(np.squeeze(kpts2d_j)[k][0], np.squeeze(kpts2d_j)[k][1], s=50, c='red',
-                                     marker='o')
-                # plt.show()
-                plt.savefig(f'{debug_out_dir}/image_{i*16+j}.png')
-                plt.close()
+            axarr[0].imshow(leres_image_j)
+            axarr[0].set_title('Normalized Focal')
+
+            axarr[1].imshow(leres_image_j)
+            axarr[1].set_title('Original Image')
+            for k in range(0, 24):
+                # axarr[0].scatter(np.squeeze(kpts_2d[j])[k][0], np.squeeze(kpts_2d[j])[k][1], s=50, c='red',
+                #                  marker='o')
+                # if (0 <= np.squeeze(kpts2d_j)[k][0] < leres_image_j.shape[1]-15 and
+                #     0 <= np.squeeze(kpts2d_j)[k][1] < leres_image_j.shape[0]-15):
+                axarr[0].scatter(np.squeeze(kpts2d_j)[k][0], np.squeeze(kpts2d_j)[k][1], s=30, c='red',
+                                 marker='o')
+                # if (0 <= np.squeeze(kpts2d_j_true)[k][0] < leres_image_j.shape[1]-15 and
+                #     0 <= np.squeeze(kpts2d_j_true)[k][1] < leres_image_j.shape[0]-15):
+                axarr[1].scatter(np.squeeze(kpts2d_j_true)[k][0], np.squeeze(kpts2d_j_true)[k][1], s=30, c='red',
+                                 marker='o')
+            plt.show()
+        if i == 0:
+            break
+            # plt.savefig(f'{debug_out_dir}/image_{i * 16 + j}.png')
+            # plt.close()
         # print(batch['leres_cut_box'][0])
 #
