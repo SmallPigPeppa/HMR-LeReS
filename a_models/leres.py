@@ -2,6 +2,7 @@ from lib_train.models import network_auxi as network
 from lib_train.configs.config import cfg
 import importlib
 import torch.nn as nn
+from resizer import Resizer
 
 
 def get_func(func_name):
@@ -39,13 +40,31 @@ class DepthModel(nn.Module):
         # out_auxi = self.auxi_modules(auxi_input)
         return out_logit, _
 
+
+class DepthModel_Fix(nn.Module):
+    def __init__(self):
+        super(DepthModel_Fix, self).__init__()
+        backbone = network.__name__.split('.')[-1] + '.' + cfg.MODEL.ENCODER
+        self.encoder_modules = get_func(backbone)()
+        self.decoder_modules = network.Decoder()
+        self.resizer = Resizer(in_chs=1, out_size=[216, 384])
+
+    def forward(self, x):
+        with torch.no_grad():
+            lateral_out = self.encoder_modules(x)
+            out_logit, _ = self.decoder_modules(lateral_out)
+        pred_depth = self.resizer(out_logit)
+        return pred_depth
+
     def load_ckpt(self, ckpt_path='leres_pretrain/res50.pth'):
         # Load the entire state dict
-        state_dict = torch.load(ckpt_path)
+        state_dict = torch.load(ckpt_path, map_location=torch.device('cpu'))['depth_model']
 
         # Extract the state dict for the encoder and decoder
-        encoder_state_dict = {k: v for k, v in state_dict.items() if 'encoder_modules' in k}
-        decoder_state_dict = {k: v for k, v in state_dict.items() if 'decoder_modules' in k}
+        encoder_state_dict = {k.split('encoder_modules.')[-1]: v for k, v in state_dict.items() if
+                              'encoder_modules' in k}
+        decoder_state_dict = {k.split('decoder_modules.')[-1]: v for k, v in state_dict.items() if
+                              'decoder_modules' in k}
 
         # Load the state dict for encoder and decoder
         self.encoder_modules.load_state_dict(encoder_state_dict, strict=True)
@@ -55,10 +74,10 @@ class DepthModel(nn.Module):
 if __name__ == '__main__':
     import torch
 
-    net = DepthModel()
+    net = DepthModel_Fix()
     net.load_ckpt('leres_pretrain/res50.pth')
     # print(net)
     # inputs = torch.ones(4, 3, 1080 // 5, 1920 // 5)
     inputs = torch.ones(4, 3, 448, 448)
-    depth, _ = net(inputs)
+    depth = net(inputs)
     print(depth.size())

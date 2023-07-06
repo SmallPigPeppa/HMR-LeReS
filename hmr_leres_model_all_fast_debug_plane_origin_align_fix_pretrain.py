@@ -6,7 +6,7 @@ from model import HMRNetBase
 from Discriminator import Discriminator
 from hmr_leres_config import args
 
-from datasets.gta_im_all_10801920_plane_change_intri import GTADataset
+from datasets.gta_im_all_10801920_plane_change_intri_align_focal_448 import GTADataset
 from datasets.mesh_pkl_all import MeshDataset
 
 from a_models.smpl_fixwarning import SMPL
@@ -155,7 +155,7 @@ class HMRLeReS(pl.LightningModule):
         #                                           pose=gt_smpl_poses,
         #                                           shape=gt_smpl_shapes,
         #                                           focal_length=gt_focal_length)
-        _,_, gt_verts = self.get_smpl_kpts_verts(transl=gt_smpl_transl,
+        _, _, gt_verts = self.get_smpl_kpts_verts(transl=gt_smpl_transl,
                                                   pose=gt_smpl_poses,
                                                   shape=gt_smpl_shapes,
                                                   focal_length=gt_focal_length)
@@ -180,7 +180,7 @@ class HMRLeReS(pl.LightningModule):
 
         pred_smpl_thetas[:, :3] = gt_smpl_transl
         loss_generator_disc = self.hmr_loss.batch_encoder_disc_l2_loss(
-            self.hmr_discriminator(pred_smpl_thetas))*0.1
+            self.hmr_discriminator(pred_smpl_thetas)) * 0.1
 
         real_thetas = mesh_data['theta']
         fake_thetas = pred_smpl_thetas.detach()
@@ -190,7 +190,7 @@ class HMRLeReS(pl.LightningModule):
         # loss_generator = (loss_shape + loss_pose + loss_kpts_2d + loss_kpts_3d) * args.e_loss_weight + \
         #                  loss_generator_disc
         loss_generator = (loss_shape + loss_pose + loss_kpts_2d + loss_kpts_3d) * 1.0 + \
-                         loss_generator_disc*1.0
+                         loss_generator_disc * 1.0
 
         loss_discriminator = d_disc_loss * 0.1
         hmr_loss_dict = {'loss_generator': loss_generator,
@@ -205,7 +205,8 @@ class HMRLeReS(pl.LightningModule):
                          }
 
         leres_images = gta_data['leres_image']
-        pred_depth, auxi = self.leres_model(leres_images)
+        leres_images = gta_data['leres_image_440']
+        pred_depth = self.leres_model(leres_images)
         gt_depth = gta_data['depth']
         gt_depth = gt_depth[:, None, :, :]
         plane_mask = gta_data['plane_mask']

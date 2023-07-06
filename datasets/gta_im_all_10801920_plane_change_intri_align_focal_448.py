@@ -32,7 +32,7 @@ class GTADataset(Dataset):
         # self.fix_focal_length = 231.6068
         self.hmr_transforms = T.Compose([T.Resize((self.hmr_size, self.hmr_size)), T.ToTensor()])
         self.leres_transforms = T.Compose([T.Resize((self.leres_size[0], self.leres_size[1])), T.ToTensor()])
-        self.leres_transforms_440 = T.Compose([T.Resize((440, 440)), T.ToTensor()])
+        self.leres_transforms_440 = T.Compose([T.Resize((448, 448)), T.ToTensor()])
         self.depth_transforms = T.Compose(
             [T.Resize((self.leres_size[0], self.leres_size[1]), interpolation=InterpolationMode.NEAREST),
              T.Lambda(lambda image: torch.from_numpy(np.array(image).astype(np.float32)))])
