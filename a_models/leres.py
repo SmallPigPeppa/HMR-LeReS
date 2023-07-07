@@ -2,7 +2,7 @@ from lib_train.models import network_auxi as network
 from lib_train.configs.config import cfg
 import importlib
 import torch.nn as nn
-from a_models.resizer3 import Resizer
+from a_models.resizer2 import Resizer
 import torch
 
 
