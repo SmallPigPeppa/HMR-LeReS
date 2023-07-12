@@ -243,8 +243,8 @@ class GTADataset(Dataset):
             'focal_length': torch.from_numpy(focal_length).float(),
             'scaled_focal_length': torch.from_numpy(scaled_focal_length).float(),
             'fixed_focal_length': torch.from_numpy(fix_focal_length).float(),
-            # 'intrinsic': torch.from_numpy(intrinsic).float(),
-            'intrinsic': torch.from_numpy(intrinsic_scaled).float(),
+            'intrinsic': torch.from_numpy(intrinsic).float(),
+            # 'intrinsic': torch.from_numpy(intrinsic_scaled).float(),
             'leres_cut_box': torch.from_numpy(leres_cut_box)
         }
 
