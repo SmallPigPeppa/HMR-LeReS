@@ -63,8 +63,10 @@ class HMRLeReS(pl.LightningModule):
         self.align_loss = AlignLoss()
 
     def train_dataloader(self):
-        gta_dataset_dir = os.path.join(args.gta_dataset_dir, 'FPS-5-test')
-        mesh_dataset_dir = os.path.join(args.mesh_dataset_dir, 'FPS-30')
+        # gta_dataset_dir = os.path.join(args.gta_dataset_dir, 'FPS-5-test')
+        # mesh_dataset_dir = os.path.join(args.mesh_dataset_dir, 'FPS-30')
+        gta_dataset_dir = os.path.join(args.gta_dataset_dir, 'FPS-5-debug')
+        mesh_dataset_dir = os.path.join(args.mesh_dataset_dir, 'FPS-5-debug')
 
         gta_dataset = GTADataset(gta_dataset_dir)
         mesh_dataset = MeshDataset(mesh_dataset_dir)
@@ -95,7 +97,7 @@ class HMRLeReS(pl.LightningModule):
         return loaders
 
     def val_dataloader(self):
-        gta_dataset_dir = os.path.join(args.gta_dataset_dir, 'FPS-5-val')
+        gta_dataset_dir = os.path.join(args.gta_dataset_dir, 'FPS-5-debug')
         gta_dataset = GTADataset(gta_dataset_dir)
         self.gta_dataset = gta_dataset
 
@@ -139,7 +141,7 @@ class HMRLeReS(pl.LightningModule):
         gt_kpts_3d = gta_data['kpts_3d']
         gt_intrinsic = gta_data['intrinsic']
         # gt_focal_length = gta_data['focal_length']
-        gt_focal_length = gta_data['scaled_focal_length']
+        gt_focal_length = gta_data['fixed_focal_length']
         top, left, height, width = gta_data['leres_cut_box'][:, 0], gta_data['leres_cut_box'][:, 1], \
             gta_data['leres_cut_box'][:, 2], gta_data['leres_cut_box'][:, 3]
 

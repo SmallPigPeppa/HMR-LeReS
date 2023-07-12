@@ -32,7 +32,10 @@ class GTADataset(Dataset):
         # self.fix_focal_length = 231.6068
         self.hmr_transforms = T.Compose([T.Resize((self.hmr_size, self.hmr_size)), T.ToTensor()])
         self.leres_transforms = T.Compose([T.Resize((self.leres_size[0], self.leres_size[1])), T.ToTensor()])
-        self.leres_transforms_448 = T.Compose([T.Resize((448, 448)), T.ToTensor()])
+        self.leres_transforms_448 = T.Compose([T.Resize((448, 448)), T.ToTensor(),T.Normalize((0.3118, 0.2885, 0.2801), (0.2216, 0.2207, 0.2189))])
+        # self.leres_transforms_448 = T.Compose([T.Resize((448, 448)), T.ToTensor(),T.Normalize((0.2216, 0.2207, 0.2189), (0.2536, 0.2262, 0.1994))])
+        # 0.2216, 0.2207, 0.2189
+        # 0.2536, 0.2262, 0.1994
         self.depth_transforms = T.Compose(
             [T.Resize((self.leres_size[0], self.leres_size[1]), interpolation=InterpolationMode.NEAREST),
              T.Lambda(lambda image: torch.from_numpy(np.array(image).astype(np.float32)))])
@@ -126,7 +129,7 @@ class GTADataset(Dataset):
         # index=563
         # index=192
         # index=3
-        # index = 599
+        # index = 518
 
         origin_image = None
         depth = None
@@ -145,10 +148,12 @@ class GTADataset(Dataset):
                 index = (index + 1) % len(self.image_paths)
 
         original_focal_length = self.intrinsics[index][0, 0]
-        scaled_focal_length = original_focal_length / self.scale
+
         fix_focal_length = self.fix_focal_length
         # if scaled_focal_length != self.fix_focal_length:
-        depth_ratio = fix_focal_length / scaled_focal_length
+        # depth_ratio = fix_focal_length / scaled_focal_length
+        depth_ratio = fix_focal_length / original_focal_length
+
         depth *= depth_ratio
 
         # image_path = self.image_paths[index]
@@ -211,10 +216,12 @@ class GTADataset(Dataset):
         intrinsic_scaled = intrinsic / self.scale
         intrinsic_scaled[2, 2] = 1  # Restore the [2, 2] element back to 1
         origin_focal_length = intrinsic_scaled[0][0]
-        intrinsic_scaled[0, 0] = fix_focal_length
-        intrinsic_scaled[1, 1] = fix_focal_length
+        intrinsic_scaled[0, 0] = fix_focal_length/self.scale
+        intrinsic_scaled[1, 1] = fix_focal_length/self.scale
         focal_length = np.array(intrinsic_scaled[0][0]).astype(np.float32)
+        scaled_focal_length = original_focal_length / self.scale
         scaled_focal_length = np.array(scaled_focal_length).astype(np.float32)
+        fix_focal_length = np.array(fix_focal_length/self.scale).astype(np.float32)
         leres_cut_box = leres_cut_box / self.scale
         kpts_3d[:, 2] *= depth_ratio
 
@@ -235,6 +242,7 @@ class GTADataset(Dataset):
             'global_pose': torch.from_numpy(global_pose).float(),
             'focal_length': torch.from_numpy(focal_length).float(),
             'scaled_focal_length': torch.from_numpy(scaled_focal_length).float(),
+            'fixed_focal_length': torch.from_numpy(fix_focal_length).float(),
             # 'intrinsic': torch.from_numpy(intrinsic).float(),
             'intrinsic': torch.from_numpy(intrinsic_scaled).float(),
             'leres_cut_box': torch.from_numpy(leres_cut_box)
@@ -254,7 +262,7 @@ if __name__ == '__main__':
     data_dir = '/Users/lwz/torch_ds/gta-im-fixbug/FPS-5'
     # data_dir = '/share/wenzhuoliu/torch_ds/gta-im/FPS-5-test'
     gta_dataset = GTADataset(data_dir)
-    gta_loader = DataLoader(gta_dataset, batch_size=1, shuffle=False)
+    gta_loader = DataLoader(gta_dataset, batch_size=1, shuffle=True)
 
     import matplotlib.pyplot as plt
     import numpy as np
@@ -305,7 +313,7 @@ if __name__ == '__main__':
                 axarr[1].scatter(np.squeeze(kpts2d_j_true)[k][0], np.squeeze(kpts2d_j_true)[k][1], s=30, c='red',
                                  marker='o')
             plt.show()
-        if i == 0:
+        if i == 20:
             break
             # plt.savefig(f'{debug_out_dir}/image_{i * 16 + j}.png')
             # plt.close()
