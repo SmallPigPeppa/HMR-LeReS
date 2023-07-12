@@ -250,10 +250,13 @@ class HMRLeReS(pl.LightningModule):
         #                                               pred_depth, gta_data)
         # loss_align = 0.
         faces = torch.tensor([self.smpl_model.faces], device=self.device)
-        loss_align = self.align_loss(faces, gt_verts, pred_verts, pred_depth, gta_data)
-        human_depth_loss = loss_align['human_depth_loss']
-        mesh_project_loss = loss_align['mesh_project_loss']
-        mesh_project_edge_loss = loss_align['mesh_project_edge_loss']
+        # loss_align = self.align_loss(faces, gt_verts, pred_verts, pred_depth, gta_data)
+        # human_depth_loss = loss_align['human_depth_loss']
+        # mesh_project_loss = loss_align['mesh_project_loss']
+        # mesh_project_edge_loss = loss_align['mesh_project_edge_loss']
+        human_depth_loss = 0.
+        mesh_project_loss = 0.
+        mesh_project_edge_loss = 0.
         loss_combie = human_depth_loss + mesh_project_loss + mesh_project_edge_loss
 
         # loss_combie = 0.
