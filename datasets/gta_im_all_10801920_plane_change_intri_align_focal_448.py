@@ -119,7 +119,8 @@ class GTADataset(Dataset):
                 self.cam_far_clips.append(cam_far_clip_i)
 
             print(f'finished load from {scene_dir}, total {scence_samples} samples')
-        self.fix_focal_length = self.intrinsics[0][0, 0] / self.scale
+        self.fix_focal_length = self.intrinsics[0][0, 0]
+        # self.fix_focal_length = self.intrinsics[0][0, 0] / self.scale
         print(f'finished load all gta-im data from {self.data_dir}, total {self.num_samples} samples')
 
     def __len__(self):
@@ -215,10 +216,12 @@ class GTADataset(Dataset):
         intrinsic = self.intrinsics[index]
         intrinsic_scaled = intrinsic / self.scale
         intrinsic_scaled[2, 2] = 1  # Restore the [2, 2] element back to 1
-        origin_focal_length = intrinsic_scaled[0][0]
+        # origin_focal_length = intrinsic_scaled[0][0]
         intrinsic_scaled[0, 0] = fix_focal_length/self.scale
         intrinsic_scaled[1, 1] = fix_focal_length/self.scale
-        focal_length = np.array(intrinsic_scaled[0][0]).astype(np.float32)
+        # intrinsic_scaled[0, 0] = fix_focal_length
+        # intrinsic_scaled[1, 1] = fix_focal_length
+        # focal_length = np.array(intrinsic_scaled[0][0]).astype(np.float32)
         scaled_focal_length = original_focal_length / self.scale
         scaled_focal_length = np.array(scaled_focal_length).astype(np.float32)
         fix_focal_length = np.array(fix_focal_length/self.scale).astype(np.float32)
@@ -243,8 +246,8 @@ class GTADataset(Dataset):
             'focal_length': torch.from_numpy(focal_length).float(),
             'scaled_focal_length': torch.from_numpy(scaled_focal_length).float(),
             'fixed_focal_length': torch.from_numpy(fix_focal_length).float(),
-            'intrinsic': torch.from_numpy(intrinsic).float(),
-            # 'intrinsic': torch.from_numpy(intrinsic_scaled).float(),
+            # 'intrinsic': torch.from_numpy(intrinsic).float(),
+            'intrinsic': torch.from_numpy(intrinsic_scaled).float(),
             'leres_cut_box': torch.from_numpy(leres_cut_box)
         }
 
@@ -272,8 +275,8 @@ if __name__ == '__main__':
         hmr_image = batch['hmr_image']
         kpts_2d = batch['kpts_2d']
         depth = batch['depth']
-        fix_fl = batch['focal_length']
-        scaled_fl = batch['scaled_focal_length']
+        # fix_fl = batch['focal_length']
+        # scaled_fl = batch['scaled_focal_length']
         intrinsic = batch['intrinsic']
         kpts_3d = batch['kpts_3d']
         # if not torch.all(torch.eq(fix_fl, scaled_fl)):
@@ -313,7 +316,7 @@ if __name__ == '__main__':
                 axarr[1].scatter(np.squeeze(kpts2d_j_true)[k][0], np.squeeze(kpts2d_j_true)[k][1], s=30, c='red',
                                  marker='o')
             plt.show()
-        if i == 20:
+        if i == 0:
             break
             # plt.savefig(f'{debug_out_dir}/image_{i * 16 + j}.png')
             # plt.close()
