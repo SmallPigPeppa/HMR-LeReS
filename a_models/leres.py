@@ -53,7 +53,7 @@ class DepthModel_Fix(nn.Module):
     def forward(self, x):
         with torch.no_grad():
             lateral_out = self.encoder_modules(x)
-            out_logit, _ = self.decoder_modules(lateral_out)
+        out_logit, _ = self.decoder_modules(lateral_out)
         pred_depth = self.resizer(out_logit)
         return pred_depth
 
