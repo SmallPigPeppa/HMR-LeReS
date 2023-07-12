@@ -140,8 +140,8 @@ class HMRLeReS(pl.LightningModule):
         gt_kpts_2d = gta_data['kpts_2d']
         gt_kpts_3d = gta_data['kpts_3d']
         gt_intrinsic = gta_data['intrinsic']
-        # gt_focal_length = gta_data['focal_length']
-        gt_focal_length = gta_data['fixed_focal_length']
+        gt_focal_length = gta_data['focal_length']
+        # gt_focal_length = gta_data['fixed_focal_length']
         top, left, height, width = gta_data['leres_cut_box'][:, 0], gta_data['leres_cut_box'][:, 1], \
             gta_data['leres_cut_box'][:, 2], gta_data['leres_cut_box'][:, 3]
 
