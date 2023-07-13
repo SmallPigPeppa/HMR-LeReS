@@ -1,4 +1,4 @@
-from lib_train.models import network_auxi as network
+# from lib_train.models import network_auxi as network
 from lib_train.models import network_auxi_1080_1920 as network_1080_1920
 from lib_train.configs.config import cfg
 import importlib
