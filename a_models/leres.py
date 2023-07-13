@@ -1,4 +1,5 @@
 from lib_train.models import network_auxi as network
+from lib_train.models import network_auxi_1080_1920 as network_1080_1920
 from lib_train.configs.config import cfg
 import importlib
 import torch.nn as nn
@@ -31,6 +32,20 @@ class DepthModel(nn.Module):
     def __init__(self):
         super(DepthModel, self).__init__()
         backbone = network.__name__.split('.')[-1] + '.' + cfg.MODEL.ENCODER
+        self.encoder_modules = get_func(backbone)()
+        self.decoder_modules = network.Decoder()
+        # self.auxi_modules = network.AuxiNetV2()
+
+    def forward(self, x):
+        lateral_out = self.encoder_modules(x)
+        out_logit, _ = self.decoder_modules(lateral_out)
+        # out_auxi = self.auxi_modules(auxi_input)
+        return out_logit, _
+
+class DepthModel_10801920(nn.Module):
+    def __init__(self):
+        super(DepthModel_10801920, self).__init__()
+        backbone = network_1080_1920.__name__.split('.')[-1] + '.' + cfg.MODEL.ENCODER
         self.encoder_modules = get_func(backbone)()
         self.decoder_modules = network.Decoder()
         # self.auxi_modules = network.AuxiNetV2()
