@@ -1,4 +1,4 @@
-# from lib_train.models import network_auxi as network
+from lib_train.models import network_auxi as network
 from lib_train.models import network_auxi_1080_1920 as network_1080_1920
 from lib_train.configs.config import cfg
 import importlib
@@ -47,7 +47,7 @@ class DepthModel_10801920(nn.Module):
         super(DepthModel_10801920, self).__init__()
         backbone = network_1080_1920.__name__.split('.')[-1] + '.' + cfg.MODEL.ENCODER
         self.encoder_modules = get_func(backbone)()
-        self.decoder_modules = network.Decoder()
+        self.decoder_modules = network_1080_1920.Decoder()
         # self.auxi_modules = network.AuxiNetV2()
 
     def forward(self, x):
