@@ -15,20 +15,31 @@ from lib_train.models import Resnet, Resnext_torch
 
 def resnet18_stride32():
     return DepthNet(backbone='resnet', depth=18, upfactors=[2, 2, 2, 2])
+
+
 def resnet34_stride32():
     return DepthNet(backbone='resnet', depth=34, upfactors=[2, 2, 2, 2])
+
+
 def resnet50_stride32():
     return DepthNet(backbone='resnet', depth=50, upfactors=[2, 2, 2, 2])
+
+
 def resnet101_stride32():
     return DepthNet(backbone='resnet', depth=101, upfactors=[2, 2, 2, 2])
+
+
 def resnet152_stride32():
     return DepthNet(backbone='resnet', depth=152, upfactors=[2, 2, 2, 2])
+
 
 def resnext101_stride32x8d():
     return DepthNet(backbone='resnext101_32x8d', depth=101, upfactors=[2, 2, 2, 2])
 
+
 def mobilenetv2():
     return DepthNet(backbone='mobilenetv2', depth=00, upfactors=[2, 2, 2, 2])
+
 
 class AuxiBlock(nn.Module):
     def __init__(self, dim_in, dim_out):
@@ -40,14 +51,16 @@ class AuxiBlock(nn.Module):
         self.bn1 = nn.BatchNorm2d(self.dim_out, momentum=0.5)
         self.bn2 = nn.BatchNorm2d(self.dim_out, momentum=0.5)
         self.relu = nn.ReLU(inplace=True)
+
     def forward(self, top, lateral):
         if lateral.shape[2] != top.shape[2]:
             h, w = lateral.size(2), lateral.size(3)
-            top = F.interpolate(input=top, size=(h, w), mode='bilinear',align_corners=True)
+            top = F.interpolate(input=top, size=(h, w), mode='bilinear', align_corners=True)
         out = torch.cat((lateral, top), dim=1)
         out = self.relu(self.bn1(self.conv1(out)))
         out = self.relu(self.bn2(self.conv2(out)))
         return out
+
 
 class AuxiNetV2(nn.Module):
     def __init__(self):
@@ -55,7 +68,7 @@ class AuxiNetV2(nn.Module):
         self.inchannels = cfg.MODEL.RESNET_BOTTLENECK_DIM[1:]  # [256, 512, 1024, 2048]
         self.midchannels = cfg.MODEL.LATERAL_OUT[::-1]  # [256, 256, 256, 512]
 
-        self.auxi_block1 = AuxiBlock(self.midchannels[2]+self.midchannels[3], 128)
+        self.auxi_block1 = AuxiBlock(self.midchannels[2] + self.midchannels[3], 128)
         self.auxi_block2 = AuxiBlock(128 + self.midchannels[2], 128)
         self.auxi_block3 = AuxiBlock(128 + self.midchannels[2], 128)
         self.auxi_block4 = AuxiBlock(128 + self.midchannels[1], 128)
@@ -97,13 +110,14 @@ class AuxiNetV2(nn.Module):
         out = self.out_conv(out)
         return out
 
+
 class AuxiNet(nn.Module):
     def __init__(self):
         super().__init__()
         self.inchannels = cfg.MODEL.RESNET_BOTTLENECK_DIM[1:]  # [256, 512, 1024, 2048]
         self.midchannels = cfg.MODEL.LATERAL_OUT[::-1]  # [256, 256, 256, 512]
 
-        self.auxi_block1 = AuxiBlock(self.midchannels[2]+self.midchannels[3], 256)
+        self.auxi_block1 = AuxiBlock(self.midchannels[2] + self.midchannels[3], 256)
         self.auxi_block2 = AuxiBlock(256 + self.midchannels[2], 256)
         self.auxi_block3 = AuxiBlock(256 + self.midchannels[2], 256)
         self.auxi_block4 = AuxiBlock(256 + self.midchannels[1], 256)
@@ -145,26 +159,31 @@ class AuxiNet(nn.Module):
         out = self.out_conv(out)
         return out
 
+
 class Decoder(nn.Module):
     def __init__(self):
         super(Decoder, self).__init__()
         self.inchannels = cfg.MODEL.RESNET_BOTTLENECK_DIM[1:]  # [256, 512, 1024, 2048]
         self.midchannels = cfg.MODEL.LATERAL_OUT[::-1]  # [256, 256, 256, 512]
-        self.upfactors = [2,2,2,2]
+        self.upfactors = [2, 2, 2, 2]
         self.outchannels = cfg.MODEL.DECODER_OUTPUT_C  # 1
 
         self.conv = FTB(inchannels=self.inchannels[3], midchannels=self.midchannels[3])
-        self.conv1 = nn.Conv2d(in_channels=self.midchannels[3], out_channels=self.midchannels[2], kernel_size=3, padding=1, stride=1, bias=True)
+        self.conv1 = nn.Conv2d(in_channels=self.midchannels[3], out_channels=self.midchannels[2], kernel_size=3,
+                               padding=1, stride=1, bias=True)
         self.upsample = nn.Upsample(scale_factor=self.upfactors[3], mode='bilinear', align_corners=True)
-        
-        self.ffm2 = FFM(inchannels=self.inchannels[2], midchannels=self.midchannels[2], outchannels = self.midchannels[2], upfactor=self.upfactors[2])
-        self.ffm1 = FFM(inchannels=self.inchannels[1], midchannels=self.midchannels[1], outchannels = self.midchannels[1], upfactor=self.upfactors[1])
-        self.ffm0 = FFM(inchannels=self.inchannels[0], midchannels=self.midchannels[0], outchannels = self.midchannels[0], upfactor=self.upfactors[0])
-        
-        #self.outconv = nn.Conv2d(in_channels=self.inchannels[0], out_channels=self.outchannels, kernel_size=3, padding=1, stride=1, bias=True)
+
+        self.ffm2 = FFM(inchannels=self.inchannels[2], midchannels=self.midchannels[2], outchannels=self.midchannels[2],
+                        upfactor=self.upfactors[2])
+        self.ffm1 = FFM(inchannels=self.inchannels[1], midchannels=self.midchannels[1], outchannels=self.midchannels[1],
+                        upfactor=self.upfactors[1])
+        self.ffm0 = FFM(inchannels=self.inchannels[0], midchannels=self.midchannels[0], outchannels=self.midchannels[0],
+                        upfactor=self.upfactors[0])
+
+        # self.outconv = nn.Conv2d(in_channels=self.inchannels[0], out_channels=self.outchannels, kernel_size=3, padding=1, stride=1, bias=True)
         self.outconv = AO(inchannels=self.midchannels[0], outchannels=self.outchannels, upfactor=2)
         self._init_params()
-        
+
     def _init_params(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -175,14 +194,14 @@ class Decoder(nn.Module):
                 init.normal_(m.weight, std=0.01)
                 if m.bias is not None:
                     init.constant_(m.bias, 0)
-            elif isinstance(m, nn.BatchNorm2d): #NN.BatchNorm2d
+            elif isinstance(m, nn.BatchNorm2d):  # NN.BatchNorm2d
                 init.constant_(m.weight, 1)
                 init.constant_(m.bias, 0)
             elif isinstance(m, nn.Linear):
                 init.normal_(m.weight, std=0.01)
                 if m.bias is not None:
                     init.constant_(m.bias, 0)
-                    
+
     def forward(self, features):
         # features' shape: # 1/32, 1/16, 1/8, 1/4
         # _,_,h,w = features[3].size()
@@ -192,15 +211,16 @@ class Decoder(nn.Module):
         x_16 = self.upsample(x_32)  # 1/16
 
         x_8 = self.ffm2(features[2], x_16)  # 1/8
-        #print('ffm2:', x.size())
+        # print('ffm2:', x.size())
         x_4 = self.ffm1(features[1], x_8)  # 1/4
-        #print('ffm1:', x.size())
+        # print('ffm1:', x.size())
         x_2 = self.ffm0(features[0], x_4)  # 1/2
-        #print('ffm0:', x.size())
-        #-----------------------------------------
+        # print('ffm0:', x.size())
+        # -----------------------------------------
         x = self.outconv(x_2)  # original size
         auxi_input = [x_32x, x_32, x_16, x_8, x_4, x_2]
         return x, auxi_input
+
 
 class DepthNet(nn.Module):
     __factory = {
@@ -210,10 +230,11 @@ class DepthNet(nn.Module):
         101: Resnet.resnet101,
         152: Resnet.resnet152
     }
+
     def __init__(self,
-                backbone='resnet',
-                depth=50,
-                upfactors=[2, 2, 2, 2]):
+                 backbone='resnet',
+                 depth=50,
+                 upfactors=[2, 2, 2, 2]):
         super(DepthNet, self).__init__()
         self.backbone = backbone
         self.depth = depth
@@ -222,7 +243,7 @@ class DepthNet(nn.Module):
         self.midchannels = cfg.MODEL.LATERAL_OUT[::-1]  # [256, 256, 256, 512]
         self.upfactors = upfactors
         self.outchannels = cfg.MODEL.DECODER_OUTPUT_C  # 1
-        
+
         # Build model
         if self.backbone == 'resnet':
             if self.depth not in DepthNet.__factory:
@@ -452,25 +473,25 @@ class ASPP(nn.Module):
                       stride=1, padding=self.paddings[0], dilation=self.rates[0], bias=True),
             nn.ReLU(inplace=True),
             nn.BatchNorm2d(num_features=self.planes)
-            )
+        )
         self.atrous_1 = nn.Sequential(
             nn.Conv2d(in_channels=self.inchannels, out_channels=self.planes, kernel_size=self.kernel_sizes[1],
                       stride=1, padding=self.paddings[1], dilation=self.rates[1], bias=True),
             nn.ReLU(inplace=True),
             nn.BatchNorm2d(num_features=self.planes),
-            )
+        )
         self.atrous_2 = nn.Sequential(
             nn.Conv2d(in_channels=self.inchannels, out_channels=self.planes, kernel_size=self.kernel_sizes[2],
                       stride=1, padding=self.paddings[2], dilation=self.rates[2], bias=True),
             nn.ReLU(inplace=True),
             nn.BatchNorm2d(num_features=self.planes),
-            )
+        )
         self.atrous_3 = nn.Sequential(
             nn.Conv2d(in_channels=self.inchannels, out_channels=self.planes, kernel_size=self.kernel_sizes[3],
                       stride=1, padding=self.paddings[3], dilation=self.rates[3], bias=True),
             nn.ReLU(inplace=True),
             nn.BatchNorm2d(num_features=self.planes),
-            )
+        )
 
         # self.conv = nn.Conv2d(in_channels=self.planes * 4, out_channels=self.inchannels, kernel_size=3, padding=1, stride=1, bias=True)
 
@@ -610,7 +631,7 @@ class SenceUnderstand(nn.Module):
 if __name__ == '__main__':
     net = DepthNet(depth=50)
     # print(net)
-    inputs = torch.ones(4,3,1080//5,1920//5)
+    inputs = torch.ones(4, 3, 1080 // 5, 1920 // 5)
     depth = net(inputs)
     print(depth[0].size())
 
