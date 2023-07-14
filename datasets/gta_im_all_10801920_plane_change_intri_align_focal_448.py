@@ -31,7 +31,7 @@ class GTADataset(Dataset):
         self.leres_size = [1080 // self.scale, 1920 // self.scale]
         # self.fix_focal_length = 231.6068
         self.hmr_transforms = T.Compose([T.Resize((self.hmr_size, self.hmr_size)), T.ToTensor()])
-        self.leres_transforms = T.Compose([T.Resize((self.leres_size[0], self.leres_size[1])), T.ToTensor()])
+        self.leres_transforms = T.Compose([T.Resize((self.leres_size[0], self.leres_size[1])), T.ToTensor(),T.Normalize((0.3118, 0.2885, 0.2801), (0.2216, 0.2207, 0.2189))])
         self.leres_transforms_448 = T.Compose([T.Resize((448, 448)), T.ToTensor(),T.Normalize((0.3118, 0.2885, 0.2801), (0.2216, 0.2207, 0.2189))])
         # self.leres_transforms_448 = T.Compose([T.Resize((448, 448)), T.ToTensor(),T.Normalize((0.2216, 0.2207, 0.2189), (0.2536, 0.2262, 0.1994))])
         # 0.2216, 0.2207, 0.2189
