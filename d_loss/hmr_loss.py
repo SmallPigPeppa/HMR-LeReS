@@ -92,3 +92,20 @@ class HMRLoss(pl.LightningModule):
         kb = fake_disc_value.shape[0]
         lb, la = torch.sum(fake_disc_value ** 2) / kb, torch.sum((real_disc_value - 1) ** 2) / ka
         return la, lb, la + lb
+
+    def batch_adv_disc_l2_loss_valid_samples(self, real_disc_value, fake_disc_value, valid_samples):
+        '''
+            Inputs:
+                disc_value: N x 25
+                valid_samples: N x 1 x 1
+        '''
+        valid_samples_flat = valid_samples.view(-1)  # 将 valid_samples 转为一维
+
+        ka = real_disc_value.shape[0]
+        kb = fake_disc_value[valid_samples_flat].shape[0]
+
+        la = torch.sum((real_disc_value - 1) ** 2) / ka  # 对 real_disc_value 不考虑 valid_samples
+        lb = torch.sum(fake_disc_value[valid_samples_flat] ** 2) / kb if kb > 0 else 0  # 只针对有效的 fake_disc_value 计算 lb
+
+        return la, lb, la + lb
+

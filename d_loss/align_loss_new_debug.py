@@ -114,6 +114,52 @@ class AlignLoss(pl.LightningModule):
                 'mesh_project_edge_loss': mesh_project_edge_loss}
         # return mesh_mask_gt,  mesh_edge_dist_gt,mesh_edge_dist_gt2
 
+    def forward_valid(self, faces, verts_gt, verts_pred, depth_pred, batch, valid_samples):
+        '''
+        Inputs:
+            valid_samples: N x 1 x 1
+        '''
+        intrinsic = batch['intrinsic']
+        image_size = (1080 // 5, 1920 // 5)
+        intrinsic_scaled = intrinsic
+        human_mask = batch['human_mask']
+        self.init_pytorch3d_render(intrinsic=intrinsic_scaled, image_size=image_size)
+        mesh_mask_gt, nearest_depth_map_gt, farrest_depth_map_gt = self.get_depth_map_pytorch3d(verts_gt, faces)
+        mesh_mask_pred, nearest_depth_map_pred, farrest_depth_map_pred = self.get_depth_map_pytorch3d(verts_pred, faces)
+
+        # Reshape valid_samples to match the shape of other tensors
+        valid_samples = valid_samples.view(-1, 1, 1, 1)
+
+        # human depth align loss
+        human_mesh_mask_gt = torch.logical_and(mesh_mask_gt, human_mask) & valid_samples
+        leres_human_depth = depth_pred[human_mesh_mask_gt]
+        hmr_huamn_depth = nearest_depth_map_pred[human_mesh_mask_gt]
+        human_depth_loss = F.l1_loss(leres_human_depth, hmr_huamn_depth, reduction='none')  # Do not reduce yet
+
+        # mesh project align loss
+        mesh_mask_gt_float = mesh_mask_gt.to(float).unsqueeze(1)
+        mesh_mask_pred_float = mesh_mask_pred.to(float).unsqueeze(1)
+        mesh_edge_gt = F.max_pool2d(mesh_mask_gt_float, self.kernal_size, 1, self.kernal_size // 2) - mesh_mask_gt_float
+        mesh_edge_pred = F.max_pool2d(mesh_mask_pred_float, self.kernal_size, 1,
+                                      self.kernal_size // 2) - mesh_mask_pred_float
+        mesh_edge_dist_gt = self.distance_transform_manhattan(mesh_edge_gt)
+        mesh_edge_dist_gt = mesh_edge_dist_gt ** self.edt_power
+        mesh_project_edge_loss = torch.mean(mesh_edge_dist_gt * mesh_edge_pred,
+                                            dim=[1, 2, 3])  # Average along spatial dimensions
+        mesh_project_loss = F.mse_loss(mesh_mask_gt_float, mesh_mask_pred_float, reduction='none')  # Do not reduce yet
+
+        # Only keep loss for valid samples
+        human_depth_loss = human_depth_loss[valid_samples.squeeze(-1)]
+        mesh_project_edge_loss = mesh_project_edge_loss[valid_samples.squeeze(-1)]
+        mesh_project_loss = mesh_project_loss[valid_samples]
+
+        # Now reduce
+        human_depth_loss = human_depth_loss.mean()
+        mesh_project_edge_loss = mesh_project_edge_loss.mean()
+        mesh_project_loss = mesh_project_loss.mean()
+
+        return {'human_depth_loss': human_depth_loss, 'mesh_project_loss': mesh_project_loss,
+                'mesh_project_edge_loss': mesh_project_edge_loss}
     def vis_forward(self, faces, verts_gt, verts_pred, depth_pred, batch):
         intrinsic = batch['intrinsic']
         image_size = (1080 // 5, 1920 // 5)
