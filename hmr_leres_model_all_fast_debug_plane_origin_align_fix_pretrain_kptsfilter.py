@@ -145,7 +145,7 @@ class HMRLeReS(pl.LightningModule):
 
         valid_samples = valid_kpt_count >= valid_kpt_thresh
 
-        if valid_samples.sum() < 8:
+        if valid_samples.sum() < 16:
             return {"loss": None, "skip": True}
 
 
