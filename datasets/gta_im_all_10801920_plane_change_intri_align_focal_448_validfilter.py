@@ -89,12 +89,18 @@ class GTADataset(Dataset):
                 mask_path_i = os.path.join(scene_dir, '{:05d}'.format(idx) + '_id.png')
                 plane_mask_path_i = os.path.join(scene_dir, '{:05d}'.format(idx) + '_plane.png')
                 depth_path_i = os.path.join(scene_dir, '{:05d}'.format(idx) + '.png')
-                # assert os.path.exists(img_path_i) and os.path.exists(mask_path_i) and os.path.exists(depth_path_i)
+                if not (os.path.exists(img_path_i) and os.path.exists(mask_path_i) and os.path.exists(depth_path_i) and os.path.exists(plane_mask_path_i)):
+                    continue
+
                 origin_image = test_read_img( img_path_i)
                 depth = test_read_img(depth_path_i)
                 human_mask = test_read_img(mask_path_i)
-                plane_mask = test_read_img(mask_path_i)
+                plane_mask = test_read_img(plane_mask_path_i)
                 if origin_image is None or depth is None or human_mask is None or plane_mask is None:
+                    os.rename(img_path_i, os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused.jpg'))
+                    os.rename(mask_path_i, os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused_id.png'))
+                    os.rename(plane_mask_path_i, os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused_plane.png'))
+                    os.rename(depth_path_i, os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused.png'))
                     continue
 
 
