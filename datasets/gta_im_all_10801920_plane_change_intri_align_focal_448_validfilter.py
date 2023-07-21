@@ -11,7 +11,7 @@ from datasets.hmr_data_utils import get_torch_image_cut_box, get_torch_image_cut
     off_set_scale_kpts
 from datasets.leres_data_utils import read_depthmap, read_human_mask, pil_loader, read_plane_mask, test_read_img
 from PIL import Image
-
+from tqdm import tqdm
 
 class GTADataset(Dataset):
     def __init__(self, data_dir, flip_prob=0.):
@@ -84,7 +84,7 @@ class GTADataset(Dataset):
             rvec = np.zeros([3, 1], dtype=float)
             tvec = np.zeros([3, 1], dtype=float)
             dist_coeffs = np.zeros([4, 1], dtype=float)
-            for idx in range(scence_samples):
+            for idx in tqdm(range(scence_samples)):
                 img_path_i = os.path.join(scene_dir, '{:05d}'.format(idx) + '.jpg')
                 mask_path_i = os.path.join(scene_dir, '{:05d}'.format(idx) + '_id.png')
                 plane_mask_path_i = os.path.join(scene_dir, '{:05d}'.format(idx) + '_plane.png')
