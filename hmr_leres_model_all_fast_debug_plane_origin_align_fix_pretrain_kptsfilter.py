@@ -257,8 +257,9 @@ class HMRLeReS(pl.LightningModule):
         loss_leres = (
                 loss_depth_regression + loss_edge_ranking + loss_msg + loss_pwn_edge + loss_pwn_plane + loss_normal * 10)
         # loss_leres = 0.
-        if torch.isnan(loss_pwn_plane):
-            import pdb;pdb.set_trace()
+        if torch.isnan(loss_leres) or loss_depth_regression > 5.0:
+            import pdb;
+            pdb.set_trace()
 
         leres_loss_dict = {
             'loss_depth_regression': loss_depth_regression,
