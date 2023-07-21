@@ -145,6 +145,10 @@ class HMRLeReS(pl.LightningModule):
 
         valid_samples = valid_kpt_count >= valid_kpt_thresh
 
+        if valid_samples.sum() < 8:
+            return {"loss": None, "skip": True}
+
+
         for key in gta_data:
             if isinstance(gta_data[key], torch.Tensor):  # 只对张量进行索引
                 gta_data[key] = gta_data[key][valid_samples]
