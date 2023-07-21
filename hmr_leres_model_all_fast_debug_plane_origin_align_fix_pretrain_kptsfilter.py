@@ -6,7 +6,7 @@ from model import HMRNetBase
 from Discriminator import Discriminator
 from hmr_leres_config import args
 
-from datasets.gta_im_all_10801920_plane_change_intri_align_focal_448_afterfilter import GTADataset
+from datasets.gta_im_all_10801920_plane_change_intri_align_focal_448_validfilter import GTADataset
 from datasets.mesh_pkl_all import MeshDataset
 
 from a_models.smpl_fixwarning import SMPL
