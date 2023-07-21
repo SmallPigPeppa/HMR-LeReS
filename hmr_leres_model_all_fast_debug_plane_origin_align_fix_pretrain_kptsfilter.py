@@ -146,6 +146,9 @@ class HMRLeReS(pl.LightningModule):
 
         valid_samples = valid_kpt_count >= valid_kpt_thresh
 
+        for key, value in gta_data.items():
+            print(f"{key}: {type(value)}, {value.shape}")
+
         for key in gta_data.keys():
             gta_data[key] = gta_data[key][valid_samples]
 
