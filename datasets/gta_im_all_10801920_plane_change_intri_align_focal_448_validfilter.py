@@ -107,6 +107,7 @@ class GTADataset(Dataset):
                                       os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused_plane.png'))
                         if os.path.exists(depth_path_i):
                             os.rename(depth_path_i, os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused.png'))
+                        continue
                     except FileNotFoundError:
                         continue
 
@@ -125,11 +126,19 @@ class GTADataset(Dataset):
                                          (kpts2d_i[:, 1] < origin_image.shape[0]))  # image height
 
                 if count_in_bounds < 6:
-                    os.rename(img_path_i, os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused.jpg'))
-                    os.rename(mask_path_i, os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused_id.png'))
-                    os.rename(plane_mask_path_i, os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused_plane.png'))
-                    os.rename(depth_path_i, os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused.png'))
-                    continue
+                    try:
+                        if os.path.exists(img_path_i):
+                            os.rename(img_path_i, os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused.jpg'))
+                        if os.path.exists(mask_path_i):
+                            os.rename(mask_path_i, os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused_id.png'))
+                        if os.path.exists(plane_mask_path_i):
+                            os.rename(plane_mask_path_i,
+                                      os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused_plane.png'))
+                        if os.path.exists(depth_path_i):
+                            os.rename(depth_path_i, os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused.png'))
+                        continue
+                    except FileNotFoundError:
+                        continue
 
                 self.boxs.append((lt, rb))  # left-top, right-bottom
                 self.kpts_2d.append(kpts2d_i.copy())
