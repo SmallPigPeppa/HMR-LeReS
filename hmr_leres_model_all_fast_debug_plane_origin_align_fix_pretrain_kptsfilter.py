@@ -80,7 +80,8 @@ class HMRLeReS(pl.LightningModule):
         gta_loader = DataLoader(
             dataset=gta_dataset,
             batch_size=args.batch_size,
-            shuffle=True,
+            # shuffle=True,
+            shuffle=False,
             drop_last=True,
             pin_memory=True,
             num_workers=args.num_workers
