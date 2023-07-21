@@ -315,7 +315,8 @@ class HMRLeReS(pl.LightningModule):
         hmr_discriminator_opt.step()
 
         train_log_dict = {f'train_{k}': v for k, v in log_dict.items()}
-        self.log_dict(train_log_dict, on_step=False, on_epoch=True)
+        # self.log_dict(train_log_dict, on_step=False, on_epoch=True)
+        self.log_dict(train_log_dict, on_step=True, on_epoch=True)
 
     def training_epoch_end(self, training_step_outputs):
         hmr_generator_leres_sche, hmr_discriminator_sche = self.lr_schedulers()
