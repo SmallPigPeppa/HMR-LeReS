@@ -131,7 +131,6 @@ class HMRLeReS(pl.LightningModule):
         gta_data = batch['gta_loader']
         mesh_data = batch['mesh_loader']
         hmr_images = gta_data['hmr_image']
-
         gt_smpl_theta = gta_data['theta']
         gt_smpl_shapes = gt_smpl_theta[:, 75:].contiguous()
         gt_smpl_poses = gt_smpl_theta[:, 3:75].contiguous()
@@ -170,25 +169,45 @@ class HMRLeReS(pl.LightningModule):
         # pred_kpts_2d[:, :, 0] *= width_ratio[:, None]
         # pred_kpts_2d[:, :, 1] *= height_ratio[:, None]
 
-        # loss_shape = self.hmr_loss.shape_loss(gt_smpl_shapes, pred_smpl_shapes) * args.e_shape_weight
-        loss_shape = self.hmr_loss.shape_loss(gt_smpl_shapes, pred_smpl_shapes) * 1.0
-        # loss_pose = self.hmr_loss.pose_loss(gt_smpl_poses, pred_smpl_poses) * args.e_pose_weight
-        loss_pose = self.hmr_loss.pose_loss(gt_smpl_poses, pred_smpl_poses) * 100.0
-        # loss_kpts_2d = self.hmr_loss.batch_kp_2d_l1_loss(gt_kpts_2d, pred_kpts_2d) * args.e_2d_kpts_weight
-        loss_kpts_2d = self.hmr_loss.batch_kp_2d_l1_loss(gt_kpts_2d, pred_kpts_2d) * 0.3
-        # loss_kpts_2d = 0.
+        # # loss_shape = self.hmr_loss.shape_loss(gt_smpl_shapes, pred_smpl_shapes) * args.e_shape_weight
+        # loss_shape = self.hmr_loss.shape_loss(gt_smpl_shapes, pred_smpl_shapes) * 1.0
+        # # loss_pose = self.hmr_loss.pose_loss(gt_smpl_poses, pred_smpl_poses) * args.e_pose_weight
+        # loss_pose = self.hmr_loss.pose_loss(gt_smpl_poses, pred_smpl_poses) * 100.0
+        # # loss_kpts_2d = self.hmr_loss.batch_kp_2d_l1_loss(gt_kpts_2d, pred_kpts_2d) * args.e_2d_kpts_weight
+        # loss_kpts_2d = self.hmr_loss.batch_kp_2d_l1_loss(gt_kpts_2d, pred_kpts_2d) * 0.3
+        # # loss_kpts_2d = 0.
+        #
+        # # loss_kpts_3d = self.hmr_loss.batch_kp_3d_l2_loss(gt_kpts_3d, pred_kpts_3d) * args.e_3d_kpts_weight
+        # loss_kpts_3d = self.hmr_loss.batch_kp_3d_l2_loss(gt_kpts_3d, pred_kpts_3d) * 200.0
 
-        # loss_kpts_3d = self.hmr_loss.batch_kp_3d_l2_loss(gt_kpts_3d, pred_kpts_3d) * args.e_3d_kpts_weight
-        loss_kpts_3d = self.hmr_loss.batch_kp_3d_l2_loss(gt_kpts_3d, pred_kpts_3d) * 200.0
+        # 以下为关键点检查步骤，对于有效关键点数量小于阈值的样本，我们将其 hmr_loss 设为0
+        img_size_leres = gta_data['leres_image'].shape[2:]  # [batch_size, channels, height, width]
+        valid_kpt_thresh = 6  # 设定的阈值
 
+        # 针对可能的非正方形图像进行调整
+        img_width_leres, img_height_leres = img_size_leres  # 假设img_size是一个包含两个元素的元组，分别为宽度和高度
+        in_img_x = (gt_kpts_2d[:, :, 0] >= 0) & (gt_kpts_2d[:, :, 0] < img_width_leres)
+        in_img_y = (gt_kpts_2d[:, :, 1] >= 0) & (gt_kpts_2d[:, :, 1] < img_height_leres)
+        in_img = in_img_x & in_img_y  # 获得在图像范围内的关键点
+
+        valid_kpt_count = in_img.sum(dim=1)
+
+        valid_samples = valid_kpt_count >= valid_kpt_thresh
+        valid_samples = valid_samples[:, None, None]  # 调整形状以便和损失进行乘法操作
+
+        # 计算 hmr_loss，如果某个样本的有效关键点数量小于阈值，将其 hmr_loss 设为0
+        loss_shape = self.hmr_loss.shape_loss(gt_smpl_shapes, pred_smpl_shapes) * 1.0 * valid_samples
+        loss_pose = self.hmr_loss.pose_loss(gt_smpl_poses, pred_smpl_poses) * 100.0 * valid_samples
+        loss_kpts_2d = self.hmr_loss.batch_kp_2d_l1_loss(gt_kpts_2d, pred_kpts_2d) * 0.3 * valid_samples
+        loss_kpts_3d = self.hmr_loss.batch_kp_3d_l2_loss(gt_kpts_3d, pred_kpts_3d) * 200.0 * valid_samples
         pred_smpl_thetas[:, :3] = gt_smpl_transl
         loss_generator_disc = self.hmr_loss.batch_encoder_disc_l2_loss(
-            self.hmr_discriminator(pred_smpl_thetas)) * 0.1
+            self.hmr_discriminator(pred_smpl_thetas)) * 0.1* valid_samples
 
         real_thetas = mesh_data['theta']
         fake_thetas = pred_smpl_thetas.detach()
         fake_disc_value, real_disc_value = self.hmr_discriminator(fake_thetas), self.hmr_discriminator(real_thetas)
-        d_disc_real, d_disc_fake, d_disc_loss = self.hmr_loss.batch_adv_disc_l2_loss(real_disc_value, fake_disc_value)
+        d_disc_real, d_disc_fake, d_disc_loss = self.hmr_loss.batch_adv_disc_l2_loss_valid_samples(real_disc_value, fake_disc_value,valid_samples)
 
         # loss_generator = (loss_shape + loss_pose + loss_kpts_2d + loss_kpts_3d) * args.e_loss_weight + \
         #                  loss_generator_disc
@@ -250,7 +269,8 @@ class HMRLeReS(pl.LightningModule):
         #                                               pred_depth, gta_data)
         # loss_align = 0.
         faces = torch.tensor([self.smpl_model.faces], device=self.device)
-        loss_align = self.align_loss(faces, gt_verts, pred_verts, pred_depth, gta_data)
+        # loss_align = self.align_loss.forward_valid(faces, gt_verts, pred_verts, pred_depth, gta_data,valid_samples)
+        loss_align = self.align_loss.forward(faces, gt_verts, pred_verts, pred_depth, gta_data)
         human_depth_loss = loss_align['human_depth_loss']
         mesh_project_loss = loss_align['mesh_project_loss']
         mesh_project_edge_loss = loss_align['mesh_project_edge_loss']
