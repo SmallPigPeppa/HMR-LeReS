@@ -97,14 +97,18 @@ class GTADataset(Dataset):
                 human_mask = test_read_img(mask_path_i)
                 plane_mask = test_read_img(plane_mask_path_i)
                 if origin_image is None or depth is None or human_mask is None or plane_mask is None:
-                    os.rename(img_path_i, os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused.jpg'))
-                    os.rename(mask_path_i, os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused_id.png'))
-                    os.rename(plane_mask_path_i, os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused_plane.png'))
-                    os.rename(depth_path_i, os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused.png'))
-                    continue
-
-
-
+                    try:
+                        if os.path.exists(img_path_i):
+                            os.rename(img_path_i, os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused.jpg'))
+                        if os.path.exists(mask_path_i):
+                            os.rename(mask_path_i, os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused_id.png'))
+                        if os.path.exists(plane_mask_path_i):
+                            os.rename(plane_mask_path_i,
+                                      os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused_plane.png'))
+                        if os.path.exists(depth_path_i):
+                            os.rename(depth_path_i, os.path.join(scene_dir, '{:05d}'.format(idx) + '_unused.png'))
+                    except FileNotFoundError:
+                        continue
 
                 intrinsic_i = info_npz['intrinsics'][idx]
                 # intrinsic_i_new = intrinsic_i / self.scale
