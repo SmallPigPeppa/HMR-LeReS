@@ -181,8 +181,8 @@ class HMRLeReS(pl.LightningModule):
         # loss_kpts_3d = self.hmr_loss.batch_kp_3d_l2_loss(gt_kpts_3d, pred_kpts_3d) * 200.0
 
         # 以下为关键点检查步骤，对于有效关键点数量小于阈值的样本，我们将其 hmr_loss 设为0
-        img_size_leres = batch['leres_image'].shape[2:]  # [batch_size, channels, height, width]
-        valid_kpt_thresh = 8  # 设定的阈值
+        img_size_leres = gta_data['leres_image'].shape[2:]  # [batch_size, channels, height, width]
+        valid_kpt_thresh = 6  # 设定的阈值
 
         # 针对可能的非正方形图像进行调整
         img_width_leres, img_height_leres = img_size_leres  # 假设img_size是一个包含两个元素的元组，分别为宽度和高度
