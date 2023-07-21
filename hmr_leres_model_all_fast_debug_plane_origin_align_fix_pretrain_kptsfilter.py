@@ -6,7 +6,7 @@ from model import HMRNetBase
 from Discriminator import Discriminator
 from hmr_leres_config import args
 
-from datasets.gta_im_all_10801920_plane_change_intri_align_focal_448 import GTADataset
+from datasets.gta_im_all_10801920_plane_change_intri_align_focal_448_validfilter import GTADataset
 from datasets.mesh_pkl_all import MeshDataset
 
 from a_models.smpl_fixwarning import SMPL
@@ -131,27 +131,27 @@ class HMRLeReS(pl.LightningModule):
         gta_data = batch['gta_loader']
         mesh_data = batch['mesh_loader']
 
-        valid_kpt_thresh = 6  # 设定的阈值
-        # 以下为关键点检查步骤，对于有效关键点数量小于阈值的样本，我们将其 hmr_loss 设为0
-        img_size_leres = gta_data['leres_image'].shape[2:]  # [batch_size, channels, height, width]
-        gt_kpts_2d = gta_data['kpts_2d']
-        # 针对可能的非正方形图像进行调整
-        img_width_leres, img_height_leres = img_size_leres  # 假设img_size是一个包含两个元素的元组，分别为宽度和高度
-        in_img_x = (gt_kpts_2d[:, :, 0] >= 0) & (gt_kpts_2d[:, :, 0] < img_width_leres)
-        in_img_y = (gt_kpts_2d[:, :, 1] >= 0) & (gt_kpts_2d[:, :, 1] < img_height_leres)
-        in_img = in_img_x & in_img_y  # 获得在图像范围内的关键点
-
-        valid_kpt_count = in_img.sum(dim=1)
-
-        valid_samples = valid_kpt_count >= valid_kpt_thresh
-
-        if valid_samples.sum() < 16:
-            return {"loss": None, "skip": True}
-
-
-        for key in gta_data:
-            if isinstance(gta_data[key], torch.Tensor):  # 只对张量进行索引
-                gta_data[key] = gta_data[key][valid_samples]
+        # valid_kpt_thresh = 6  # 设定的阈值
+        # # 以下为关键点检查步骤，对于有效关键点数量小于阈值的样本，我们将其 hmr_loss 设为0
+        # img_size_leres = gta_data['leres_image'].shape[2:]  # [batch_size, channels, height, width]
+        # gt_kpts_2d = gta_data['kpts_2d']
+        # # 针对可能的非正方形图像进行调整
+        # img_width_leres, img_height_leres = img_size_leres  # 假设img_size是一个包含两个元素的元组，分别为宽度和高度
+        # in_img_x = (gt_kpts_2d[:, :, 0] >= 0) & (gt_kpts_2d[:, :, 0] < img_width_leres)
+        # in_img_y = (gt_kpts_2d[:, :, 1] >= 0) & (gt_kpts_2d[:, :, 1] < img_height_leres)
+        # in_img = in_img_x & in_img_y  # 获得在图像范围内的关键点
+        #
+        # valid_kpt_count = in_img.sum(dim=1)
+        #
+        # valid_samples = valid_kpt_count >= valid_kpt_thresh
+        #
+        # if valid_samples.sum() < 16:
+        #     return {"loss": None, "skip": True}
+        #
+        #
+        # for key in gta_data:
+        #     if isinstance(gta_data[key], torch.Tensor):  # 只对张量进行索引
+        #         gta_data[key] = gta_data[key][valid_samples]
 
         hmr_images = gta_data['hmr_image']
 
