@@ -131,7 +131,6 @@ class HMRLeReS(pl.LightningModule):
         gta_data = batch['gta_loader']
         mesh_data = batch['mesh_loader']
 
-
         valid_kpt_thresh = 6  # 设定的阈值
         # 以下为关键点检查步骤，对于有效关键点数量小于阈值的样本，我们将其 hmr_loss 设为0
         img_size_leres = gta_data['leres_image'].shape[2:]  # [batch_size, channels, height, width]
@@ -147,12 +146,11 @@ class HMRLeReS(pl.LightningModule):
         valid_samples = valid_kpt_count >= valid_kpt_thresh
 
         for key, value in gta_data.items():
-            print(f"{key}: {type(value)}, {value.shape}")
+            print(f"{key}: {type(value)}")
+            print("value.shape:", value.shape)
 
         for key in gta_data.keys():
             gta_data[key] = gta_data[key][valid_samples]
-
-
 
         hmr_images = gta_data['hmr_image']
 
@@ -186,11 +184,6 @@ class HMRLeReS(pl.LightningModule):
                                                   pose=gt_smpl_poses,
                                                   shape=gt_smpl_shapes,
                                                   focal_length=gt_focal_length)
-
-
-
-
-
 
         # height_ratio = self.gta_dataset.leres_size[0] / height
         # width_ratio = self.gta_dataset.leres_size[1] / width
