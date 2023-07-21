@@ -145,12 +145,9 @@ class HMRLeReS(pl.LightningModule):
 
         valid_samples = valid_kpt_count >= valid_kpt_thresh
 
-        for key, value in gta_data.items():
-            print(f"{key}: {type(value)}")
-            print("value.shape:", value.shape)
-
-        for key in gta_data.keys():
-            gta_data[key] = gta_data[key][valid_samples]
+        for key in gta_data:
+            if isinstance(gta_data[key], torch.Tensor):  # 只对张量进行索引
+                gta_data[key] = gta_data[key][valid_samples]
 
         hmr_images = gta_data['hmr_image']
 
