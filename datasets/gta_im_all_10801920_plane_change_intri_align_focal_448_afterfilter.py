@@ -114,14 +114,14 @@ class GTADataset(Dataset):
                 kpts2d_i = np.squeeze(kpts2d_i)
                 lt, rb = calc_aabb(kpts2d_i)
 
-                # Count how many keypoints are within the image's boundaries
-                count_in_bounds = np.sum((kpts2d_i[:, 0] >= 0) &
-                                         (kpts2d_i[:, 0] < origin_image.shape[1]) &  # image width
-                                         (kpts2d_i[:, 1] >= 0) &
-                                         (kpts2d_i[:, 1] < origin_image.shape[0]))  # image height
-
-                if count_in_bounds < 6:
-                    continue
+                # # Count how many keypoints are within the image's boundaries
+                # count_in_bounds = np.sum((kpts2d_i[:, 0] >= 0) &
+                #                          (kpts2d_i[:, 0] < origin_image.shape[1]) &  # image width
+                #                          (kpts2d_i[:, 1] >= 0) &
+                #                          (kpts2d_i[:, 1] < origin_image.shape[0]))  # image height
+                #
+                # if count_in_bounds < 6:
+                #     continue
 
                 self.boxs.append((lt, rb))  # left-top, right-bottom
                 self.kpts_2d.append(kpts2d_i.copy())
