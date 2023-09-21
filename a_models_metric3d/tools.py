@@ -75,3 +75,35 @@ def get_configured_monodepth_model(
     """
     model = get_monodepth_model(cfg)
     return model
+
+
+import logging
+import os
+def load_ckpt(load_path, model, optimizer=None, scheduler=None, strict_match=True, loss_scaler=None):
+    """
+    Load the check point for resuming training or finetuning.
+    """
+    logger = logging.getLogger()
+    if os.path.isfile(load_path):
+
+        logger.info(f"Loading weight '{load_path}'")
+        checkpoint = torch.load(load_path, map_location="cpu")
+        ckpt_state_dict  = checkpoint['model_state_dict']
+        model.module.load_state_dict(ckpt_state_dict, strict=strict_match)
+
+        if optimizer is not None:
+            optimizer.load_state_dict(checkpoint['optimizer'])
+        if scheduler is not None:
+            scheduler.load_state_dict(checkpoint['scheduler'])
+        if loss_scaler is not None and 'scaler' in checkpoint:
+            scheduler.load_state_dict(checkpoint['scaler'])
+        del ckpt_state_dict
+        del checkpoint
+        # if main_process():
+        logger.info(f"Successfully loaded weight: '{load_path}'")
+        if scheduler is not None and optimizer is not None:
+            logger.info(f"Resume training from: '{load_path}'")
+    else:
+        # if main_process():
+        raise RuntimeError(f"No weight found at '{load_path}'")
+    return model, optimizer, scheduler, loss_scaler

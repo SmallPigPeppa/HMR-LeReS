@@ -1,8 +1,10 @@
 from types import SimpleNamespace
 
 
-def dict_to_sns(d):
-    return SimpleNamespace(**{k: dict_to_sns(v) if isinstance(v, dict) else v for k, v in d.items()})
+try:
+    from mmcv.utils import Config, DictAction
+except:
+    from mmengine import Config, DictAction
 
 
 cfg_dict = {
@@ -36,7 +38,7 @@ cfg_dict = {
         'crop_size': (544, 1216),
         'clip_depth_range': (0.9, 150)
     },
-    'load_from': None,
+    'load_from': './convlarge_hourglass_0.3_150_step750k_v1.1.pth',
     'cudnn_benchmark': True,
     'test_metrics': [
         'abs_rel', 'rmse', 'silog',
@@ -47,4 +49,5 @@ cfg_dict = {
     'thread_per_gpu': 4
 }
 
-cfg = dict_to_sns(cfg_dict)
+cfg = Config(cfg_dict=cfg_dict)
+# print(cfg)
